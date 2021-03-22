@@ -1,0 +1,21 @@
+# ignore text editors
+.vscode
+.idea
+.atom
+
+# ignore modules
+node_modules
+
+# ignore package-lock.json
+package-lock.json
+
+# esling cache file
+.eslintcache
+
+# ignore test dir
+.test
+
+# macOS file
+.DS_Store
+
+dist
