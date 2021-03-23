@@ -1,52 +1,43 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { makeStyles, createStyles } from '@material-ui/core/styles';
-
+import React, { useEffect, useState } from 'react';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Divider from '@material-ui/core/Divider';
 import Collapse from '@material-ui/core/Collapse';
-
 import IconExpandLess from '@material-ui/icons/ExpandLess';
 import IconExpandMore from '@material-ui/icons/ExpandMore';
-// import { primary } from '../../../theme/colors';
+import * as icons from 'mdi-material-ui';
+import { SvgIconTypeMap } from '@material-ui/core';
+import { OverridableComponent } from '@material-ui/core/OverridableComponent';
 
-// React runtime PropTypes
-export const AppMenuItemPropTypes = {
-  name: PropTypes.string.isRequired,
-  link: PropTypes.string,
-  Icon: PropTypes.elementType,
-  items: PropTypes.array,
-};
-
-// TypeScript compile-time props type, infered from propTypes
-// https://dev.to/busypeoples/notes-on-typescript-inferring-react-proptypes-1g88
-type AppMenuItemPropTypes = PropTypes.InferProps<typeof AppMenuItemPropTypes>;
-type AppMenuItemPropsWithoutItems = Omit<AppMenuItemPropTypes, 'items'>;
-
-// Improve child items declaration
-export type AppMenuItemProps = AppMenuItemPropsWithoutItems & {
+export interface AppMenuItemProps {
+  name: string;
+  link?: string;
+  icon?: string;
   items?: AppMenuItemProps[];
-};
+}
 
-const AppMenuItem: React.FC<AppMenuItemProps> = props => {
-  const { name, Icon, items = [] } = props;
-  const classes = useStyles();
+const AppMenuItem: React.FC<AppMenuItemProps> = (props) => {
+  const { name, icon, items = [] } = props;
   const isExpandable = items && items.length > 0;
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState<boolean>(false);
+  const [Icon, setIcon] = useState<OverridableComponent<SvgIconTypeMap<{}, 'svg'>>>(null);
 
-  function handleClick() {
+  useEffect(() => {
+    setIcon(icons[icon]);
+  }, [icon]);
+
+  const handleClick = () => {
     setOpen(!open);
-  }
+  };
 
   const MenuItemRoot = (
-    <ListItem button className={classes.menuItem} onClick={handleClick}>
+    <ListItem button onClick={handleClick}>
       {/* Display an icon if any */}
       {!!Icon && (
         <ListItemIcon>
-          <Icon />
+          <Icon color="primary" />
         </ListItemIcon>
       )}
       <ListItemText primary={name} inset={!Icon} />
@@ -74,11 +65,5 @@ const AppMenuItem: React.FC<AppMenuItemProps> = props => {
     </>
   );
 };
-
-AppMenuItem.propTypes = AppMenuItemPropTypes;
-
-const useStyles = makeStyles(theme => createStyles({
-  menuItem: {},
-}));
 
 export default AppMenuItem;

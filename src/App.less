@@ -1,3 +1,5 @@
+@import './variables.less';
+
 p {
   font-size: 15px;
   line-height: 15px;
@@ -6,4 +8,15 @@ p {
 p > code {
   line-height: 20px;
   color: darkslateblue;
+}
+
+.app-page {
+  &__navbar {
+    border-bottom: @component-border;
+
+    &__toolbar {
+      background-color: white;
+      color: @text-color;
+    }
+  }
 }

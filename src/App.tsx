@@ -3,7 +3,6 @@ import { connect } from './patches/dva';
 import { ConnectState } from './models';
 import { AppState } from './models/app';
 import { Dispatch, AnyAction } from 'redux';
-import './App.less';
 import { makeStyles, StylesProvider, ThemeProvider } from '@material-ui/core';
 import {
   Route,
@@ -12,6 +11,7 @@ import {
 } from 'react-router-dom';
 import { theme } from './theme';
 import Fallback from './components/Fallback';
+import './App.less';
 
 // pages
 const HomePage = React.lazy(() => import('./pages/Home'));
