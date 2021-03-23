@@ -55,8 +55,7 @@ const AppMenu: React.FC = () => {
   return (
     <List className={clsx('app-sidebar__menu', classes.appMenu)} disablePadding={true}>
       <Toolbar className="app-sidebar__menu__logo-wrapper">
-        <img src="/assets/images/exampro.svg" alt="" />
-        EXAMPRO
+        <img src="/assets/images/logo_text.svg" alt="" />
       </Toolbar>
       {appMenuItems.map((item, index) => (
         <AppMenuItem {...item} key={index} />

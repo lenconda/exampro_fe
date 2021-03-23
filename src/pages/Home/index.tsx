@@ -23,7 +23,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   },
   appBar: {
     [theme.breakpoints.up('sm')]: {
-      width: `calc(100% - ${drawerWidth}px)`,
+      width: '100%',
       marginLeft: drawerWidth,
     },
     backgroundColor: 'white',
@@ -63,7 +63,11 @@ const HomePage: React.FC<HomePageProps> = (props) => {
   return (
     <div className="app-page app-page-home">
       <CssBaseline />
-      <AppBar position="fixed" className={clsx('app-page__navbar', classes.appBar)} elevation={0}>
+      <AppBar
+        position="fixed"
+        className={clsx('app-page__navbar', classes.appBar)}
+        elevation={0}
+      >
         <Toolbar classes={{ root: 'app-page__navbar__toolbar' }}>
           <IconButton
             color="inherit"
@@ -74,12 +78,14 @@ const HomePage: React.FC<HomePageProps> = (props) => {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap>
-            Responsive drawer
-          </Typography>
+          <img
+            src="/assets/images/logo_text.svg"
+            alt="logo"
+            className="app-page__navbar__toolbar__logo"
+          />
         </Toolbar>
       </AppBar>
-      <nav className={classes.drawer} aria-label="mailbox folders">
+      <nav className={clsx('app-sidebar', classes.drawer)} aria-label="mailbox folders">
         {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
         <Hidden smUp implementation="css">
           <Drawer
