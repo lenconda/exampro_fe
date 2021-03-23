@@ -13,14 +13,14 @@ import { OverridableComponent } from '@material-ui/core/OverridableComponent';
 import './index.less';
 
 export interface AppMenuItemProps {
-  name: string;
+  title: string;
   link?: string;
   icon?: string;
   items?: AppMenuItemProps[];
 }
 
 const AppMenuItem: React.FC<AppMenuItemProps> = (props) => {
-  const { name, icon, items = [] } = props;
+  const { title, icon, items = [] } = props;
   const isExpandable = items && items.length > 0;
   const [open, setOpen] = useState<boolean>(false);
   const [Icon, setIcon] = useState<OverridableComponent<SvgIconTypeMap<{}, 'svg'>>>(null);
@@ -38,10 +38,10 @@ const AppMenuItem: React.FC<AppMenuItemProps> = (props) => {
       {/* Display an icon if any */}
       {!!Icon && (
         <ListItemIcon>
-          <Icon color="secondary" />
+          <Icon className="app-menu__item__icon" />
         </ListItemIcon>
       )}
-      <ListItemText primary={name} inset={!Icon} classes={{ root: 'app-menu__item__text' }} />
+      <ListItemText primary={title} inset={!Icon} classes={{ root: 'app-menu__item__text' }} />
       {/* Display the expand menu if the item has children */}
       {isExpandable && !open && <IconExpandMore />}
       {isExpandable && open && <IconExpandLess />}

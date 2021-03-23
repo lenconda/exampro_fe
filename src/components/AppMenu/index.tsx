@@ -8,40 +8,40 @@ import clsx from 'clsx';
 
 const appMenuItems = [
   {
-    name: 'Dashboard',
+    title: 'Dashboard',
     link: '/',
     icon: 'ViewDashboard',
   },
   {
-    name: 'Orders',
+    title: 'Orders',
     link: '/orders',
     icon: 'Cart',
   },
   {
-    name: 'Customers',
+    title: 'Customers',
     link: '/customers',
     icon: 'Account',
   },
   {
-    name: 'Reports',
+    title: 'Reports',
     link: '/reports',
     icon: 'FileChart',
   },
   {
-    name: 'Nested Pages',
+    title: 'Nested Pages',
     icon: 'BookMultiple',
     items: [
       {
-        name: 'Level 2',
+        title: 'Level 2',
       },
       {
-        name: 'Level 2',
+        title: 'Level 2',
         items: [
           {
-            name: 'Level 3',
+            title: 'Level 3',
           },
           {
-            name: 'Level 3',
+            title: 'Level 3',
           },
         ],
       },
