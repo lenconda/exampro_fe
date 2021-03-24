@@ -11,6 +11,7 @@ import { makeStyles, useTheme, Theme, createStyles } from '@material-ui/core/sty
 import AppMenu from '../../components/AppMenu';
 import './index.less';
 import clsx from 'clsx';
+import AppAvatar from '../../components/AppAvatar';
 
 const drawerWidth = 240;
 
@@ -83,6 +84,9 @@ const HomePage: React.FC<HomePageProps> = (props) => {
             alt="logo"
             className="app-page__navbar__toolbar__logo"
           />
+        </Toolbar>
+        <Toolbar>
+          <AppAvatar user={{ email: 'lenconda@foxmail.com', name: '彭瀚林' }} />
         </Toolbar>
       </AppBar>
       <nav className={clsx('app-sidebar', classes.drawer)} aria-label="mailbox folders">

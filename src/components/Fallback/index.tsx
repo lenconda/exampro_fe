@@ -4,7 +4,6 @@ import { Loading } from 'mdi-material-ui';
 import { SvgIcon } from '@material-ui/core';
 
 const Fallback = () => {
-  console.log(111);
   return (
     <div className="app-fallback__backdrop">
       <SvgIcon
