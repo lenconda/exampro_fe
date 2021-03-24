@@ -12,6 +12,7 @@ import AppMenu from '../../components/AppMenu';
 import './index.less';
 import clsx from 'clsx';
 import AppAvatar from '../../components/AppAvatar';
+import Dropdown from '../../components/Dropdown';
 
 const drawerWidth = 240;
 
@@ -86,7 +87,11 @@ const HomePage: React.FC<HomePageProps> = (props) => {
           />
         </Toolbar>
         <Toolbar>
-          <AppAvatar user={{ email: 'lenconda@foxmail.com', name: '彭瀚林' }} />
+          <Dropdown
+            trigger={<AppAvatar user={{ email: 'lenconda@foxmail.com', name: '彭瀚林' }} />}
+          >
+            <div style={{ height: 200 }}></div>
+          </Dropdown>
         </Toolbar>
       </AppBar>
       <nav className={clsx('app-sidebar', classes.drawer)} aria-label="mailbox folders">
