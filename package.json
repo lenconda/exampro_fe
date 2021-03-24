@@ -68,6 +68,7 @@
   "dependencies": {
     "@material-ui/core": "^4.11.3",
     "@material-ui/icons": "^4.11.2",
+    "axios": "^0.21.1",
     "clsx": "^1.1.1",
     "connected-react-router": "^6.8.0",
     "dva": "^2.4.1",
@@ -76,7 +77,9 @@
     "history": "^5.0.0",
     "invariant": "^2.2.4",
     "isomorphic-fetch": "^3.0.0",
+    "js-base64": "^3.6.0",
     "mdi-material-ui": "^6.22.0",
+    "notistack": "^1.0.5",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-redux": "^7.2.2",

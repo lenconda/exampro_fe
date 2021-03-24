@@ -13,6 +13,7 @@ import './index.less';
 import clsx from 'clsx';
 import AppAvatar from '../../components/AppAvatar';
 import Dropdown from '../../components/Dropdown';
+import Manager from '../../components/AppAlert/Manager';
 
 const drawerWidth = 240;
 

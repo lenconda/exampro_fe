@@ -19,7 +19,7 @@ const Dropdown: React.FC<DropdownProps> = ({
       <div ref={anchor} onClick={() => setOpen(true)}>{trigger}</div>
       <Menu
         open={open}
-        classes={{ paper: 'app-dropdown', list: 'app-dropdown__list' }}
+        classes={{ paper: 'app-dropdown' }}
         anchorEl={anchor.current}
         onClose={() => setOpen(false)}
       >{children}</Menu>

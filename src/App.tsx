@@ -12,6 +12,7 @@ import {
 import { theme } from './theme';
 import Fallback from './components/Fallback';
 import './App.less';
+import Container from './components/AppAlert/Container';
 
 // pages
 const HomePage = React.lazy(() => import('./pages/Home'));
@@ -29,11 +30,10 @@ const useStyles = makeStyles((theme) => {
 });
 
 const App: React.FC<AppProps> = (props) => {
-  const classes = useStyles();
-
   return (
     <ThemeProvider theme={theme}>
-      <StylesProvider injectFirst>
+      <StylesProvider injectFirst={true}>
+        <Container />
         <Router>
           <Suspense fallback={<Fallback />}>
             <Route path="/home" component={() => <HomePage />}></Route>
