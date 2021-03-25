@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import AppBar from '@material-ui/core/AppBar';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Drawer from '@material-ui/core/Drawer';
@@ -9,11 +9,12 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles, useTheme, Theme, createStyles } from '@material-ui/core/styles';
 import AppMenu from '../../components/AppMenu';
-import './index.less';
 import clsx from 'clsx';
 import AppAvatar from '../../components/AppAvatar';
 import Dropdown from '../../components/Dropdown';
-import Manager from '../../components/AppAlert/Manager';
+import AppRequestManager from '../../components/AppRequest/Manager';
+import { useHistory } from 'react-router-dom';
+import './index.less';
 
 const drawerWidth = 240;
 
@@ -56,6 +57,7 @@ const HomePage: React.FC<HomePageProps> = (props) => {
   const classes = useStyles();
   const theme = useTheme();
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const history = useHistory();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -128,6 +130,14 @@ const HomePage: React.FC<HomePageProps> = (props) => {
       </nav>
       <main className={classes.content}>
         <Toolbar />
+        <button
+          onClick={() => {
+            AppRequestManager
+              .send({ method: 'GET', url: '/user/profile' })
+              .then(res => console.log('RES: ', res))
+              .catch(error => console.log('ERROR: ', error));
+          }}
+        >test</button>
         <Typography paragraph>
           Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
           ut labore et dolore magna aliqua. Rhoncus dolor purus non enim praesent elementum

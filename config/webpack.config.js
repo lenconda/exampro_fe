@@ -220,6 +220,16 @@ module.exports = function() {
       inline: true,
       contentBase: APP_PUBLIC_PATH,
       historyApiFallback: true,
+      proxy: {
+        '/api': {
+          target: 'http://localhost:3000',
+          secure: true,
+          changeOrigin: true,
+          pathRewrite: {
+            '^/api': '/api',
+          },
+        },
+      },
     },
     module: {
       strictExportPresence: true,

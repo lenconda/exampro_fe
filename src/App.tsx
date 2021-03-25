@@ -11,8 +11,10 @@ import {
 } from 'react-router-dom';
 import { theme } from './theme';
 import Fallback from './components/Fallback';
+import AppAlertContainer from './components/AppAlert/Container';
+import AppRequestContainer from './components/AppRequest/Container';
+import { SnackbarProvider } from 'notistack';
 import './App.less';
-import Container from './components/AppAlert/Container';
 
 // pages
 const HomePage = React.lazy(() => import('./pages/Home'));
@@ -33,13 +35,16 @@ const App: React.FC<AppProps> = (props) => {
   return (
     <ThemeProvider theme={theme}>
       <StylesProvider injectFirst={true}>
-        <Container />
-        <Router>
-          <Suspense fallback={<Fallback />}>
-            <Route path="/home" component={() => <HomePage />}></Route>
-            <Redirect from="/" to="/home" exact={true} />
-          </Suspense>
-        </Router>
+        <SnackbarProvider autoHideDuration={3000}>
+          <AppAlertContainer />
+          <AppRequestContainer />
+          <Router>
+            <Suspense fallback={<Fallback />}>
+              <Route path="/home" component={() => <HomePage />}></Route>
+              <Redirect from="/" to="/home" exact={true} />
+            </Suspense>
+          </Router>
+        </SnackbarProvider>
       </StylesProvider>
     </ThemeProvider>
   );

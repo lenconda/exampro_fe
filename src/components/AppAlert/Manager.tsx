@@ -6,23 +6,12 @@ const Constants = {
 };
 
 class Manager extends EventEmitter {
-  private alerts: SnackbarProps[] = [];
-
-  constructor() {
-    super();
-    this.alerts = [];
-  }
-
   public create(message: string, props: SnackbarProps) {
-    this.alerts.push({
-      message,
-      ...props,
-    });
-    this.emitChange();
+    this.emitChange({ message, ...props });
   }
 
-  public emitChange() {
-    this.emit(Constants.CHANGE, this.alerts);
+  public emitChange(props: SnackbarProps) {
+    this.emit(Constants.CHANGE, props);
   }
 
   public addChangeListener(callback) {
