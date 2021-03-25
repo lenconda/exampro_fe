@@ -62,6 +62,7 @@ const AppModel: AppModelType = {
           ERR_EMAIL_VERIFICATION_REQUIRED: '请先验证邮箱',
           ERR_NOT_PARTICIPANT: '你不是本场考试的考生',
           ERR_DUPLICATED_CONFIRMATION_PROHIBITED: '无法重复确认已确认的考试',
+          ERR_PASSWORD_NOT_NULL: '无法设置已设置密码的账户的密码',
         },
         ui: {
           '/user/auth': {
@@ -78,6 +79,18 @@ const AppModel: AppModelType = {
             '011': '账户注册成功',
             '012': '已为账户重置密码',
             '013': '请按照账户邮箱中的邮件进行下一步操作',
+          },
+          '/user/complete': {
+            '001': '密码',
+            '002': '确认密码',
+            '003': '继续',
+            '004': '完善账户信息',
+            '005': '请填写密码',
+            '006': '请确认密码',
+            '007': '完善账户信息成功',
+            '008': '正在前往控制台',
+            '009': '两次输入密码不一致',
+            '010': '姓名',
           },
         },
       },

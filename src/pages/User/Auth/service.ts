@@ -20,3 +20,12 @@ export const login = async (email: string, password: string) => {
   });
   return data;
 };
+
+export const forgetPassword = async (email: string) => {
+  const data = await AppRequestManager.send({
+    url: '/auth/forget_password',
+    method: 'POST',
+    data: { email },
+  });
+  return data;
+};

@@ -21,6 +21,8 @@ import './App.less';
 const HomePage = React.lazy(() => import('./pages/Home'));
 // /user/auth
 const UserAuthPage = React.lazy(() => import('./pages/User/Auth'));
+// /user/complete
+const UserCompletePage = React.lazy(() => import('./pages/User/Complete'));
 
 export interface AppProps extends AppState {
   dispatch: Dispatch<AnyAction>;
@@ -46,6 +48,7 @@ const App: React.FC<AppProps> = (props) => {
               <Switch>
                 <Route path="/home" component={() => <HomePage />} />
                 <Route path="/user/auth" component={() => <UserAuthPage />} />
+                <Route path="/user/complete" component={() => <UserCompletePage />} />
                 <Redirect from="/" to="/home" exact={true} />
               </Switch>
             </Suspense>

@@ -52,10 +52,10 @@ const createAxiosInstance = (errorsMap: Record<string, string>, history: History
     }
 
     if (statusCode === 403) {
-      return;
+      return Promise.reject(error);
     }
 
-    return Promise.reject(error);
+    return;
   });
 
   return instance;

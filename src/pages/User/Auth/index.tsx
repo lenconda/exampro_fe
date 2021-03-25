@@ -6,7 +6,7 @@ import { DatabaseCheck, Fingerprint, HeadCheck } from 'mdi-material-ui';
 import { connect } from 'react-redux';
 import { ConnectState } from '../../../models';
 import { AppState } from '../../../models/app';
-import { getEmailAuthType, login } from './service';
+import { forgetPassword, getEmailAuthType, login } from './service';
 import { useHistory } from 'react-router-dom';
 import _ from 'lodash';
 import { Base64 } from 'js-base64';
@@ -18,8 +18,9 @@ export interface AuthPageProps extends AppState {}
 
 const AuthPage: React.FC<AuthPageProps> = (props) => {
   const [authStatus, setAuthStatus] = useState<'login' | 'register' | 'forget_password'>(null);
-  const texts = props.i18n[props.locale].ui['/user/auth'];
+  const [isForgetPasswordPending, setIsForgetPasswordPending] = useState<boolean>(false);
   const history = useHistory();
+  const texts = props.i18n[props.locale].ui['/user/auth'] || {};
 
   return (
     <div className="app-page app-page-auth">
@@ -75,14 +76,23 @@ const AuthPage: React.FC<AuthPageProps> = (props) => {
                 }}
                 onSubmit={(values, { setSubmitting }) => {
                   const { email, password } = values;
-                  if (!authStatus) {
+                  if (!authStatus && !isForgetPasswordPending) {
                     getEmailAuthType(email)
                       .then((type) => {
                         setAuthStatus(type);
                       })
+                      .catch(() => {})
+                      .finally(() => setSubmitting(false));
+                  } else if (isForgetPasswordPending) {
+                    forgetPassword(values.email)
+                      .then((res) => {
+                        if (res) {
+                          setAuthStatus('forget_password');
+                        }
+                      })
                       .finally(() => setSubmitting(false));
                   }
-                  if (authStatus === 'login') {
+                  if (authStatus === 'login' && !isForgetPasswordPending) {
                     login(email, password)
                       .then((res) => {
                         if (res) {
@@ -94,6 +104,7 @@ const AuthPage: React.FC<AuthPageProps> = (props) => {
                           }
                         }
                       })
+                      .catch(() => {})
                       .finally(() => setSubmitting(false));
                   }
                 }}
@@ -149,6 +160,19 @@ const AuthPage: React.FC<AuthPageProps> = (props) => {
                       disabled={isSubmitting}
                       onClick={submitForm}
                     >{authStatus === 'login' ? texts['010'] : texts['004']}</Button>
+                    {
+                      authStatus === 'login' && (
+                        <Button
+                          color="secondary"
+                          className="button-wrapper"
+                          disabled={isSubmitting}
+                          onClick={() => {
+                            setIsForgetPasswordPending(true);
+                            submitForm();
+                          }}
+                        >{texts['005']}</Button>
+                      )
+                    }
                     {isSubmitting && <LinearProgress />}
                   </Form>
                 )}
