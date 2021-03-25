@@ -2,12 +2,19 @@ import { Reducer } from 'redux';
 import { Effect, Subscription } from 'dva';
 import { ConnectState } from '.';
 
-export type I18nKeys = 'errors';
+export interface I18N {
+  [key: string]: {
+    errors: Record<string, string>;
+    ui: {
+      [pathname: string]: Record<string, string>;
+    };
+  };
+}
 
 export interface AppState {
   count: number;
   locale: string;
-  i18n: Record<string, Record<I18nKeys, Record<string, string>>>;
+  i18n: I18N;
 }
 
 export interface AppModelType {
@@ -55,6 +62,20 @@ const AppModel: AppModelType = {
           ERR_EMAIL_VERIFICATION_REQUIRED: '请先验证邮箱',
           ERR_NOT_PARTICIPANT: '你不是本场考试的考生',
           ERR_DUPLICATED_CONFIRMATION_PROHIBITED: '无法重复确认已确认的考试',
+        },
+        ui: {
+          '/user/auth': {
+            '001': '验证身份',
+            '002': '邮箱',
+            '003': '密码',
+            '004': '继续',
+            '005': '我忘记了密码',
+            '006': '保持我的登录状态',
+            '007': '隐私政策',
+            '008': '邮箱地址验证无效',
+            '009': '请输入邮箱地址',
+            '010': '登录',
+          },
         },
       },
     },

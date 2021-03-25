@@ -10,6 +10,8 @@ p > code {
 }
 
 .app-page {
+  height: 100%;
+
   &__navbar {
     border-bottom: @component-border;
 
@@ -17,5 +19,18 @@ p > code {
       background-color: white;
       color: @text-color;
     }
+  }
+}
+
+.app-form {
+  display: flex;
+  flex-direction: column;
+
+  .button-wrapper, .input-wrapper {
+    margin-bottom: 20px;
+  }
+
+  .input-wrapper {
+    min-width: 280px;
   }
 }

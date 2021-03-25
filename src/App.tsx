@@ -8,6 +8,7 @@ import {
   Route,
   Redirect,
   BrowserRouter as Router,
+  Switch,
 } from 'react-router-dom';
 import { theme } from './theme';
 import Fallback from './components/Fallback';
@@ -16,8 +17,10 @@ import AppRequestContainer from './components/AppRequest/Container';
 import { SnackbarProvider } from 'notistack';
 import './App.less';
 
-// pages
+// /home
 const HomePage = React.lazy(() => import('./pages/Home'));
+// /user/auth
+const UserAuthPage = React.lazy(() => import('./pages/User/Auth'));
 
 export interface AppProps extends AppState {
   dispatch: Dispatch<AnyAction>;
@@ -40,8 +43,11 @@ const App: React.FC<AppProps> = (props) => {
             <AppAlertContainer />
             <AppRequestContainer />
             <Suspense fallback={<Fallback />}>
-              <Route path="/home" component={() => <HomePage />}></Route>
-              <Redirect from="/" to="/home" exact={true} />
+              <Switch>
+                <Route path="/home" component={() => <HomePage />} />
+                <Route path="/user/auth" component={() => <UserAuthPage />} />
+                <Redirect from="/" to="/home" exact={true} />
+              </Switch>
             </Suspense>
           </Router>
         </SnackbarProvider>

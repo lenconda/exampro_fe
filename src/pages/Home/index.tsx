@@ -130,14 +130,6 @@ const HomePage: React.FC<HomePageProps> = (props) => {
       </nav>
       <main className={classes.content}>
         <Toolbar />
-        <button
-          onClick={() => {
-            AppRequestManager
-              .send({ method: 'GET', url: '/user/profile' })
-              .then(res => console.log('RES: ', res))
-              .catch(error => console.log('ERROR: ', error));
-          }}
-        >test</button>
         <Typography paragraph>
           Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
           ut labore et dolore magna aliqua. Rhoncus dolor purus non enim praesent elementum
