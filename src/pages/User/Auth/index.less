@@ -13,6 +13,7 @@
 
   &__card {
     border: @border;
+    min-width: 340px;
     padding: 30px 20px;
     user-select: none;
 
@@ -25,6 +26,10 @@
         display: inline-block;
         margin-right: 5px;
         color: @red;
+
+        &.success {
+          color: @primary;
+        }
       }
 
       > .title {
