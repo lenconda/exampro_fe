@@ -20,19 +20,20 @@ const createAxiosInstance = (errorsMap: Record<string, string>, history: History
   });
 
   instance.interceptors.response.use((response: any) => {
-    if (response.data.token) {
+    const token = _.get(response, 'data.data.token');
+    if (token) {
       if (JSON.parse(localStorage.getItem('persist') || 'false')) {
-        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('token', token);
       } else {
-        sessionStorage.setItem('token', response.data.token);
+        sessionStorage.setItem('token', token);
       }
     }
     return response;
   }, (error) => {
-    if (
-      error.response.status === 401
-      || _.get(error, 'response.data.statusCode') === 401
-    ) {
+    const statusCode = error.response.status || _.get(error, 'response.data.statusCode');
+    const errorCode = _.get(error, 'response.data.message') || _.get(error, 'response.data.error');
+
+    if (statusCode === 401) {
       localStorage.removeItem('token');
       sessionStorage.removeItem('token');
       const { pathname, hash, search } = window.location;
@@ -43,12 +44,15 @@ const createAxiosInstance = (errorsMap: Record<string, string>, history: History
           search: `?redirect=${redirect}`,
         });
       }
-      return Promise.reject(error);
+      return;
     }
 
-    const errorCode = _.get(error, 'response.data.message') || _.get(error, 'response.data.error');
     if (errorCode) {
       AppAlertManager.create(errorsMap[errorCode] || errorCode, { variant: 'error' });
+    }
+
+    if (statusCode === 403) {
+      return;
     }
 
     return Promise.reject(error);

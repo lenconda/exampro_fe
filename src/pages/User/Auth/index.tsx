@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
-import { Button, Card, CssBaseline, LinearProgress, Typography } from '@material-ui/core';
+import { Button, Card, Checkbox, CssBaseline, FormControlLabel, LinearProgress, Typography } from '@material-ui/core';
 import { Field, Form as FormikForm, Formik } from 'formik';
 import { TextField } from 'formik-material-ui';
 import { Fingerprint } from 'mdi-material-ui';
 import { connect } from 'react-redux';
 import { ConnectState } from '../../../models';
 import { AppState } from '../../../models/app';
+import { getEmailAuthType, login } from './service';
+import { useHistory } from 'react-router-dom';
+import _ from 'lodash';
+import { Base64 } from 'js-base64';
 import './index.less';
-import { getEmailAuthType } from './service';
 
 const Form = FormikForm as any;
 
@@ -16,6 +19,7 @@ export interface AuthPageProps extends AppState {}
 const AuthPage: React.FC<AuthPageProps> = (props) => {
   const [authStatus, setAuthStatus] = useState<'login' | 'register'>(null);
   const texts = props.i18n[props.locale].ui['/user/auth'];
+  const history = useHistory();
 
   return (
     <div className="app-page app-page-auth">
@@ -43,10 +47,25 @@ const AuthPage: React.FC<AuthPageProps> = (props) => {
             return errors;
           }}
           onSubmit={(values, { setSubmitting }) => {
+            const { email, password } = values;
             if (!authStatus) {
-              getEmailAuthType(values.email)
+              getEmailAuthType(email)
                 .then((type) => {
                   setAuthStatus(type);
+                })
+                .finally(() => setSubmitting(false));
+            }
+            if (authStatus === 'login') {
+              login(email, password)
+                .then((res) => {
+                  if (res) {
+                    const location = (_.get(history, 'location.search') || '').slice(1);
+                    if (location.redirect) {
+                      history.push(Base64.decode(location.redirect));
+                    } else {
+                      history.push('/');
+                    }
+                  }
                 })
                 .finally(() => setSubmitting(false));
             }
@@ -67,17 +86,34 @@ const AuthPage: React.FC<AuthPageProps> = (props) => {
                 }}
               />
               {
-                authStatus === 'login' && <Field
-                  component={TextField}
-                  type="password"
-                  label={texts['003']}
-                  name="password"
-                  variant="outlined"
-                  className="input-wrapper"
-                  InputProps={{
-                    className: 'input',
-                  }}
-                />
+                authStatus === 'login' && (
+                  <>
+                    <Field
+                      component={TextField}
+                      type="password"
+                      label={texts['003']}
+                      name="password"
+                      variant="outlined"
+                      className="input-wrapper"
+                      InputProps={{
+                        className: 'input',
+                      }}
+                    />
+                    <FormControlLabel
+                      classes={{ root: 'checkbox-wrapper' }}
+                      label={texts['006']}
+                      control={
+                        <Checkbox
+                          color="primary"
+                          defaultChecked={JSON.parse(localStorage.getItem('persist') || 'false')}
+                          onChange={(event) => {
+                            localStorage.setItem('persist', JSON.stringify(event.target.checked));
+                          }}
+                        />
+                      }
+                    />
+                  </>
+                )
               }
               <Button
                 variant="contained"
