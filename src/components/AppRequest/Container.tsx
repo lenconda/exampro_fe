@@ -6,11 +6,13 @@ import { connect } from '../../patches/dva';
 import { ConnectState } from '../../models';
 import { AppState } from '../../models/app';
 import _ from 'lodash';
+import { useHistory } from 'react-router-dom';
 
 export interface AppRequestContainerProps extends AppState {}
 
 const Container: React.FC<AppRequestContainerProps> = (props) => {
-  const http = createAxiosInstance(props.errorMap);
+  const history = useHistory();
+  const http = createAxiosInstance(props.i18n[props.locale].errors, history);
 
   useEffect(() => {
     const handler = (config: AxiosRequestConfig & { cb: Function }) => {

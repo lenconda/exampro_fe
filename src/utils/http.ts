@@ -1,8 +1,10 @@
 import axios from 'axios';
+import { History } from 'history';
 import _ from 'lodash';
-import Manager from '../components/AppAlert/Manager';
+import { Base64 } from 'js-base64';
+import AppAlertManager from '../components/AppAlert/Manager';
 
-const createAxiosInstance = (errorsMap) => {
+const createAxiosInstance = (errorsMap: Record<string, string>, history: History<any>) => {
   const instance = axios.create({
     timeout: 3600000,
     baseURL: '/api',
@@ -33,20 +35,22 @@ const createAxiosInstance = (errorsMap) => {
     ) {
       localStorage.removeItem('token');
       sessionStorage.removeItem('token');
-      const location = window.location;
-      console.log(location);
+      const { pathname, hash, search } = window.location;
+      const redirect = Base64.encode(`${pathname}${search}${hash}`);
+      if (pathname !== '/user/auth') {
+        history.push({
+          pathname: '/user/auth',
+          search: `?redirect=${redirect}`,
+        });
+      }
+      return Promise.reject(error);
     }
-    // if (error.response.status === 401) {
-    //   localStorage.removeItem('token');
-    //   // const { pathname, search, hash } = history.location;
-    //   // if (pathname !== '/signin') {
-    //   // history.push(`/signin?redirect=${Base64.encode(`${pathname}${search}${hash}`)}`);
-    //   // }
-    // } else {
-    // }
-    // if (error.response.data.message) {
-    // Manager.create(, {});
-    // }
+
+    const errorCode = _.get(error, 'response.data.message') || _.get(error, 'response.data.error');
+    if (errorCode) {
+      AppAlertManager.create(errorsMap[errorCode] || errorCode, { variant: 'error' });
+    }
+
     return Promise.reject(error);
   });
 

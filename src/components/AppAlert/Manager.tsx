@@ -1,16 +1,16 @@
 import { EventEmitter } from 'events';
-import { SnackbarProps } from '@material-ui/core/Snackbar';
+import { OptionsObject } from 'notistack';
 
 const Constants = {
   CHANGE: 'change',
 };
 
 class Manager extends EventEmitter {
-  public create(message: string, props: SnackbarProps) {
+  public create(message: string, props: OptionsObject) {
     this.emitChange({ message, ...props });
   }
 
-  public emitChange(props: SnackbarProps) {
+  public emitChange(props: OptionsObject & { message: string }) {
     this.emit(Constants.CHANGE, props);
   }
 

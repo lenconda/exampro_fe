@@ -36,9 +36,9 @@ const App: React.FC<AppProps> = (props) => {
     <ThemeProvider theme={theme}>
       <StylesProvider injectFirst={true}>
         <SnackbarProvider autoHideDuration={3000}>
-          <AppAlertContainer />
-          <AppRequestContainer />
           <Router>
+            <AppAlertContainer />
+            <AppRequestContainer />
             <Suspense fallback={<Fallback />}>
               <Route path="/home" component={() => <HomePage />}></Route>
               <Redirect from="/" to="/home" exact={true} />
