@@ -1,0 +1,42 @@
+@import '../../../variables.less';
+
+.app-page-verify--email {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  &__logo {
+    width: 180px;
+    margin-bottom: 40px;
+  }
+
+  &__card {
+    border: @border;
+    min-width: 340px;
+    padding: 30px 20px;
+    user-select: none;
+
+    &__icons {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+
+      > .icon {
+        display: inline-block;
+        margin-right: 5px;
+        color: @primary;
+
+        &.error {
+          color: @danger;
+        }
+      }
+
+      .title {
+        font-size: 16px;
+        line-height: 32px;
+        text-align: center;
+      }
+    }
+  }
+}

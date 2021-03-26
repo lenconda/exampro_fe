@@ -3,7 +3,7 @@ import { connect } from './patches/dva';
 import { ConnectState } from './models';
 import { AppState } from './models/app';
 import { Dispatch, AnyAction } from 'redux';
-import { makeStyles, StylesProvider, ThemeProvider } from '@material-ui/core';
+import { StylesProvider, ThemeProvider } from '@material-ui/core';
 import {
   Route,
   Redirect,
@@ -23,18 +23,12 @@ const HomePage = React.lazy(() => import('./pages/Home'));
 const UserAuthPage = React.lazy(() => import('./pages/User/Auth'));
 // /user/complete
 const UserCompletePage = React.lazy(() => import('./pages/User/Complete'));
+// /user/verify_email
+const UserVerifyEmailPage = React.lazy(() => import('./pages/User/VerifyEmail'));
 
 export interface AppProps extends AppState {
   dispatch: Dispatch<AnyAction>;
 }
-
-const useStyles = makeStyles((theme) => {
-  return {
-    sideBar: {
-      width: 360,
-    },
-  };
-});
 
 const App: React.FC<AppProps> = (props) => {
   return (
@@ -49,6 +43,7 @@ const App: React.FC<AppProps> = (props) => {
                 <Route path="/home" component={() => <HomePage />} />
                 <Route path="/user/auth" component={() => <UserAuthPage />} />
                 <Route path="/user/complete" component={() => <UserCompletePage />} />
+                <Route path="/user/verify_email" component={() => <UserVerifyEmailPage />} />
                 <Redirect from="/" to="/home" exact={true} />
               </Switch>
             </Suspense>
