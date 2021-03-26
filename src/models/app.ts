@@ -1,14 +1,14 @@
-import { Reducer } from 'redux';
 import { Effect, Subscription } from 'dva';
 import { ConnectState } from '.';
 import _ from 'lodash';
 
 export interface I18N {
   [key: string]: {
-    errors: Record<string, string>;
-    ui: {
+    errors?: Record<string, string>;
+    ui?: {
       [pathname: string]: Record<string, string>;
     };
+    avatarDropdown?: Record<string, string>;
   };
 }
 
@@ -61,6 +61,12 @@ const AppModel: AppModelType = {
           ERR_NOT_PARTICIPANT: '你不是本场考试的考生',
           ERR_DUPLICATED_CONFIRMATION_PROHIBITED: '无法重复确认已确认的考试',
           ERR_PASSWORD_NOT_NULL: '无法设置已设置密码的账户的密码',
+        },
+        avatarDropdown: {
+          '001': '个人资料',
+          '002': '更新密码',
+          '003': '更新邮箱',
+          '004': '退出登录',
         },
         ui: {
           '/user/auth': {

@@ -34,8 +34,6 @@ const createAxiosInstance = (errorsMap: Record<string, string>, history: History
     const errorCode = _.get(error, 'response.data.message') || _.get(error, 'response.data.error');
 
     if (statusCode === 401) {
-      localStorage.removeItem('token');
-      sessionStorage.removeItem('token');
       const { pathname, hash, search } = window.location;
       const redirect = Base64.encode(`${pathname}${search}${hash}`);
       if (pathname !== '/user/auth') {

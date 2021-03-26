@@ -7,12 +7,15 @@ import { ConnectState } from '../../models';
 import { AppState } from '../../models/app';
 import _ from 'lodash';
 import { useHistory } from 'react-router-dom';
+import { Dispatch } from '../../interfaces';
+import { useTexts } from '../../utils/texts';
 
-export interface AppRequestContainerProps extends AppState {}
+export interface AppRequestContainerProps extends AppState, Dispatch {}
 
 const Container: React.FC<AppRequestContainerProps> = (props) => {
   const history = useHistory();
-  const http = createAxiosInstance(props.i18n[props.locale].errors, history);
+  const errorTexts = useTexts(props.dispatch, 'errors');
+  const http = createAxiosInstance(errorTexts, history);
 
   useEffect(() => {
     const handler = (config: AxiosRequestConfig & { cb: Function }) => {
@@ -25,7 +28,7 @@ const Container: React.FC<AppRequestContainerProps> = (props) => {
     return () => {
       AppRequestManager.removeChangeListener(handler);
     };
-  }, []);
+  }, [errorTexts]);
 
   return (
     <></>
