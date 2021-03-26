@@ -1,6 +1,7 @@
 import { Reducer } from 'redux';
 import { Effect, Subscription } from 'dva';
 import { ConnectState } from '.';
+import _ from 'lodash';
 
 export interface I18N {
   [key: string]: {
@@ -21,12 +22,9 @@ export interface AppModelType {
   namespace: 'app';
   state: AppState;
   effects: {
-    increaseCount: Effect;
-    decreaseCount: Effect;
+    getTexts: Effect;
   };
-  reducers: {
-    setCount: Reducer<AppState>;
-  };
+  reducers: {};
   subscriptions: {
     setup: Subscription;
   };
@@ -106,35 +104,15 @@ const AppModel: AppModelType = {
     },
   },
   effects: {
-    * increaseCount({ payload }, { put, select }) {
-      const currentCount: number = yield select((state: ConnectState) => state.app.count);
-      const result = currentCount + 1;
-      yield put({
-        type: 'setCount',
-        payload: result,
-      });
-    },
-    * decreaseCount({ payload }, { put, select }) {
-      const currentCount: number = yield select((state: ConnectState) => state.app.count);
-      const result = currentCount - 1;
-      yield put({
-        type: 'setCount',
-        payload: result,
-      });
+    * getTexts({ payload }, { select }) {
+      const currentI18n: I18N = yield select((state: ConnectState) => state.app.i18n);
+      const currentLocale = yield select((state: ConnectState) => state.app.locale);
+      const enUSTexts = _.get(currentI18n, 'en_US') || {};
+      const localeTexts = _.get(currentI18n, currentLocale) || {};
+      return _.merge(enUSTexts, localeTexts);
     },
   },
-  reducers: {
-    setCount(state, { payload }): AppState {
-      if (!payload && typeof payload !== 'number') {
-        return state;
-      }
-
-      return {
-        ...state,
-        count: payload,
-      };
-    },
-  },
+  reducers: {},
   subscriptions: {
     setup({ history }) {
       history.listen(data => console.log(data));

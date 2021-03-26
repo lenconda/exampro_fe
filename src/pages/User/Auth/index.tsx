@@ -11,16 +11,18 @@ import { useHistory } from 'react-router-dom';
 import _ from 'lodash';
 import { Base64 } from 'js-base64';
 import './index.less';
+import { usePageTexts } from '../../../utils/texts';
+import { Dispatch } from '../../../interfaces';
 
 const Form = FormikForm as any;
 
-export interface AuthPageProps extends AppState {}
+export interface AuthPageProps extends AppState, Dispatch {}
 
 const AuthPage: React.FC<AuthPageProps> = (props) => {
   const [authStatus, setAuthStatus] = useState<'login' | 'register' | 'forget_password'>(null);
   const [isForgetPasswordPending, setIsForgetPasswordPending] = useState<boolean>(false);
   const history = useHistory();
-  const texts = props.i18n[props.locale].ui['/user/auth'] || {};
+  const texts = usePageTexts(props.dispatch, '/user/auth');
 
   return (
     <div className="app-page app-page-auth">

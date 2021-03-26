@@ -10,16 +10,18 @@ import { useHistory } from 'react-router-dom';
 import _ from 'lodash';
 import { getQuery } from '../../../utils/qs';
 import AppAlertManager from '../../../components/AppAlert/Manager';
-import './index.less';
 import { completeResetPassword, completeRegistration } from './service';
+import { Dispatch } from '../../../interfaces';
+import './index.less';
+import { usePageTexts } from '../../../utils/texts';
 
 const Form = FormikForm as any;
 
-export interface CompletePageProps extends AppState {}
+export interface CompletePageProps extends AppState, Dispatch {}
 
 const CompletePage: React.FC<CompletePageProps> = (props) => {
   const [authStatus, setAuthStatus] = useState<'pending' | 'finished'>(null);
-  const texts = props.i18n[props.locale].ui['/user/complete'] || {};
+  const texts = usePageTexts(props.dispatch, '/user/complete');
   const history = useHistory();
   const type = getQuery(history.location.search, 'type');
 

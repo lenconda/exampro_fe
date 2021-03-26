@@ -8,13 +8,15 @@ import { useHistory } from 'react-router-dom';
 import _ from 'lodash';
 import { verifyEmail } from './service';
 import './index.less';
+import { Dispatch } from '../../../interfaces';
+import { usePageTexts } from '../../../utils/texts';
 
-export interface CompletePageProps extends AppState {}
+export interface CompletePageProps extends AppState, Dispatch {}
 
 const CompletePage: React.FC<CompletePageProps> = (props) => {
   const [authStatus, setAuthStatus] = useState<'pending' | 'succeeded' | 'failed'>(null);
   const [errorCode, setErrorCode] = useState<string>('');
-  const texts = props.i18n[props.locale].ui['/user/verify_email'] || {};
+  const texts = usePageTexts(props.dispatch, '/user/verify_email');
   const history = useHistory();
 
   return (
