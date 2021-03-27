@@ -8,7 +8,7 @@ import Collapse from '@material-ui/core/Collapse';
 import IconExpandLess from '@material-ui/icons/ExpandLess';
 import IconExpandMore from '@material-ui/icons/ExpandMore';
 import * as icons from 'mdi-material-ui';
-import { SvgIconTypeMap } from '@material-ui/core';
+import { SvgIconTypeMap, Tooltip, Typography } from '@material-ui/core';
 import { OverridableComponent } from '@material-ui/core/OverridableComponent';
 import './index.less';
 import { SidebarMenuItem } from '../../../interfaces';
@@ -43,7 +43,17 @@ const AppMenuItem: React.FC<AppMenuItemProps> = ({
           <Icon className="app-menu__item__icon" />
         </ListItemIcon>
       )}
-      <ListItemText primary={title} inset={!Icon} classes={{ root: 'app-menu__item__text' }} />
+      <Tooltip title={title}>
+        <ListItemText
+          primary={
+            <Typography
+              noWrap={true}
+              classes={{ root: 'app-menu__item__text' }}
+            >{title}</Typography>
+          }
+          inset={!Icon}
+        />
+      </Tooltip>
       {/* Display the expand menu if the item has children */}
       {isExpandable && !open && <IconExpandMore />}
       {isExpandable && open && <IconExpandLess />}
