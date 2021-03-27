@@ -1,0 +1,35 @@
+@import '../../variables.less';
+
+.app-user-card {
+  padding: 10px 15px;
+  display: flex;
+
+  &__avatar-wrapper {
+    margin-right: 5px;
+  }
+
+  &__info-wrapper {
+    display: flex;
+    flex-direction: column;
+    margin-left: 5px;
+
+    .name {
+      max-width: 160px;
+      font-weight: 700;
+      line-height: 1;
+      font-size: 16px;
+    }
+
+    .email {
+      color: @gray-600;
+    }
+
+    .description {
+      margin-top: 5px;
+      width: 160px;
+      word-wrap: break-word;
+      font-size: 13px;
+      line-height: 1;
+    }
+  }
+}

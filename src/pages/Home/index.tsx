@@ -6,7 +6,6 @@ import Hidden from '@material-ui/core/Hidden';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
 import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
 import { makeStyles, useTheme, Theme, createStyles } from '@material-ui/core/styles';
 import AppMenu from '../../components/AppMenu';
 import clsx from 'clsx';
@@ -18,8 +17,10 @@ import { connect } from 'react-redux';
 import { ConnectState } from '../../models';
 import { AppState } from '../../models/app';
 import { Dispatch, User } from '../../interfaces';
-import './index.less';
 import { getUserProfile } from './service';
+import AppUserCard from '../../components/AppUserCard';
+import { Divider, MenuItem } from '@material-ui/core';
+import './index.less';
 
 const drawerWidth = 240;
 
@@ -62,7 +63,7 @@ const HomePage: React.FC<HomePageProps> = (props) => {
   const classes = useStyles();
   const theme = useTheme();
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  const dropdownTexts = useTexts(props.dispatch, 'dropdown');
+  const dropdownTexts = useTexts(props.dispatch, 'avatarDropdown');
   const history = useHistory();
   const [userProfile, setUserProfile] = useState<User>(undefined);
 
@@ -108,9 +109,19 @@ const HomePage: React.FC<HomePageProps> = (props) => {
         </Toolbar>
         <Toolbar>
           <Dropdown
-            trigger={<AppAvatar user={{ email: 'lenconda@foxmail.com', name: '彭瀚林' }} />}
+            classes={{
+              paper: 'app-page-home__avatar-dropdown',
+              list: 'list',
+            }}
+            trigger={<AppAvatar user={userProfile} />}
           >
-            <div style={{ height: 200 }}></div>
+            <AppUserCard user={userProfile} />
+            <Divider />
+            <MenuItem>{dropdownTexts['001']}</MenuItem>
+            <MenuItem>{dropdownTexts['002']}</MenuItem>
+            <MenuItem>{dropdownTexts['003']}</MenuItem>
+            <Divider />
+            <MenuItem>{dropdownTexts['004']}</MenuItem>
           </Dropdown>
         </Toolbar>
       </AppBar>

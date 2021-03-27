@@ -31,7 +31,6 @@ const AppAvatar: React.FC<AvatarProps> = (props) => {
       setAvatar(user.avatar);
     }
     if (!user.name) {
-      console.log(111);
       setName(user.email.split('@')[0]);
     } else {
       setName(user.name);
