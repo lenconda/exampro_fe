@@ -9,6 +9,7 @@ export interface I18N {
       [pathname: string]: Record<string, string>;
     };
     avatarDropdown?: Record<string, string>;
+    sidebarMenu?: Record<string, string>;
   };
 }
 
@@ -68,6 +69,7 @@ const AppModel: AppModelType = {
           '003': '更新邮箱',
           '004': '登出',
         },
+        sidebarMenu: {},
         ui: {
           '/user/auth': {
             '001': '验证身份',

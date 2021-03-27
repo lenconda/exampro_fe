@@ -14,3 +14,16 @@ export interface User {
 export interface Dispatch {
   dispatch: ReduxDispatch<AnyAction>;
 }
+
+export interface SidebarMenuItem {
+  id: number;
+  title: string;
+  icon: string;
+  pathname: string;
+  show: boolean;
+  order: number;
+  items?: SidebarMenuItem[];
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string;
+}

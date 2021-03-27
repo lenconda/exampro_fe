@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { History } from 'history';
 import _ from 'lodash';
-import { Base64 } from 'js-base64';
 import AppAlertManager from '../components/AppAlert/Manager';
+import { encodeRedirectPathname } from './redirect';
 
 const createAxiosInstance = (errorsMap: Record<string, string>, history: History<any>) => {
   const instance = axios.create({
@@ -34,8 +34,8 @@ const createAxiosInstance = (errorsMap: Record<string, string>, history: History
     const errorCode = _.get(error, 'response.data.message') || _.get(error, 'response.data.error');
 
     if (statusCode === 401) {
-      const { pathname, hash, search } = window.location;
-      const redirect = Base64.encode(`${pathname}${search}${hash}`);
+      const { pathname } = history.location;
+      const redirect = encodeRedirectPathname(history.location);
       if (pathname !== '/user/auth') {
         history.push({
           pathname: '/user/auth',

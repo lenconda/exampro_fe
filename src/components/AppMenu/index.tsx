@@ -5,51 +5,15 @@ import AppMenuItem from './Item';
 import { Toolbar } from '@material-ui/core';
 import './index.less';
 import clsx from 'clsx';
+import { SidebarMenuItem } from '../../interfaces';
 
-const appMenuItems = [
-  {
-    title: 'Dashboard',
-    link: '/',
-    icon: 'ViewDashboard',
-  },
-  {
-    title: 'Orders',
-    link: '/orders',
-    icon: 'Cart',
-  },
-  {
-    title: 'Customers',
-    link: '/customers',
-    icon: 'Account',
-  },
-  {
-    title: 'Reports',
-    link: '/reports',
-    icon: 'FileChart',
-  },
-  {
-    title: 'Nested Pages',
-    icon: 'BookMultiple',
-    items: [
-      {
-        title: 'Level 2',
-      },
-      {
-        title: 'Level 2',
-        items: [
-          {
-            title: 'Level 3',
-          },
-          {
-            title: 'Level 3',
-          },
-        ],
-      },
-    ],
-  },
-];
+export interface AppMenuProps {
+  items: SidebarMenuItem[];
+}
 
-const AppMenu: React.FC = () => {
+const AppMenu: React.FC<AppMenuProps> = ({
+  items = [],
+}) => {
   const classes = useStyles();
 
   return (
@@ -57,9 +21,11 @@ const AppMenu: React.FC = () => {
       <Toolbar className="app-sidebar__menu__logo-wrapper">
         <img src="/assets/images/logo_text.svg" alt="" />
       </Toolbar>
-      {appMenuItems.map((item, index) => (
-        <AppMenuItem {...item} key={index} />
-      ))}
+      {
+        items.map((item, index) => (
+          <AppMenuItem item={item} key={index} />
+        ))
+      }
     </List>
   );
 };

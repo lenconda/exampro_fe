@@ -11,16 +11,17 @@ import AppMenu from '../../components/AppMenu';
 import clsx from 'clsx';
 import AppAvatar from '../../components/AppAvatar';
 import Dropdown from '../../components/Dropdown';
-import { useHistory } from 'react-router-dom';
 import { useTexts } from '../../utils/texts';
 import { connect } from 'react-redux';
 import { ConnectState } from '../../models';
 import { AppState } from '../../models/app';
-import { Dispatch, User } from '../../interfaces';
-import { getUserProfile } from './service';
+import { Dispatch, SidebarMenuItem, User } from '../../interfaces';
+import { getSidebarMenu, getUserProfile, logout } from './service';
 import AppUserCard from '../../components/AppUserCard';
 import { Divider, MenuItem } from '@material-ui/core';
 import './index.less';
+import { useHistory } from 'react-router-dom';
+import { encodeRedirectPathname } from '../../utils/redirect';
 
 const drawerWidth = 240;
 
@@ -62,10 +63,11 @@ const HomePage: React.FC<HomePageProps> = (props) => {
   const { window } = props;
   const classes = useStyles();
   const theme = useTheme();
+  const history = useHistory();
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const dropdownTexts = useTexts(props.dispatch, 'avatarDropdown');
-  const history = useHistory();
   const [userProfile, setUserProfile] = useState<User>(undefined);
+  const [sidebarMenu, setSidebarMenu] = useState<SidebarMenuItem[]>([]);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -81,7 +83,16 @@ const HomePage: React.FC<HomePageProps> = (props) => {
         setUserProfile(res);
       }
     });
+    getSidebarMenu().then((res) => {
+      if (res) {
+        setSidebarMenu(res);
+      }
+    });
   }, []);
+
+  const AppSidebarMenu: React.FC = () => {
+    return <AppMenu items={sidebarMenu} />;
+  };
 
   return (
     <div className="app-page app-page-home">
@@ -121,7 +132,16 @@ const HomePage: React.FC<HomePageProps> = (props) => {
             <MenuItem>{dropdownTexts['002']}</MenuItem>
             <MenuItem>{dropdownTexts['003']}</MenuItem>
             <Divider />
-            <MenuItem>{dropdownTexts['004']}</MenuItem>
+            <MenuItem
+              onClick={() => {
+                const redirect = encodeRedirectPathname(history.location);
+                logout(redirect).then((res) => {
+                  if (res) {
+                    history.push(res || '/user/auth');
+                  }
+                });
+              }}
+            >{dropdownTexts['004']}</MenuItem>
           </Dropdown>
         </Toolbar>
       </AppBar>
@@ -141,10 +161,10 @@ const HomePage: React.FC<HomePageProps> = (props) => {
               keepMounted: true, // Better open performance on mobile.
             }}
           >
-            <AppMenu />
+            <AppSidebarMenu />
           </Drawer>
         </Hidden>
-        <Hidden xsDown implementation="css">
+        <Hidden xsDown={true} implementation="css">
           <Drawer
             classes={{
               paper: classes.drawerPaper,
@@ -152,7 +172,7 @@ const HomePage: React.FC<HomePageProps> = (props) => {
             variant="permanent"
             open
           >
-            <AppMenu />
+            <AppSidebarMenu />
           </Drawer>
         </Hidden>
       </nav>

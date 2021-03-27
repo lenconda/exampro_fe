@@ -11,16 +11,18 @@ import * as icons from 'mdi-material-ui';
 import { SvgIconTypeMap } from '@material-ui/core';
 import { OverridableComponent } from '@material-ui/core/OverridableComponent';
 import './index.less';
+import { SidebarMenuItem } from '../../../interfaces';
 
 export interface AppMenuItemProps {
-  title: string;
-  link?: string;
-  icon?: string;
-  items?: AppMenuItemProps[];
+  item: SidebarMenuItem;
+  prefix?: string;
 }
 
-const AppMenuItem: React.FC<AppMenuItemProps> = (props) => {
-  const { title, icon, items = [] } = props;
+const AppMenuItem: React.FC<AppMenuItemProps> = ({
+  item,
+  prefix = '',
+}) => {
+  const { items = [], title, icon } = item;
   const isExpandable = items && items.length > 0;
   const [open, setOpen] = useState<boolean>(false);
   const [Icon, setIcon] = useState<OverridableComponent<SvgIconTypeMap<{}, 'svg'>>>(null);
@@ -53,7 +55,7 @@ const AppMenuItem: React.FC<AppMenuItemProps> = (props) => {
       <Divider />
       <List>
         {items.map((item, index) => (
-          <AppMenuItem {...item} key={index} />
+          <AppMenuItem item={item} key={index} />
         ))}
       </List>
     </Collapse>

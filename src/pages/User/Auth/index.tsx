@@ -9,10 +9,11 @@ import { AppState } from '../../../models/app';
 import { forgetPassword, getEmailAuthType, login } from './service';
 import { useHistory } from 'react-router-dom';
 import _ from 'lodash';
-import { Base64 } from 'js-base64';
-import './index.less';
+import qs from 'qs';
 import { usePageTexts } from '../../../utils/texts';
 import { Dispatch } from '../../../interfaces';
+import { decodeRedirectPathnameToString } from '../../../utils/redirect';
+import './index.less';
 
 const Form = FormikForm as any;
 
@@ -98,9 +99,10 @@ const AuthPage: React.FC<AuthPageProps> = (props) => {
                     login(email, password)
                       .then((res) => {
                         if (res) {
-                          const location = (_.get(history, 'location.search') || '').slice(1);
-                          if (location.redirect) {
-                            history.push(Base64.decode(location.redirect));
+                          const search = (_.get(history, 'location.search') || '').slice(1);
+                          const { redirect } = qs.parse(search);
+                          if (redirect && typeof redirect === 'string') {
+                            history.push(decodeRedirectPathnameToString(redirect));
                           } else {
                             history.push('/');
                           }
