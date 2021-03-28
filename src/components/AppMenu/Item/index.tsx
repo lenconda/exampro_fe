@@ -10,8 +10,9 @@ import IconExpandMore from '@material-ui/icons/ExpandMore';
 import * as icons from 'mdi-material-ui';
 import { SvgIconTypeMap, Tooltip, Typography } from '@material-ui/core';
 import { OverridableComponent } from '@material-ui/core/OverridableComponent';
-import './index.less';
 import { SidebarMenuItem } from '../../../interfaces';
+import { NavLink } from 'react-router-dom';
+import './index.less';
 
 export interface AppMenuItemProps {
   item: SidebarMenuItem;
@@ -22,7 +23,7 @@ const AppMenuItem: React.FC<AppMenuItemProps> = ({
   item,
   prefix = '',
 }) => {
-  const { items = [], title, icon } = item;
+  const { items = [], title, icon, pathname } = item;
   const isExpandable = items && items.length > 0;
   const [open, setOpen] = useState<boolean>(false);
   const [Icon, setIcon] = useState<OverridableComponent<SvgIconTypeMap<{}, 'svg'>>>(null);
@@ -35,46 +36,77 @@ const AppMenuItem: React.FC<AppMenuItemProps> = ({
     setOpen(!open);
   };
 
-  const MenuItemRoot = (
-    <ListItem button onClick={handleClick}>
-      {/* Display an icon if any */}
-      {!!Icon && (
-        <ListItemIcon>
-          <Icon className="app-menu__item__icon" />
-        </ListItemIcon>
-      )}
-      <Tooltip title={title}>
-        <ListItemText
-          primary={
-            <Typography
-              noWrap={true}
-              classes={{ root: 'app-menu__item__text' }}
-            >{title}</Typography>
-          }
-          inset={!Icon}
-        />
-      </Tooltip>
-      {/* Display the expand menu if the item has children */}
-      {isExpandable && !open && <IconExpandMore />}
-      {isExpandable && open && <IconExpandLess />}
-    </ListItem>
-  );
+  const AppMenuItemRoot: React.FC = () => {
+    const componentContent = (
+      <>
+        {
+          !!Icon && (
+            <ListItemIcon>
+              <Icon className="app-menu__item__icon" />
+            </ListItemIcon>
+          )
+        }
+        <Tooltip title={title}>
+          <ListItemText
+            classes={{
+              root: 'app-menu__item__text',
+            }}
+            primary={
+              <Typography
+                noWrap={true}
+                classes={{ root: 'content' }}
+              >{title}</Typography>
+            }
+            inset={!Icon}
+          />
+        </Tooltip>
+        {
+          isExpandable
+            ? open ? <IconExpandLess /> : <IconExpandMore />
+            : null
+        }
+      </>
+    );
 
-  const MenuItemChildren = isExpandable ? (
-    <Collapse in={open} timeout="auto" unmountOnExit>
+    return (
+      <ListItem
+        button={true}
+        onClick={handleClick}
+        classes={{ root: `app-menu__item${items.length !== 0 ? ' padding' : ''}` }}
+      >
+        {
+          items.length !== 0
+            ? componentContent
+            : (
+              <NavLink
+                className="app-menu__item__link"
+                to={`${prefix}${pathname}`}
+                exact={true}
+                activeClassName="active"
+              >{componentContent}</NavLink>
+            )
+        }
+      </ListItem>
+    );
+  };
+
+  const menuItemChildren = isExpandable ? (
+    <Collapse in={open} timeout="auto" unmountOnExit={true}>
       <Divider />
-      <List>
-        {items.map((item, index) => (
-          <AppMenuItem item={item} key={index} />
-        ))}
+      <List classes={{ root: 'app-menu__child-list' }}>
+        {
+          items.map((item, index) => (
+            <AppMenuItem prefix={`${prefix}${pathname}`} item={item} key={index} />
+          ))
+        }
       </List>
     </Collapse>
   ) : null;
 
   return (
     <>
-      {MenuItemRoot}
-      {MenuItemChildren}
+      <AppMenuItemRoot />
+      {menuItemChildren}
     </>
   );
 };
