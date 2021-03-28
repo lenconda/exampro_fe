@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import AppBar from '@material-ui/core/AppBar';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Drawer from '@material-ui/core/Drawer';
@@ -19,9 +19,13 @@ import { Dispatch, SidebarMenuItem, User } from '../../interfaces';
 import { getSidebarMenu, getUserProfile, logout } from './service';
 import AppUserCard from '../../components/AppUserCard';
 import { Divider, MenuItem } from '@material-ui/core';
-import './index.less';
-import { useHistory } from 'react-router-dom';
+import { useHistory, Route, Redirect, Switch } from 'react-router-dom';
 import { encodeRedirectPathname } from '../../utils/redirect';
+import Fallback from '../../components/Fallback';
+import _ from 'lodash';
+import './index.less';
+
+const HomeExamsPage = React.lazy(() => import('./Exams'));
 
 const drawerWidth = 240;
 
@@ -51,6 +55,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   content: {
     flexGrow: 1,
     padding: theme.spacing(3),
+    paddingTop: 0,
   },
 }));
 
@@ -63,9 +68,9 @@ const HomePage: React.FC<HomePageProps> = (props) => {
   const classes = useStyles();
   const theme = useTheme();
   const history = useHistory();
-  const [mobileOpen, setMobileOpen] = useState(false);
   const dropdownTexts = useTexts(props.dispatch, 'avatarDropdown');
   const sidebarMenuTexts = useTexts(props.dispatch, 'sidebarMenu');
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [userProfile, setUserProfile] = useState<User>(undefined);
   const [sidebarMenu, setSidebarMenu] = useState<SidebarMenuItem[]>([]);
 
@@ -83,11 +88,16 @@ const HomePage: React.FC<HomePageProps> = (props) => {
         setUserProfile(res);
       }
     });
-    getSidebarMenu(sidebarMenuTexts).then((res) => {
-      if (res) {
-        setSidebarMenu(res);
-      }
-    });
+  }, []);
+
+  useEffect(() => {
+    if (sidebarMenuTexts && !_.isEmpty(sidebarMenuTexts)) {
+      getSidebarMenu(sidebarMenuTexts).then((res) => {
+        if (res) {
+          setSidebarMenu(res);
+        }
+      });
+    }
   }, [sidebarMenuTexts]);
 
   const AppSidebarMenu: React.FC = () => {
@@ -176,8 +186,13 @@ const HomePage: React.FC<HomePageProps> = (props) => {
           </Drawer>
         </Hidden>
       </nav>
-      <main className={classes.content}>
-        <Toolbar />
+      <main className={clsx(classes.content, 'app-container')}>
+        <Suspense fallback={<Fallback />}>
+          <Switch>
+            <Route path="/home/exams" component={() => <HomeExamsPage />} />
+            <Redirect from="/home" to="/home/exams" exact={true} />
+          </Switch>
+        </Suspense>
       </main>
     </div>
   );

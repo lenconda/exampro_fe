@@ -10,6 +10,7 @@ export interface I18N {
     };
     avatarDropdown?: Record<string, string>;
     sidebarMenu?: Record<string, string>;
+    examRoles?: Record<string, string>;
   };
 }
 
@@ -78,6 +79,13 @@ const AppModel: AppModelType = {
           'ACCOUNT_SETTINGS/PROFILE': '个人资料',
           'ACCOUNT_SETTINGS/CHANGE_EMAIL': '更新邮箱',
           'ACCOUNT_SETTINGS/CHANGE_PASSWORD': '更新密码',
+        },
+        examRoles: {
+          'resource/exam/initiator': '发起',
+          'resource/exam/invigilator': '监考',
+          'resource/exam/maintainer': '参与协作',
+          'resource/exam/participant': '作为考生参加',
+          'resource/exam/reviewer': '参与批阅',
         },
         ui: {
           '/user/auth': {

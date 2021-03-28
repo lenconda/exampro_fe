@@ -14,8 +14,16 @@ export const theme = createMuiTheme({
     info: {
       main: '#3d749a',
     },
+    text: {
+      primary: '#202124',
+    },
   },
   typography: {
     fontSize: 13,
+  },
+  props: {
+    MuiListItem: {
+      color: 'red',
+    },
   },
 });

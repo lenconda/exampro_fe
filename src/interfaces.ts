@@ -27,3 +27,11 @@ export interface SidebarMenuItem {
   updatedAt?: string;
   deletedAt?: string;
 }
+
+export interface ExamRole {
+  id: string;
+  description?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string;
+}
