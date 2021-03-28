@@ -3,9 +3,9 @@ import { makeStyles, createStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import AppMenuItem from './Item';
 import { Toolbar } from '@material-ui/core';
-import './index.less';
 import clsx from 'clsx';
 import { SidebarMenuItem } from '../../interfaces';
+import './index.less';
 
 export interface AppMenuProps {
   items: SidebarMenuItem[];
@@ -19,7 +19,7 @@ const AppMenu: React.FC<AppMenuProps> = ({
   return (
     <List className={clsx('app-sidebar__menu', classes.appMenu)} disablePadding={true}>
       <Toolbar className="app-sidebar__menu__logo-wrapper">
-        <img src="/assets/images/logo_text.svg" alt="" />
+        <img src="/assets/images/logo_text.svg" alt="logo_text" />
       </Toolbar>
       {
         items.map((item, index) => (

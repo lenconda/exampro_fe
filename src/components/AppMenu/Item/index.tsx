@@ -11,7 +11,8 @@ import * as icons from 'mdi-material-ui';
 import { SvgIconTypeMap, Tooltip, Typography } from '@material-ui/core';
 import { OverridableComponent } from '@material-ui/core/OverridableComponent';
 import { SidebarMenuItem } from '../../../interfaces';
-import { NavLink } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
+import { useAppPathname } from '../../../utils/pathname';
 import './index.less';
 
 export interface AppMenuItemProps {
@@ -23,80 +24,77 @@ const AppMenuItem: React.FC<AppMenuItemProps> = ({
   item,
   prefix = '',
 }) => {
-  const { items = [], title, icon, pathname } = item;
+  const { items = [], title, icon, pathname: itemPathname } = item;
   const isExpandable = items && items.length > 0;
+  const history = useHistory();
+  const locationPathname = useAppPathname(history);
   const [open, setOpen] = useState<boolean>(false);
   const [Icon, setIcon] = useState<OverridableComponent<SvgIconTypeMap<{}, 'svg'>>>(null);
+  const [pathname, setPathname] = useState<string>('');
+  const [isActive, setIsActive] = useState<boolean>(false);
 
   useEffect(() => {
     setIcon(icons[icon]);
   }, [icon]);
 
+  useEffect(() => {
+    const currentPathname = `${prefix}${itemPathname}`;
+    setPathname(currentPathname);
+    setIsActive(currentPathname === locationPathname);
+  }, [itemPathname, locationPathname]);
+
   const handleClick = () => {
+    if (items.length === 0) {
+      history.push(pathname);
+    }
     setOpen(!open);
   };
 
-  const AppMenuItemRoot: React.FC = () => {
-    const componentContent = (
-      <>
-        {
-          !!Icon && (
-            <ListItemIcon>
-              <Icon className="app-menu__item__icon" />
-            </ListItemIcon>
-          )
-        }
-        <Tooltip title={title}>
-          <ListItemText
-            classes={{
-              root: 'app-menu__item__text',
-            }}
-            primary={
-              <Typography
-                noWrap={true}
-                classes={{ root: 'content' }}
-              >{title}</Typography>
-            }
-            inset={!Icon}
-          />
-        </Tooltip>
-        {
-          isExpandable
-            ? open ? <IconExpandLess /> : <IconExpandMore />
-            : null
-        }
-      </>
-    );
+  const MenuItemRoot = (
+    <ListItem
+      button={true}
+      onClick={handleClick}
+      classes={{
+        root: `app-menu__item${isActive ? ' active' : ''}`,
+      }}
+    >
+      {
+        !!Icon && (
+          <ListItemIcon>
+            <Icon className="app-menu__item__icon" />
+          </ListItemIcon>
+        )
+      }
+      <Tooltip title={title}>
+        <ListItemText
+          primary={
+            <Typography
+              noWrap={true}
+              classes={{ root: 'app-menu__item__text' }}
+            >{title}</Typography>
+          }
+          inset={!Icon}
+        />
+      </Tooltip>
+      {
+        isExpandable && (
+          open ? <IconExpandLess /> : <IconExpandMore />
+        )
+      }
+    </ListItem>
+  );
 
-    return (
-      <ListItem
-        button={true}
-        onClick={handleClick}
-        classes={{ root: `app-menu__item${items.length !== 0 ? ' padding' : ''}` }}
-      >
-        {
-          items.length !== 0
-            ? componentContent
-            : (
-              <NavLink
-                className="app-menu__item__link"
-                to={`${prefix}${pathname}`}
-                exact={true}
-                activeClassName="active"
-              >{componentContent}</NavLink>
-            )
-        }
-      </ListItem>
-    );
-  };
-
-  const menuItemChildren = isExpandable ? (
-    <Collapse in={open} timeout="auto" unmountOnExit={true}>
+  const MenuItemChildren = isExpandable ? (
+    <Collapse in={open} timeout="auto" unmountOnExit>
       <Divider />
-      <List classes={{ root: 'app-menu__child-list' }}>
+      <List classes={{ root: 'app-menu__children' }}>
         {
           items.map((item, index) => (
-            <AppMenuItem prefix={`${prefix}${pathname}`} item={item} key={index} />
+            <AppMenuItem
+              prefix={`${prefix}${pathname}`}
+              item={item}
+              key={index}
+            />
           ))
         }
       </List>
@@ -105,8 +103,8 @@ const AppMenuItem: React.FC<AppMenuItemProps> = ({
 
   return (
     <>
-      <AppMenuItemRoot />
-      {menuItemChildren}
+      {MenuItemRoot}
+      {MenuItemChildren}
     </>
   );
 };

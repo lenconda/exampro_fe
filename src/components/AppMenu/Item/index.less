@@ -1,45 +1,23 @@
+
 @import '../../../variables.less';
 
 .app-menu {
   &__item {
-    padding: 0;
-    height: 50px;
-    display: flex;
-    align-items: center;
-
-    &.padding {
-      padding: 0 15px;
-    }
-
     &__text {
-      margin: 0;
-
-      .content {
-        color: #333;
-        max-width: 140px;
-        margin: 0;
-      }
+      color: #333;
+      max-width: 140px;
     }
 
     &__icon {
       color: @primary;
     }
 
-    &__link {
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      height: 100%;
-      width: 100%;
-      padding: 0 15px;
-
-      &.active {
-        background-color: @active-bg-color;
-      }
+    &.active {
+      background-color: @active-bg-color;
     }
   }
 
-  &__child-list {
+  &__children {
     padding-top: 0;
     padding-bottom: 0;
   }
