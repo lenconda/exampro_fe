@@ -1,6 +1,6 @@
-import { Location } from 'history';
 import _ from 'lodash';
 import AppRequestManager from '../../components/AppRequest/Manager';
+import { SidebarMenuItem } from '../../interfaces';
 
 export const getUserProfile = async () => {
   const data = await AppRequestManager.send({
@@ -9,11 +9,28 @@ export const getUserProfile = async () => {
   return _.get(data, 'data.data');
 };
 
-export const getSidebarMenu = async () => {
+export const getSidebarMenu = async (
+  sidebarMenuTexts: Record<string, string>,
+): Promise<SidebarMenuItem[]> => {
   const data = await AppRequestManager.send({
     url: '/menu',
   });
-  return _.get(data, 'data.data');
+  const items = (_.get(data, 'data.data') || []) as SidebarMenuItem[];
+  const recurse = (items: SidebarMenuItem[], parentTitle = ''): SidebarMenuItem[] => {
+    const result = [];
+    for (const item of items) {
+      const currentTitle = `${parentTitle}${item.title}`;
+      const { items: currentItems = [] } = item;
+      const resultItem: SidebarMenuItem = {
+        ..._.omit(item, ['items']),
+        title: sidebarMenuTexts[currentTitle],
+        items: currentItems.length > 0 ? recurse(currentItems, `${currentTitle}/`) : [],
+      };
+      result.push(resultItem);
+    }
+    return result;
+  };
+  return recurse(items);
 };
 
 export const logout = async (redirect: string): Promise<string> => {

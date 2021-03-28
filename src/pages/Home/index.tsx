@@ -45,7 +45,6 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
       display: 'none',
     },
   },
-  // necessary for content to be below app bar
   drawerPaper: {
     width: drawerWidth,
   },
@@ -64,8 +63,9 @@ const HomePage: React.FC<HomePageProps> = (props) => {
   const classes = useStyles();
   const theme = useTheme();
   const history = useHistory();
-  const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const dropdownTexts = useTexts(props.dispatch, 'avatarDropdown');
+  const sidebarMenuTexts = useTexts(props.dispatch, 'sidebarMenu');
   const [userProfile, setUserProfile] = useState<User>(undefined);
   const [sidebarMenu, setSidebarMenu] = useState<SidebarMenuItem[]>([]);
 
@@ -83,7 +83,7 @@ const HomePage: React.FC<HomePageProps> = (props) => {
         setUserProfile(res);
       }
     });
-    getSidebarMenu().then((res) => {
+    getSidebarMenu(sidebarMenuTexts).then((res) => {
       if (res) {
         setSidebarMenu(res);
       }

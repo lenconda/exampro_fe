@@ -69,7 +69,16 @@ const AppModel: AppModelType = {
           '003': '更新邮箱',
           '004': '登出',
         },
-        sidebarMenu: {},
+        sidebarMenu: {
+          'EXAMS': '考试',
+          'PAPERS': '试卷',
+          'QUESTIONS': '试题',
+          'ADMIN': '管理员',
+          'ACCOUNT_SETTINGS': '账户',
+          'ACCOUNT_SETTINGS/PROFILE': '个人资料',
+          'ACCOUNT_SETTINGS/CHANGE_EMAIL': '更新邮箱',
+          'ACCOUNT_SETTINGS/CHANGE_PASSWORD': '更新密码',
+        },
         ui: {
           '/user/auth': {
             '001': '验证身份',
