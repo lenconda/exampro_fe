@@ -88,7 +88,7 @@ const HomePage: React.FC<HomePageProps> = (props) => {
         setSidebarMenu(res);
       }
     });
-  }, []);
+  }, [sidebarMenuTexts]);
 
   const AppSidebarMenu: React.FC = () => {
     return <AppMenu items={sidebarMenu} />;

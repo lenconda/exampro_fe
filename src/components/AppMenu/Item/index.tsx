@@ -24,7 +24,7 @@ const AppMenuItem: React.FC<AppMenuItemProps> = ({
   item,
   prefix = '',
 }) => {
-  const { items = [], title, icon, pathname: itemPathname } = item;
+  const { items = [], title = '', icon, pathname: itemPathname } = item;
   const isExpandable = items && items.length > 0;
   const history = useHistory();
   const locationPathname = useAppPathname(history);
