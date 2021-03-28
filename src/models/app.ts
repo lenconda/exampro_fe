@@ -131,9 +131,7 @@ const AppModel: AppModelType = {
   },
   reducers: {},
   subscriptions: {
-    setup({ history }) {
-      history.listen(data => console.log(data));
-    },
+    setup({ history }) {},
   },
 };
 
