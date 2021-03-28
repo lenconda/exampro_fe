@@ -12,7 +12,7 @@ import { SvgIconTypeMap, Tooltip, Typography } from '@material-ui/core';
 import { OverridableComponent } from '@material-ui/core/OverridableComponent';
 import { SidebarMenuItem } from '../../../interfaces';
 import { useHistory } from 'react-router-dom';
-import { useAppPathname } from '../../../utils/pathname';
+import { useAppPathname } from '../../../utils/history';
 import './index.less';
 
 export interface AppMenuItemProps {
