@@ -1,13 +1,35 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import Table from '@material-ui/core/Table';
+import Table, { TableProps } from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
+import TableCell, { TableCellProps } from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import clsx from 'clsx';
+import _ from 'lodash';
+import { TablePagination, TablePaginationProps } from '@material-ui/core';
+import { ConnectState } from '../../models';
+import { AppState } from '../../models/app';
+import { connect } from '../../patches/dva';
+import { Dispatch } from '../../interfaces';
+import { useTexts } from '../../utils/texts';
+
+export interface TableSchema {
+  title: string | React.ReactNode;
+  key: string;
+  TableCellProps?: TableCellProps;
+  render?: (row: any, value: any) => React.ReactNode;
+}
+
+export interface AppTableProps extends TableProps, AppState, Dispatch {
+  schema?: TableSchema[];
+  data?: Record<string, any>[];
+  TablePaginationProps?: TablePaginationProps;
+  loading?: boolean;
+}
 
 const useStyles = makeStyles({
   tableContainer: {
@@ -18,49 +40,82 @@ const useStyles = makeStyles({
   },
 });
 
-function createData(name: string, calories: number, fat: number, carbs: number, protein: number) {
-  return { name, calories, fat, carbs, protein };
-}
-
-const rows = [
-  createData('Frozen yoghurt', 159, 6.0, 24, 4.0),
-  createData('Ice cream sandwich', 237, 9.0, 37, 4.3),
-  createData('Eclair', 262, 16.0, 24, 6.0),
-  createData('Cupcake', 305, 3.7, 67, 4.3),
-  createData('Gingerbread', 356, 16.0, 49, 3.9),
-];
-
-const AppTable: React.FC = () => {
-  const classes = useStyles();
-
-  return (
-    <TableContainer component={Paper} classes={{ root: clsx(classes.tableContainer) }}>
-      <Table classes={{ root: classes.table }}>
-        <TableHead>
-          <TableRow>
-            <TableCell>Dessert (100g serving)</TableCell>
-            <TableCell align="right">Calories</TableCell>
-            <TableCell align="right">Fat&nbsp;(g)</TableCell>
-            <TableCell align="right">Carbs&nbsp;(g)</TableCell>
-            <TableCell align="right">Protein&nbsp;(g)</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row.name}>
-              <TableCell component="th" scope="row">
-                {row.name}
-              </TableCell>
-              <TableCell align="right">{row.calories}</TableCell>
-              <TableCell align="right">{row.fat}</TableCell>
-              <TableCell align="right">{row.carbs}</TableCell>
-              <TableCell align="right">{row.protein}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-  );
+const renderTableCell = (
+  dataItem: Record<string, any>,
+  schemaItem: TableSchema,
+): React.ReactNode => {
+  const { key, render } = schemaItem;
+  const columnValue = dataItem[key];
+  let columnNode;
+  if (render && _.isFunction(render)) {
+    columnNode = render(dataItem, columnValue);
+  } else {
+    columnNode = columnValue as React.ReactNode;
+  }
+  return columnNode;
 };
 
-export default AppTable;
+const AppTable: React.FC<AppTableProps> = ({
+  schema = [],
+  data = [],
+  dispatch,
+  loading = false,
+  ...props
+}) => {
+  const classes = useStyles();
+  const texts = useTexts(dispatch, 'tablePagination');
+
+  const component = loading
+    ? (
+      <div className="app-loading">
+        <CircularProgress classes={{ root: 'app-loading__icon' }} />
+      </div>
+    )
+    : (
+      <TableContainer component={Paper} classes={{ root: clsx(classes.tableContainer) }}>
+        {
+          (data.length > 0 && schema.length > 0) && (
+            <Table {...props} classes={{ root: clsx(classes.table, _.get(props, 'classes.root')) }}>
+              <TableHead>
+                <TableRow>
+                  {
+                    schema.map((schemaItem, index) => (
+                      <TableCell
+                        key={index}
+                        {...(schemaItem.TableCellProps || {})}
+                      >{schemaItem.title}</TableCell>
+                    ))
+                  }
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {
+                  data.map((dataItem, index) => (
+                    <TableRow key={index}>
+                      {
+                        schema.map((schemaItem, index) => (
+                          <TableCell key={index}>{renderTableCell(dataItem, schemaItem)}</TableCell>
+                        ))
+                      }
+                    </TableRow>
+                  ))
+                }
+              </TableBody>
+              <TablePagination
+                {...(props.TablePaginationProps)}
+                rowsPerPageOptions={[10, 15, 20, 50]}
+                labelRowsPerPage={texts['001']}
+                backIconButtonText={texts['002']}
+                nextIconButtonText={texts['003']}
+                labelDisplayedRows={({ from, to, count }) => `${count}${texts['004']}${from}-${to}`}
+              />
+            </Table>
+          )
+        }
+      </TableContainer>
+    );
+
+  return component;
+};
+
+export default connect(({ app }: ConnectState) => app)(AppTable);

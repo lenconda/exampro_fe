@@ -11,6 +11,8 @@ export interface I18N {
     avatarDropdown?: Record<string, string>;
     sidebarMenu?: Record<string, string>;
     examRoles?: Record<string, string>;
+    tablePagination?: Record<string, string>;
+    system?: Record<string, string>;
   };
 }
 
@@ -87,6 +89,18 @@ const AppModel: AppModelType = {
           'resource/exam/participant': '我参加的',
           'resource/exam/reviewer': '参与阅卷',
         },
+        tablePagination: {
+          '001': '每页数量',
+          '002': '上一页',
+          '003': '下一页',
+          '004': '条记录中的',
+        },
+        system: {
+          'TRUE': '是',
+          'FALSE': '否',
+          'OK': '好',
+          'CANCEL': '放弃',
+        },
         ui: {
           '/user/auth': {
             '001': '验证身份',
@@ -127,6 +141,7 @@ const AppModel: AppModelType = {
           '/home/exams': {
             '001': '查询考试',
             '002': '新建',
+            '003': '名称',
           },
         },
       },

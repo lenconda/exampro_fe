@@ -14,7 +14,7 @@ import qs from 'qs';
 import { NotePlus } from 'mdi-material-ui';
 import { usePaginationRequest, useRequest } from '../../../utils/request';
 import './index.less';
-import AppTable from '../../../components/AppTable';
+import AppTable, { TableSchema } from '../../../components/AppTable';
 
 export interface ExamPageProps extends Dispatch, AppState {}
 
@@ -40,6 +40,7 @@ const ExamsPage: React.FC<ExamPageProps> = ({
 }) => {
   const classes = useStyles();
   const examRoleTexts = useTexts(dispatch, 'examRoles');
+  const systemTexts = useTexts(dispatch, 'system');
   const history = useHistory();
   const roleId = useLocationQuery('role') as string;
   const texts = usePageTexts(dispatch, '/home/exams');
@@ -51,6 +52,7 @@ const ExamsPage: React.FC<ExamPageProps> = ({
     totalExams,
     queryExamsLoading,
   ] = usePaginationRequest<Exam>(queryExams, { role: roleId });
+  const [schema, setSchema] = useState<TableSchema[]>([]);
 
   useEffect(() => {
     const queries = qs.parse(_.get(history, 'location.search').slice(1));
@@ -66,6 +68,17 @@ const ExamsPage: React.FC<ExamPageProps> = ({
       setSelectedRoleIndex(roles.findIndex((role) => role.id === roleId));
     }
   }, [roleId, roles]);
+
+  useEffect(() => {
+    if (!_.isEmpty(systemTexts)) {
+      setSchema([
+        {
+          title: texts['003'],
+          key: 'title',
+        },
+      ]);
+    }
+  }, [systemTexts, texts]);
 
   return (
     <div className="app-page app-page-home__exams">
@@ -175,7 +188,7 @@ const ExamsPage: React.FC<ExamPageProps> = ({
               >{!queryExamsInputFocused ? texts['002'] : null}</Button>
             </div>
             <div className="app-page-table-wrapper">
-              <AppTable />
+              <AppTable loading={queryExamsLoading} />
             </div>
           </Paper>
         </Grid>
