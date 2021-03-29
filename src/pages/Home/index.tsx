@@ -19,7 +19,8 @@ import { Dispatch, SidebarMenuItem, User } from '../../interfaces';
 import { getSidebarMenu, getUserProfile, logout } from './service';
 import AppUserCard from '../../components/AppUserCard';
 import { Divider, MenuItem } from '@material-ui/core';
-import { useHistory, Route, Redirect, Switch } from 'react-router-dom';
+import { Route, Redirect, Switch } from 'react-router-dom';
+import { useHistory } from 'react-router';
 import { encodeRedirectPathname } from '../../utils/redirect';
 import Fallback from '../../components/Fallback';
 import _ from 'lodash';
@@ -189,7 +190,7 @@ const HomePage: React.FC<HomePageProps> = (props) => {
       <main className={clsx(classes.content, 'app-container')}>
         <Suspense fallback={<Fallback />}>
           <Switch>
-            <Route path="/home/exams" component={() => <HomeExamsPage />} />
+            <Route path="/home/exams" component={HomeExamsPage} />
             <Redirect from="/home" to="/home/exams" exact={true} />
           </Switch>
         </Suspense>

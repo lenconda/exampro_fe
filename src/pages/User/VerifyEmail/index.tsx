@@ -4,12 +4,12 @@ import { EmailCheck, EmailRemove, ProgressClock, ShieldAccountVariant } from 'md
 import { connect } from 'react-redux';
 import { ConnectState } from '../../../models';
 import { AppState } from '../../../models/app';
-import { useHistory } from 'react-router-dom';
+import { useHistory } from 'react-router';
 import _ from 'lodash';
 import { verifyEmail } from './service';
-import './index.less';
 import { Dispatch } from '../../../interfaces';
 import { usePageTexts } from '../../../utils/texts';
+import './index.less';
 
 export interface CompletePageProps extends AppState, Dispatch {}
 

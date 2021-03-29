@@ -27,7 +27,7 @@ const useStyles = makeStyles((theme) => ({
 const AppUserCard: React.FC<AppUserCardProps> = React.forwardRef(({
   user,
   ...props
-}) => {
+}, ref) => {
   const classes = useStyles();
   const [name, setName] = useState<string>('');
 

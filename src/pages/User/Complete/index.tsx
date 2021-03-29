@@ -6,7 +6,7 @@ import { ProgressCheck, ProgressClock } from 'mdi-material-ui';
 import { connect } from 'react-redux';
 import { ConnectState } from '../../../models';
 import { AppState } from '../../../models/app';
-import { useHistory } from 'react-router-dom';
+import { useHistory } from 'react-router';
 import _ from 'lodash';
 import { getQuery } from '../../../utils/qs';
 import AppAlertManager from '../../../components/AppAlert/Manager';

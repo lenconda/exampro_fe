@@ -1,13 +1,18 @@
-import { createStyles, CssBaseline, Grid, makeStyles, Paper, Theme } from '@material-ui/core';
+import { createStyles, makeStyles, Paper, Grid, Tab, Tabs, Theme, Typography, InputBase, Button } from '@material-ui/core';
 import clsx from 'clsx';
+import _ from 'lodash';
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
+import { useHistory } from 'react-router';
 import { Dispatch, ExamRole } from '../../../interfaces';
 import { ConnectState } from '../../../models';
 import { AppState } from '../../../models/app';
-import { useTexts } from '../../../utils/texts';
-import './index.less';
+import { usePageTexts, useTexts } from '../../../utils/texts';
 import { getExamRoleTypes } from './service';
+import { useLocationQuery } from '../../../utils/history';
+import qs from 'qs';
+import './index.less';
+import { NotePlus, Plus } from 'mdi-material-ui';
 
 export interface ExamPageProps extends Dispatch, AppState {}
 
@@ -15,10 +20,16 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   root: {
     flexGrow: 1,
   },
-  paper: {
-    padding: theme.spacing(2),
+  wrapperPaper: {
     textAlign: 'center',
     color: theme.palette.text.secondary,
+    backgroundColor: 'transparent',
+  },
+  roleTabItem: {
+    paddingTop: theme.spacing(1),
+    paddingRight: theme.spacing(4),
+    paddingBottom: theme.spacing(1),
+    paddingLeft: theme.spacing(4),
   },
 }));
 
@@ -27,15 +38,37 @@ const ExamsPage: React.FC<ExamPageProps> = ({
 }) => {
   const classes = useStyles();
   const examRoleTexts = useTexts(dispatch, 'examRoles');
+  const history = useHistory();
+  const roleId = useLocationQuery('role');
+  const texts = usePageTexts(dispatch, '/home/exams');
   const [roles, setRoles] = useState<ExamRole[]>([]);
+  const [selectedRoleIndex, setSelectedRoleIndex] = useState<number>(0);
+  const [queryExamsInputFocused, setQueryExamsInputFocused] = useState<boolean>(false);
 
   useEffect(() => {
-    getExamRoleTypes(examRoleTexts).then((res) => {
-      if (res) {
-        setRoles(res);
-      }
-    });
-  }, []);
+    if (!_.isEmpty(examRoleTexts)) {
+      getExamRoleTypes(examRoleTexts).then((res) => {
+        if (res) {
+          setRoles(res);
+        }
+      });
+    }
+  }, [examRoleTexts]);
+
+  useEffect(() => {
+    const queries = qs.parse(_.get(history, 'location.search').slice(1));
+    if (!roleId && roles.length > 0) {
+      history.push({
+        search: qs.stringify({
+          ...queries,
+          role: roles[0].id,
+        }),
+      });
+    }
+    if (roleId && roles.length > 0) {
+      setSelectedRoleIndex(roles.findIndex((role) => role.id === roleId));
+    }
+  }, [roleId, roles]);
 
   return (
     <div className="app-page app-page-home__exams">
@@ -55,8 +88,44 @@ const ExamsPage: React.FC<ExamPageProps> = ({
         >
           <Paper
             elevation={0}
-            classes={{ root: clsx(classes.paper, 'app-exams-roles-wrapper') }}
+            classes={{ root: clsx(classes.wrapperPaper, 'app-exams-roles-card') }}
           >
+            <Tabs
+              orientation="vertical"
+              variant="scrollable"
+              value={selectedRoleIndex}
+              indicatorColor="primary"
+              classes={{
+                root: 'app-exams-roles-card__tabs',
+                indicator: 'app-exams-roles-card__indicator',
+              }}
+            >
+              {
+                roles.map((role, index) => (
+                  <Tab
+                    key={index}
+                    label={
+                      <Typography
+                        noWrap={true}
+                        variant="body1"
+                      >{role.description}</Typography>
+                    }
+                    classes={{
+                      root: clsx('app-exams-roles-card__tabs__item', classes.roleTabItem),
+                      wrapper: 'app-exams-roles-card__tabs__item__wrapper',
+                    }}
+                    onClick={() => {
+                      history.push({
+                        search: qs.stringify({
+                          ...qs.parse(_.get(history, 'location.search').slice(1)),
+                          role: role.id,
+                        }),
+                      });
+                    }}
+                  />
+                ))
+              }
+            </Tabs>
           </Paper>
         </Grid>
         <Grid
@@ -70,8 +139,35 @@ const ExamsPage: React.FC<ExamPageProps> = ({
         >
           <Paper
             elevation={0}
-            classes={{ root: classes.paper }}
-          >xs</Paper>
+            classes={{ root: classes.wrapperPaper }}
+          >
+            <div className="app-page-interact-wrapper">
+              <Paper
+                classes={{ root: 'app-search-wrapper' }}
+              >
+                <InputBase
+                  classes={{
+                    root: 'app-search-wrapper__input__root',
+                    input: 'app-search-wrapper__input__input',
+                  }}
+                  placeholder={texts['001']}
+                  onFocus={() => setQueryExamsInputFocused(true)}
+                  onBlur={() => setQueryExamsInputFocused(false)}
+                />
+              </Paper>
+              <Button
+                classes={{
+                  root: clsx(
+                    'app-page-interact-wrapper__button',
+                    queryExamsInputFocused ? 'collapsed' : '',
+                  ),
+                }}
+                color="primary"
+                startIcon={!queryExamsInputFocused ? <NotePlus /> : null}
+                variant="contained"
+              >{!queryExamsInputFocused ? texts['002'] : null}</Button>
+            </div>
+          </Paper>
         </Grid>
       </Grid>
     </div>

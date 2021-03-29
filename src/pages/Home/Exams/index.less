@@ -1,3 +1,28 @@
-.app-exams-roles-wrapper {
+@import '../../../variables.less';
+
+.app-exams-roles-card {
   background-color: transparent;
+  padding: 0;
+
+  &__indicator {
+    left: 0;
+    right: initial;
+  }
+
+  &__tabs {
+    &__item {
+      &__wrapper {
+        text-align: left;
+        align-items: flex-start;
+        max-width: 150px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        > p {
+          max-width: 100%;
+        }
+      }
+    }
+  }
 }

@@ -81,11 +81,11 @@ const AppModel: AppModelType = {
           'ACCOUNT_SETTINGS/CHANGE_PASSWORD': '更新密码',
         },
         examRoles: {
-          'resource/exam/initiator': '发起',
-          'resource/exam/invigilator': '监考',
+          'resource/exam/initiator': '我发起的',
+          'resource/exam/invigilator': '我监考的',
           'resource/exam/maintainer': '参与协作',
-          'resource/exam/participant': '作为考生参加',
-          'resource/exam/reviewer': '参与批阅',
+          'resource/exam/participant': '作为考生',
+          'resource/exam/reviewer': '参与阅卷',
         },
         ui: {
           '/user/auth': {
@@ -123,6 +123,10 @@ const AppModel: AppModelType = {
             '005': '请稍后刷新这个页面',
             '006': '请验证邮箱',
             '007': '验证',
+          },
+          '/home/exams': {
+            '001': '查询考试',
+            '002': '新建',
           },
         },
       },

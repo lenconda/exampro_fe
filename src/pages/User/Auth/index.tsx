@@ -7,7 +7,7 @@ import { connect } from 'react-redux';
 import { ConnectState } from '../../../models';
 import { AppState } from '../../../models/app';
 import { forgetPassword, getEmailAuthType, login } from './service';
-import { useHistory } from 'react-router-dom';
+import { useHistory } from 'react-router';
 import _ from 'lodash';
 import qs from 'qs';
 import { usePageTexts } from '../../../utils/texts';

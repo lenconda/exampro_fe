@@ -6,7 +6,7 @@ import { connect } from '../../patches/dva';
 import { ConnectState } from '../../models';
 import { AppState } from '../../models/app';
 import _ from 'lodash';
-import { useHistory } from 'react-router-dom';
+import { useHistory } from 'react-router';
 import { Dispatch } from '../../interfaces';
 import { useTexts } from '../../utils/texts';
 
