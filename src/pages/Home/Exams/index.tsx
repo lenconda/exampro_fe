@@ -4,16 +4,16 @@ import _ from 'lodash';
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { useHistory } from 'react-router';
-import { Dispatch, ExamRole } from '../../../interfaces';
+import { Dispatch, Exam, ExamRole } from '../../../interfaces';
 import { ConnectState } from '../../../models';
 import { AppState } from '../../../models/app';
 import { usePageTexts, useTexts } from '../../../utils/texts';
-import { getExamRoleTypes } from './service';
+import { getExamRoleTypes, queryExams } from './service';
 import { useLocationQuery } from '../../../utils/history';
 import qs from 'qs';
+import { NotePlus } from 'mdi-material-ui';
+import { usePaginationRequest, useRequest } from '../../../utils/request';
 import './index.less';
-import { NotePlus, Plus } from 'mdi-material-ui';
-import { useRequest } from '../../../utils/request';
 
 export interface ExamPageProps extends Dispatch, AppState {}
 
@@ -45,6 +45,11 @@ const ExamsPage: React.FC<ExamPageProps> = ({
   const [selectedRoleIndex, setSelectedRoleIndex] = useState<number>(0);
   const [queryExamsInputFocused, setQueryExamsInputFocused] = useState<boolean>(false);
   const [roles = [], rolesLoading] = useRequest<ExamRole[]>(getExamRoleTypes, [examRoleTexts]);
+  const [
+    examItems,
+    totalExams,
+    queryExamsLoading,
+  ] = usePaginationRequest<Exam>(queryExams);
 
   useEffect(() => {
     const queries = qs.parse(_.get(history, 'location.search').slice(1));

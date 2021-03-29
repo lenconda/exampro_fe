@@ -1,9 +1,16 @@
 import _ from 'lodash';
+import qs from 'qs';
 import { useEffect, useState } from 'react';
+import { PaginationResponse } from '../interfaces';
+import { useLocationQuery } from './history';
 
 export type UseRequestReturnType<T> = [T, boolean, Error?];
+export type UsePaginationRequestReturnType<T> = [T[], number, boolean, Error?];
 
-export const useRequest = <T>(handler: (...args: any) => Promise<T>, args?: any[]): UseRequestReturnType<T> => {
+export const useRequest = <T>(
+  handler: (...args: any) => Promise<T>,
+  args?: any[],
+): UseRequestReturnType<T> => {
   const [result, setResult] = useState<T>(undefined);
   const [error, setError] = useState<Error>(undefined);
   const [loading, setLoading] = useState<boolean>(false);
@@ -14,11 +21,10 @@ export const useRequest = <T>(handler: (...args: any) => Promise<T>, args?: any[
       return false;
     }
     if (!args || !_.isArray(args)) {
-      console.log('FUCK');
       return true;
     }
     for (const arg of args) {
-      if ((_.isObject(arg) && _.isEmpty(arg)) || !arg) {
+      if ((_.isObject(arg) && _.isEmpty(arg)) || (!_.isNumber(arg) && !arg)) {
         return false;
       }
     }
@@ -39,4 +45,31 @@ export const useRequest = <T>(handler: (...args: any) => Promise<T>, args?: any[
   }, [handler, args, flag]);
 
   return [result, loading, error];
+};
+
+export const usePaginationRequest = <T>(
+  handler: (...args: any) => Promise<PaginationResponse<T>>,
+): UsePaginationRequestReturnType<T> => {
+  const page = useLocationQuery('page');
+  const size = useLocationQuery('size');
+  const search = useLocationQuery('search');
+  const lastCursor = useLocationQuery('last_cursor');
+  const searchString = qs.stringify({
+    page,
+    size,
+    search,
+    last_cursor: lastCursor,
+  });
+  const [result, loading, error] = useRequest<PaginationResponse<T>>(handler, searchString ? [searchString] : null);
+  const [items, setItems] = useState<T[]>([]);
+  const [total, setTotal] = useState<number>(0);
+
+  useEffect(() => {
+    if (result) {
+      setItems(result.items || []);
+      setTotal(result.total || 0);
+    }
+  }, [result]);
+
+  return [items, total, loading, error];
 };

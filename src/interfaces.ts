@@ -35,3 +35,22 @@ export interface ExamRole {
   updatedAt?: string;
   deletedAt?: string;
 }
+
+export interface PaginationResponse<T = any> {
+  items: T[];
+  total: number;
+}
+
+export interface Exam {
+  id: number;
+  title: string;
+  notifyParticipants: boolean;
+  public: boolean;
+  grades: boolean;
+  startTime: string;
+  endTime: string;
+  duration?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string;
+}

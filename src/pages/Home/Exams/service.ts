@@ -13,3 +13,11 @@ export const getExamRoleTypes = async (roleTexts: Record<string, string>) => {
     description: roleTexts[item.id],
   }));
 };
+
+export const queryExams = async (search) => {
+  const data = await AppRequestManager.send({
+    url: `/exam?${search}`,
+  });
+
+  return _.get(data, 'data.data');
+};
