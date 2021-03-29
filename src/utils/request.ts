@@ -49,6 +49,7 @@ export const useRequest = <T>(
 
 export const usePaginationRequest = <T>(
   handler: (...args: any) => Promise<PaginationResponse<T>>,
+  queries?: Record<string, string>,
 ): UsePaginationRequestReturnType<T> => {
   const page = useLocationQuery('page');
   const size = useLocationQuery('size');
@@ -59,6 +60,7 @@ export const usePaginationRequest = <T>(
     size,
     search,
     last_cursor: lastCursor,
+    ...queries,
   });
   const [result, loading, error] = useRequest<PaginationResponse<T>>(handler, searchString ? [searchString] : null);
   const [items, setItems] = useState<T[]>([]);

@@ -14,6 +14,7 @@ import qs from 'qs';
 import { NotePlus } from 'mdi-material-ui';
 import { usePaginationRequest, useRequest } from '../../../utils/request';
 import './index.less';
+import AppTable from '../../../components/AppTable';
 
 export interface ExamPageProps extends Dispatch, AppState {}
 
@@ -40,7 +41,7 @@ const ExamsPage: React.FC<ExamPageProps> = ({
   const classes = useStyles();
   const examRoleTexts = useTexts(dispatch, 'examRoles');
   const history = useHistory();
-  const roleId = useLocationQuery('role');
+  const roleId = useLocationQuery('role') as string;
   const texts = usePageTexts(dispatch, '/home/exams');
   const [selectedRoleIndex, setSelectedRoleIndex] = useState<number>(0);
   const [queryExamsInputFocused, setQueryExamsInputFocused] = useState<boolean>(false);
@@ -49,7 +50,7 @@ const ExamsPage: React.FC<ExamPageProps> = ({
     examItems,
     totalExams,
     queryExamsLoading,
-  ] = usePaginationRequest<Exam>(queryExams);
+  ] = usePaginationRequest<Exam>(queryExams, { role: roleId });
 
   useEffect(() => {
     const queries = qs.parse(_.get(history, 'location.search').slice(1));
@@ -77,7 +78,7 @@ const ExamsPage: React.FC<ExamPageProps> = ({
           item={true}
           xs={12}
           sm={12}
-          md={4}
+          md={3}
           lg={2}
           xl={1}
           classes={{ root: 'item' }}
@@ -138,7 +139,7 @@ const ExamsPage: React.FC<ExamPageProps> = ({
           item={true}
           xs={12}
           sm={12}
-          md={8}
+          md={9}
           lg={10}
           xl={11}
           classes={{ item: 'item' }}
@@ -172,6 +173,9 @@ const ExamsPage: React.FC<ExamPageProps> = ({
                 startIcon={!queryExamsInputFocused ? <NotePlus /> : null}
                 variant="contained"
               >{!queryExamsInputFocused ? texts['002'] : null}</Button>
+            </div>
+            <div className="app-page-table-wrapper">
+              <AppTable />
             </div>
           </Paper>
         </Grid>
