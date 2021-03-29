@@ -1,7 +1,6 @@
 import React from 'react';
+import { CircularProgress } from '@material-ui/core';
 import './index.less';
-import { Loading } from 'mdi-material-ui';
-import { CircularProgress, SvgIcon } from '@material-ui/core';
 
 const Fallback = () => {
   return (

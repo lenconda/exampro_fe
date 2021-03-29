@@ -1,4 +1,4 @@
-import { createStyles, makeStyles, Paper, Grid, Tab, Tabs, Theme, Typography, InputBase, Button } from '@material-ui/core';
+import { createStyles, makeStyles, Paper, Grid, Tab, Tabs, Theme, Typography, InputBase, Button, CircularProgress } from '@material-ui/core';
 import clsx from 'clsx';
 import _ from 'lodash';
 import React, { useEffect, useState } from 'react';
@@ -13,6 +13,7 @@ import { useLocationQuery } from '../../../utils/history';
 import qs from 'qs';
 import './index.less';
 import { NotePlus, Plus } from 'mdi-material-ui';
+import { useRequest } from '../../../utils/request';
 
 export interface ExamPageProps extends Dispatch, AppState {}
 
@@ -41,19 +42,9 @@ const ExamsPage: React.FC<ExamPageProps> = ({
   const history = useHistory();
   const roleId = useLocationQuery('role');
   const texts = usePageTexts(dispatch, '/home/exams');
-  const [roles, setRoles] = useState<ExamRole[]>([]);
   const [selectedRoleIndex, setSelectedRoleIndex] = useState<number>(0);
   const [queryExamsInputFocused, setQueryExamsInputFocused] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (!_.isEmpty(examRoleTexts)) {
-      getExamRoleTypes(examRoleTexts).then((res) => {
-        if (res) {
-          setRoles(res);
-        }
-      });
-    }
-  }, [examRoleTexts]);
+  const [roles = [], rolesLoading] = useRequest<ExamRole[]>(getExamRoleTypes, [examRoleTexts]);
 
   useEffect(() => {
     const queries = qs.parse(_.get(history, 'location.search').slice(1));
@@ -90,42 +81,52 @@ const ExamsPage: React.FC<ExamPageProps> = ({
             elevation={0}
             classes={{ root: clsx(classes.wrapperPaper, 'app-exams-roles-card') }}
           >
-            <Tabs
-              orientation="vertical"
-              variant="scrollable"
-              value={selectedRoleIndex}
-              indicatorColor="primary"
-              classes={{
-                root: 'app-exams-roles-card__tabs',
-                indicator: 'app-exams-roles-card__indicator',
-              }}
-            >
-              {
-                roles.map((role, index) => (
-                  <Tab
-                    key={index}
-                    label={
-                      <Typography
-                        noWrap={true}
-                        variant="body1"
-                      >{role.description}</Typography>
-                    }
+            {
+              rolesLoading
+                ? (
+                  <div className="app-loading">
+                    <CircularProgress classes={{ root: 'app-loading__icon' }} color="primary" />
+                  </div>
+                )
+                : (
+                  <Tabs
+                    orientation="vertical"
+                    variant="scrollable"
+                    value={selectedRoleIndex}
+                    indicatorColor="primary"
                     classes={{
-                      root: clsx('app-exams-roles-card__tabs__item', classes.roleTabItem),
-                      wrapper: 'app-exams-roles-card__tabs__item__wrapper',
+                      root: 'app-exams-roles-card__tabs',
+                      indicator: 'app-exams-roles-card__indicator',
                     }}
-                    onClick={() => {
-                      history.push({
-                        search: qs.stringify({
-                          ...qs.parse(_.get(history, 'location.search').slice(1)),
-                          role: role.id,
-                        }),
-                      });
-                    }}
-                  />
-                ))
-              }
-            </Tabs>
+                  >
+                    {
+                      roles.map((role, index) => (
+                        <Tab
+                          key={index}
+                          label={
+                            <Typography
+                              noWrap={true}
+                              variant="body1"
+                            >{role.description}</Typography>
+                          }
+                          classes={{
+                            root: clsx('app-exams-roles-card__tabs__item', classes.roleTabItem),
+                            wrapper: 'app-exams-roles-card__tabs__item__wrapper',
+                          }}
+                          onClick={() => {
+                            history.push({
+                              search: qs.stringify({
+                                ...qs.parse(_.get(history, 'location.search').slice(1)),
+                                role: role.id,
+                              }),
+                            });
+                          }}
+                        />
+                      ))
+                    }
+                  </Tabs>
+                )
+            }
           </Paper>
         </Grid>
         <Grid

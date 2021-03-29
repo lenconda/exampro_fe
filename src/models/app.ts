@@ -84,7 +84,7 @@ const AppModel: AppModelType = {
           'resource/exam/initiator': '我发起的',
           'resource/exam/invigilator': '我监考的',
           'resource/exam/maintainer': '参与协作',
-          'resource/exam/participant': '作为考生',
+          'resource/exam/participant': '我参加的',
           'resource/exam/reviewer': '参与阅卷',
         },
         ui: {

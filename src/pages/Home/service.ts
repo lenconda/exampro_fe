@@ -12,6 +12,9 @@ export const getUserProfile = async () => {
 export const getSidebarMenu = async (
   sidebarMenuTexts: Record<string, string>,
 ): Promise<SidebarMenuItem[]> => {
+  if (!sidebarMenuTexts) {
+    return null;
+  }
   const data = await AppRequestManager.send({
     url: '/menu',
   });

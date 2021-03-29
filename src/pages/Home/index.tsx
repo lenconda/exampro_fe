@@ -25,6 +25,7 @@ import { encodeRedirectPathname } from '../../utils/redirect';
 import Fallback from '../../components/Fallback';
 import _ from 'lodash';
 import './index.less';
+import { useRequest } from '../../utils/request';
 
 const HomeExamsPage = React.lazy(() => import('./Exams'));
 
@@ -72,8 +73,8 @@ const HomePage: React.FC<HomePageProps> = (props) => {
   const dropdownTexts = useTexts(props.dispatch, 'avatarDropdown');
   const sidebarMenuTexts = useTexts(props.dispatch, 'sidebarMenu');
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [userProfile, setUserProfile] = useState<User>(undefined);
-  const [sidebarMenu, setSidebarMenu] = useState<SidebarMenuItem[]>([]);
+  const [userProfile, userProfileLoading] = useRequest<User>(getUserProfile);
+  const [sidebarMenu, sidebarMenuLoading] = useRequest<SidebarMenuItem[]>(getSidebarMenu, [sidebarMenuTexts]);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -83,26 +84,8 @@ const HomePage: React.FC<HomePageProps> = (props) => {
     ? () => window().document.body
     : undefined;
 
-  useEffect(() => {
-    getUserProfile().then((res) => {
-      if (res) {
-        setUserProfile(res);
-      }
-    });
-  }, []);
-
-  useEffect(() => {
-    if (sidebarMenuTexts && !_.isEmpty(sidebarMenuTexts)) {
-      getSidebarMenu(sidebarMenuTexts).then((res) => {
-        if (res) {
-          setSidebarMenu(res);
-        }
-      });
-    }
-  }, [sidebarMenuTexts]);
-
   const AppSidebarMenu: React.FC = () => {
-    return <AppMenu items={sidebarMenu} />;
+    return <AppMenu items={sidebarMenu} loading={sidebarMenuLoading} />;
   };
 
   return (
@@ -135,7 +118,7 @@ const HomePage: React.FC<HomePageProps> = (props) => {
               paper: 'app-page-home__avatar-dropdown',
               list: 'list',
             }}
-            trigger={<AppAvatar user={userProfile} />}
+            trigger={<AppAvatar user={userProfile} loading={userProfileLoading} />}
           >
             <AppUserCard user={userProfile} />
             <Divider />

@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { User } from '../../interfaces';
-import { Avatar, Button, makeStyles, Typography } from '@material-ui/core';
+import { Avatar, Button, CircularProgress, makeStyles, Typography } from '@material-ui/core';
 import './index.less';
 import clsx from 'clsx';
 
 export interface AvatarProps {
   children?: React.ReactNode;
   user?: User;
+  loading?: boolean;
 }
 
 const useStyles = makeStyles((theme) => {
@@ -20,7 +21,10 @@ const useStyles = makeStyles((theme) => {
   };
 });
 
-const AppAvatar: React.FC<AvatarProps> = (props) => {
+const AppAvatar: React.FC<AvatarProps> = ({
+  user,
+  loading = false,
+}) => {
   const ref = useRef(null);
   const classes = useStyles();
   const [name, setName] = useState<string>('');
@@ -34,7 +38,6 @@ const AppAvatar: React.FC<AvatarProps> = (props) => {
   }, [ref]);
 
   useEffect(() => {
-    const { user } = props;
     if (!user) {
       return;
     }
@@ -48,30 +51,41 @@ const AppAvatar: React.FC<AvatarProps> = (props) => {
     } else {
       setName(user.name);
     }
-  }, [props.user]);
+  }, [user]);
 
-  return (
-    <Button
-      ref={ref}
-      classes={{
-        root: clsx('app-avatar', classes.wrapper),
-      }}
-      style={{ borderRadius: height / 2 }}
-    >
-      {
-        props.user && (
-          <>
-            <Typography classes={{ root: 'app-avatar__hi' }}>Hi,&nbsp;</Typography>
-            <Typography
-              noWrap={true}
-              classes={{ root: clsx('app-avatar__name', classes.name) }}
-            >{name}</Typography>
-          </>
-        )
-      }
-      <Avatar alt={name} src={avatar} classes={{ root: 'app-avatar__image' }} />
-    </Button>
-  );
+  const generateComponent = () => {
+    if (loading) {
+      return (
+        <div className="app-avatar loading">
+          <CircularProgress color="primary" size={22} classes={{ root: 'app-avatar__icon' }} />
+        </div>
+      );
+    }
+    return (
+      <Button
+        ref={ref}
+        classes={{
+          root: clsx('app-avatar', classes.wrapper),
+        }}
+        style={{ borderRadius: height / 2 }}
+      >
+        {
+          user && (
+            <>
+              <Typography classes={{ root: 'app-avatar__hi' }}>Hi,&nbsp;</Typography>
+              <Typography
+                noWrap={true}
+                classes={{ root: clsx('app-avatar__name', classes.name) }}
+              >{name}</Typography>
+            </>
+          )
+        }
+        <Avatar alt={name} src={avatar} classes={{ root: 'app-avatar__image' }} />
+      </Button>
+    );
+  };
+
+  return generateComponent();
 };
 
 export default AppAvatar;
