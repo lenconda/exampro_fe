@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { lighten, makeStyles } from '@material-ui/core/styles';
 import Table, { TableProps } from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -18,6 +18,7 @@ import { Dispatch } from '../../interfaces';
 import { useTexts } from '../../utils/texts';
 import { FileQuestion } from 'mdi-material-ui';
 import { useUpdateEffect } from '../../utils/hooks';
+import AppTableToolbar from './Toolbar';
 
 export interface TableSchema {
   title: string | React.ReactNode;
@@ -40,6 +41,7 @@ const useStyles = makeStyles((theme) => {
     tableContainer: {
       maxHeight: 440,
       width: '100%',
+      userSelect: 'none',
     },
     table: {
       width: '100%',
@@ -110,6 +112,7 @@ const AppTable: React.FC<AppTableProps> = React.forwardRef(({
   const classes = useStyles();
   const texts = useTexts(dispatch, 'table');
   const [selectedItemIndexes, setSelectedItemIndexes] = useState<number[]>([]);
+  const tableContainer = useRef(undefined);
 
   const handleRowCheckboxChange = (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -117,11 +120,21 @@ const AppTable: React.FC<AppTableProps> = React.forwardRef(({
   ) => {
     const checked = event.target.checked;
     if (checked) {
-      setSelectedItemIndexes(selectedItemIndexes.concat(index));
+      if (!selectedItemIndexes.includes(index)) {
+        setSelectedItemIndexes(selectedItemIndexes.concat(index));
+      }
     } else {
       setSelectedItemIndexes(selectedItemIndexes.filter((selectedIndex) => {
         return selectedIndex !== index;
       }));
+    }
+  };
+
+  const handleRowClick = (index: number) => {
+    if (!selectedItemIndexes.includes(index)) {
+      setSelectedItemIndexes(selectedItemIndexes.concat(index));
+    } else {
+      setSelectedItemIndexes(selectedItemIndexes.filter((selectedIndex) => selectedIndex !== index));
     }
   };
 
@@ -158,6 +171,21 @@ const AppTable: React.FC<AppTableProps> = React.forwardRef(({
     }
   }, [selectedItemIndexes]);
 
+  useEffect(() => {
+    if (loading) {
+      setSelectedItemIndexes([]);
+    }
+  }, [loading]);
+
+  useEffect(() => {
+    if (!loading && tableContainer && tableContainer.current) {
+      const screenHeight = window.innerHeight;
+      const clientHeight = tableContainer.current.clientHeight;
+      const offsetTop = tableContainer.current.offsetTop;
+      console.log(screenHeight, clientHeight, offsetTop);
+    }
+  }, [tableContainer, loading]);
+
   const component = loading
     ? (
       <div className="app-loading">
@@ -174,7 +202,17 @@ const AppTable: React.FC<AppTableProps> = React.forwardRef(({
         )
         : (
           <Paper>
-            <TableContainer component={Paper} elevation={0} classes={{ root: clsx(classes.tableContainer) }}>
+            {
+              selectedItemIndexes.length > 0 && (
+                <AppTableToolbar selected={selectedItemIndexes.map((index) => data[index])} />
+              )
+            }
+            <TableContainer
+              component={Paper}
+              elevation={0}
+              ref={tableContainer}
+              classes={{ root: clsx(classes.tableContainer) }}
+            >
               <Table
                 {...props}
                 stickyHeader={true}
@@ -227,12 +265,14 @@ const AppTable: React.FC<AppTableProps> = React.forwardRef(({
                             [classes.tableRowSelected]: selectedItemIndexes.includes(index),
                           }),
                         }}
+                        onClick={() => handleRowClick(index)}
                       >
                         <TableCell>
                           <Checkbox
                             color="primary"
                             checked={selectedItemIndexes.includes(index)}
                             onChange={(event) => handleRowCheckboxChange(event, index)}
+                            onClick={(event) => event.stopPropagation()}
                           />
                         </TableCell>
                         {
@@ -253,7 +293,7 @@ const AppTable: React.FC<AppTableProps> = React.forwardRef(({
               labelRowsPerPage={texts['001']}
               backIconButtonText={texts['002']}
               nextIconButtonText={texts['003']}
-              labelDisplayedRows={({ from, to, count }) => `${count}${texts['004']}${from}-${to}`}
+              labelDisplayedRows={({ from, to, count }) => `${count} ${texts['004']} ${from}-${to}`}
               onChangePage={handleChangePage}
               onChangeRowsPerPage={handleChangeRowsPerPage}
             />

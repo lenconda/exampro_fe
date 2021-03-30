@@ -95,6 +95,7 @@ const AppModel: AppModelType = {
           '003': '下一页',
           '004': '条记录中的',
           '005': '没有数据',
+          '006': '个项目被选中',
         },
         system: {
           'TRUE': '是',
@@ -102,6 +103,7 @@ const AppModel: AppModelType = {
           'OK': '好',
           'CANCEL': '放弃',
           'NULL': '无',
+          'DELETE': '删除',
         },
         ui: {
           '/user/auth': {
