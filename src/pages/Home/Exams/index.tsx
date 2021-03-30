@@ -238,6 +238,14 @@ const ExamsPage: React.FC<ExamPageProps> = ({
                       }),
                     });
                   },
+                  onChangeRowsPerPage: (event) => {
+                    history.push({
+                      search: pushSearch(history, {
+                        size: event.target.value,
+                        page: 1,
+                      }),
+                    });
+                  },
                 }}
               />
             </div>

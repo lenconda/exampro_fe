@@ -164,7 +164,7 @@ const AppTable: React.FC<AppTableProps> = React.forwardRef(({
             <TablePagination
               {...TablePaginationProps}
               component="div"
-              rowsPerPageOptions={[10, 15, 20, 50]}
+              rowsPerPageOptions={[5, 10, 20, 50]}
               labelRowsPerPage={texts['001']}
               backIconButtonText={texts['002']}
               nextIconButtonText={texts['003']}
