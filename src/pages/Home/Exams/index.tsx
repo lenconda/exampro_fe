@@ -9,7 +9,7 @@ import { ConnectState } from '../../../models';
 import { AppState } from '../../../models/app';
 import { usePageTexts, useTexts } from '../../../utils/texts';
 import { getExamRoleTypes, queryExams } from './service';
-import { useLocationQuery } from '../../../utils/history';
+import { pushSearch, useLocationQuery } from '../../../utils/history';
 import qs from 'qs';
 import { NotePlus } from 'mdi-material-ui';
 import { usePaginationRequest, useRequest } from '../../../utils/request';
@@ -229,9 +229,15 @@ const ExamsPage: React.FC<ExamPageProps> = ({
                 loading={queryExamsLoading}
                 TablePaginationProps={{
                   count: totalExams,
-                  page,
+                  page: page - 1,
                   rowsPerPage: size,
-                  onChangePage: () => {},
+                  onChangePage: (event, newPageNumber) => {
+                    history.push({
+                      search: pushSearch(history, {
+                        page: newPageNumber + 1,
+                      }),
+                    });
+                  },
                 }}
               />
             </div>

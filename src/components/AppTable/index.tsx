@@ -46,18 +46,15 @@ const useStyles = makeStyles((theme) => {
     empty: {
       position: 'relative',
       height: 300,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     tableEmpty: {
-      width: '100%',
-      height: '100%',
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      position: 'absolute',
-      top: 0,
-      right: 0,
-      bottom: 0,
-      left: 0,
     },
     tableEmptyWrapper: {
       borderBottom: 'none',
@@ -113,79 +110,68 @@ const AppTable: React.FC<AppTableProps> = React.forwardRef(({
       </div>
     )
     : (
-      <Paper>
-        <TableContainer component={Paper} elevation={0} classes={{ root: clsx(classes.tableContainer) }}>
-          <Table
-            {...props}
-            stickyHeader={true}
-            classes={{
-              root: clsx(classes.table, _.get(props, 'classes.root', {
-                [classes.empty]: !loading && data.length === 0,
-              })),
-            }}
-          >
-            {
-              schema.length > 0 && (
-                <TableHead>
-                  <TableRow>
-                    {
-                      schema.map((schemaItem, index) => (
-                        <TableCell
-                          key={index}
-                          {...(schemaItem.TableCellProps || {})}
-                          style={{
-                            minWidth: schemaItem.minWidth || 140,
-                          }}
-                        >{schemaItem.title}</TableCell>
-                      ))
-                    }
-                  </TableRow>
-                </TableHead>
-              )
-            }
-            {
-              data.length > 0
-                ? (
-                  <>
-                    <TableBody classes={{ root: classes.tableBody }}>
-                      {
-                        data.map((dataItem, index) => (
-                          <TableRow key={index}>
-                            {
-                              schema.map((schemaItem, index) => (
-                                <TableCell key={index}>{renderTableCell(dataItem, schemaItem)}</TableCell>
-                              ))
-                            }
-                          </TableRow>
-                        ))
-                      }
-                    </TableBody>
-                  </>
-                )
-                : (
-                  <TableBody classes={{ root: clsx(classes.tableEmpty) }}>
-                    <TableRow>
-                      <TableCell colSpan={schema.length} variant="body" classes={{ root: clsx(classes.tableEmptyWrapper) }}>
-                        <FileQuestion classes={{ root: clsx(classes.tableEmptyIcon) }} />
-                        <Typography>{texts['005']}</Typography>
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
-                )
-            }
-          </Table>
-        </TableContainer>
-        <TablePagination
-          {...TablePaginationProps}
-          component="div"
-          page={(_.get(props, 'TablePaginationProps.page') || 1) - 1}
-          rowsPerPageOptions={[10, 15, 20, 50]}
-          labelRowsPerPage={texts['001']}
-          backIconButtonText={texts['002']}
-          nextIconButtonText={texts['003']}
-          labelDisplayedRows={({ from, to, count }) => `${count}${texts['004']}${from}-${to}`}
-        />
-      </Paper>
+      data.length === 0
+        ? (
+          <div className={clsx(classes.empty)}>
+            <FileQuestion classes={{ root: clsx(classes.tableEmptyIcon) }} />
+            <Typography>{texts['005']}</Typography>
+          </div>
+        )
+        : (
+          <Paper>
+            <TableContainer component={Paper} elevation={0} classes={{ root: clsx(classes.tableContainer) }}>
+              <Table
+                {...props}
+                stickyHeader={true}
+                classes={{
+                  root: clsx(classes.table, _.get(props, 'classes.root')),
+                }}
+              >
+                {
+                  schema.length > 0 && (
+                    <TableHead>
+                      <TableRow>
+                        {
+                          schema.map((schemaItem, index) => (
+                            <TableCell
+                              key={index}
+                              {...(schemaItem.TableCellProps || {})}
+                              style={{
+                                minWidth: schemaItem.minWidth || 140,
+                              }}
+                            >{schemaItem.title}</TableCell>
+                          ))
+                        }
+                      </TableRow>
+                    </TableHead>
+                  )
+                }
+                <TableBody classes={{ root: classes.tableBody }}>
+                  {
+                    data.map((dataItem, index) => (
+                      <TableRow key={index}>
+                        {
+                          schema.map((schemaItem, index) => (
+                            <TableCell key={index}>{renderTableCell(dataItem, schemaItem)}</TableCell>
+                          ))
+                        }
+                      </TableRow>
+                    ))
+                  }
+                </TableBody>
+              </Table>
+            </TableContainer>
+            <TablePagination
+              {...TablePaginationProps}
+              component="div"
+              rowsPerPageOptions={[10, 15, 20, 50]}
+              labelRowsPerPage={texts['001']}
+              backIconButtonText={texts['002']}
+              nextIconButtonText={texts['003']}
+              labelDisplayedRows={({ from, to, count }) => `${count}${texts['004']}${from}-${to}`}
+            />
+          </Paper>
+        )
     );
 
   return component;

@@ -53,3 +53,14 @@ export const useLocationQuery = <T extends QSTypes>(
 
   return queryValue;
 };
+
+export const pushSearch = (history: History, queries: Record<string, any>) => {
+  const search = (_.get(history, 'location.search') || '').slice(1);
+  const parsedQueries = qs.parse(search);
+  const newQueries = {
+    ...parsedQueries,
+    ...queries,
+  };
+  const stringifiedSearchString = qs.stringify(newQueries);
+  return stringifiedSearchString ? `?${stringifiedSearchString}` : '';
+};
