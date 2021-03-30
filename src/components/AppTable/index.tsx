@@ -1,5 +1,5 @@
-import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
+import React, { useState } from 'react';
+import { lighten, makeStyles } from '@material-ui/core/styles';
 import Table, { TableProps } from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell, { TableCellProps } from '@material-ui/core/TableCell';
@@ -10,13 +10,14 @@ import Paper from '@material-ui/core/Paper';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import clsx from 'clsx';
 import _ from 'lodash';
-import { TablePagination, TablePaginationProps, Typography } from '@material-ui/core';
+import { Checkbox, TablePagination, TablePaginationProps, Typography } from '@material-ui/core';
 import { ConnectState } from '../../models';
 import { AppState } from '../../models/app';
 import { connect } from '../../patches/dva';
 import { Dispatch } from '../../interfaces';
 import { useTexts } from '../../utils/texts';
 import { FileQuestion } from 'mdi-material-ui';
+import { useUpdateEffect } from '../../utils/hooks';
 
 export interface TableSchema {
   title: string | React.ReactNode;
@@ -31,6 +32,7 @@ export interface AppTableProps extends TableProps, AppState, Dispatch {
   data?: Record<string, any>[];
   TablePaginationProps?: TablePaginationProps;
   loading?: boolean;
+  onSelectionChange?: (items: Record<string, any>) => void;
 }
 
 const useStyles = makeStyles((theme) => {
@@ -69,6 +71,10 @@ const useStyles = makeStyles((theme) => {
       maxHeight: '100%',
       overflowY: 'scroll',
     },
+    tableRowSelected: {
+      color: theme.palette.primary.main,
+      backgroundColor: lighten(theme.palette.primary.light, 0.85),
+    },
   };
 });
 
@@ -92,6 +98,7 @@ const AppTable: React.FC<AppTableProps> = React.forwardRef(({
   data = [],
   dispatch,
   loading = false,
+  onSelectionChange,
   TablePaginationProps = {
     count: 0,
     page: 0,
@@ -102,6 +109,54 @@ const AppTable: React.FC<AppTableProps> = React.forwardRef(({
 }, ref) => {
   const classes = useStyles();
   const texts = useTexts(dispatch, 'table');
+  const [selectedItemIndexes, setSelectedItemIndexes] = useState<number[]>([]);
+
+  const handleRowCheckboxChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    index: number,
+  ) => {
+    const checked = event.target.checked;
+    if (checked) {
+      setSelectedItemIndexes(selectedItemIndexes.concat(index));
+    } else {
+      setSelectedItemIndexes(selectedItemIndexes.filter((selectedIndex) => {
+        return selectedIndex !== index;
+      }));
+    }
+  };
+
+  const handleChangePage = (
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+    pageNumber: number,
+  ) => {
+    const customChangePage = _.get(TablePaginationProps, 'onChangePage');
+    setSelectedItemIndexes([]);
+    if (_.isFunction(customChangePage)) {
+      customChangePage(event, pageNumber);
+    }
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+    const customChangeRowsPerPage = _.get(TablePaginationProps, 'onChangeRowsPerPage');
+    if (_.isFunction(customChangeRowsPerPage)) {
+      customChangeRowsPerPage(event);
+    }
+  };
+
+  const handleHeadCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = event.target.checked;
+    if (checked) {
+      setSelectedItemIndexes(data.map((item, index) => index));
+    } else {
+      setSelectedItemIndexes([]);
+    }
+  };
+
+  useUpdateEffect(() => {
+    if (_.isFunction(onSelectionChange)) {
+      onSelectionChange(selectedItemIndexes.map((index) => data[index]));
+    }
+  }, [selectedItemIndexes]);
 
   const component = loading
     ? (
@@ -131,6 +186,22 @@ const AppTable: React.FC<AppTableProps> = React.forwardRef(({
                   schema.length > 0 && (
                     <TableHead>
                       <TableRow>
+                        <TableCell>
+                          <Checkbox
+                            color="primary"
+                            indeterminate={
+                              selectedItemIndexes.length !== 0
+                              && data.length !== 0
+                              && selectedItemIndexes.length < data.length
+                            }
+                            checked={
+                              selectedItemIndexes.length !== 0
+                              && data.length !== 0
+                              && selectedItemIndexes.length === data.length
+                            }
+                            onChange={handleHeadCheckboxChange}
+                          />
+                        </TableCell>
                         {
                           schema.map((schemaItem, index) => (
                             <TableCell
@@ -149,7 +220,21 @@ const AppTable: React.FC<AppTableProps> = React.forwardRef(({
                 <TableBody classes={{ root: classes.tableBody }}>
                   {
                     data.map((dataItem, index) => (
-                      <TableRow key={index}>
+                      <TableRow
+                        key={index}
+                        classes={{
+                          root: clsx({
+                            [classes.tableRowSelected]: selectedItemIndexes.includes(index),
+                          }),
+                        }}
+                      >
+                        <TableCell>
+                          <Checkbox
+                            color="primary"
+                            checked={selectedItemIndexes.includes(index)}
+                            onChange={(event) => handleRowCheckboxChange(event, index)}
+                          />
+                        </TableCell>
                         {
                           schema.map((schemaItem, index) => (
                             <TableCell key={index}>{renderTableCell(dataItem, schemaItem)}</TableCell>
@@ -169,6 +254,8 @@ const AppTable: React.FC<AppTableProps> = React.forwardRef(({
               backIconButtonText={texts['002']}
               nextIconButtonText={texts['003']}
               labelDisplayedRows={({ from, to, count }) => `${count}${texts['004']}${from}-${to}`}
+              onChangePage={handleChangePage}
+              onChangeRowsPerPage={handleChangeRowsPerPage}
             />
           </Paper>
         )
