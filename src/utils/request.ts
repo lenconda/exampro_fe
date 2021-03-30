@@ -5,7 +5,7 @@ import { PaginationResponse } from '../interfaces';
 import { useLocationQuery } from './history';
 
 export type UseRequestReturnType<T> = [T, boolean, Error?];
-export type UsePaginationRequestReturnType<T> = [T[], number, boolean, Error?];
+export type UsePaginationRequestReturnType<T> = [T[], number, boolean, number, number, string?, Error?];
 
 export const useRequest = <T>(
   handler: (...args: any) => Promise<T>,
@@ -55,14 +55,11 @@ export const usePaginationRequest = <T>(
   const size = useLocationQuery('size');
   const search = useLocationQuery('search');
   const lastCursor = useLocationQuery('last_cursor');
-  const searchString = qs.stringify({
-    page,
-    size,
-    search,
-    last_cursor: lastCursor,
-    ...queries,
-  });
-  const [result, loading, error] = useRequest<PaginationResponse<T>>(handler, searchString ? [searchString] : null);
+  const [searchString, setSearchString] = useState<string>('');
+  const [previousSearchString, setPreviousSearchString] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<Error>(undefined);
+  const [result, setResult] = useState<PaginationResponse<T>>(undefined);
   const [items, setItems] = useState<T[]>([]);
   const [total, setTotal] = useState<number>(0);
 
@@ -71,7 +68,39 @@ export const usePaginationRequest = <T>(
       setItems(result.items || []);
       setTotal(result.total || 0);
     }
-  }, [result]);
+    const stringifiedQueries = qs.stringify({
+      page,
+      size,
+      search,
+      last_cursor: lastCursor,
+      ...queries,
+    });
+    setSearchString(stringifiedQueries);
+  }, [result, queries]);
 
-  return [items, total, loading, error];
+  useEffect(() => {
+    if (previousSearchString !== searchString && _.isFunction(handler)) {
+      setLoading(true);
+      handler(searchString).then((data) => {
+        if (data) {
+          setResult(data);
+        }
+      }).catch((error) => {
+        setError(error);
+      }).finally(() => {
+        setLoading(false);
+        setPreviousSearchString(searchString);
+      });
+    }
+  }, [searchString, previousSearchString]);
+
+  return [
+    items,
+    total,
+    loading,
+    parseInt((page as string) || '1', 10),
+    parseInt((size as string) || '10', 10),
+    (lastCursor as string),
+    error,
+  ];
 };

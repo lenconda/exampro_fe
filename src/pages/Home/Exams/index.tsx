@@ -13,8 +13,8 @@ import { useLocationQuery } from '../../../utils/history';
 import qs from 'qs';
 import { NotePlus } from 'mdi-material-ui';
 import { usePaginationRequest, useRequest } from '../../../utils/request';
-import './index.less';
 import AppTable, { TableSchema } from '../../../components/AppTable';
+import './index.less';
 
 export interface ExamPageProps extends Dispatch, AppState {}
 
@@ -26,6 +26,9 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     textAlign: 'center',
     color: theme.palette.text.secondary,
     backgroundColor: 'transparent',
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
   },
   roleTabItem: {
     paddingTop: theme.spacing(1),
@@ -51,7 +54,9 @@ const ExamsPage: React.FC<ExamPageProps> = ({
     examItems,
     totalExams,
     queryExamsLoading,
-  ] = usePaginationRequest<Exam>(queryExams, { role: roleId });
+    page,
+    size,
+  ] = usePaginationRequest<Exam>(queryExams, { roles: roleId });
   const [schema, setSchema] = useState<TableSchema[]>([]);
 
   useEffect(() => {
@@ -70,11 +75,41 @@ const ExamsPage: React.FC<ExamPageProps> = ({
   }, [roleId, roles]);
 
   useEffect(() => {
-    if (!_.isEmpty(systemTexts)) {
+    if (!_.isEmpty(systemTexts) && !_.isEmpty(texts)) {
       setSchema([
         {
           title: texts['003'],
           key: 'title',
+        },
+        {
+          title: texts['004'],
+          key: 'public',
+          minWidth: 80,
+          render: (row, value) => (value ? systemTexts['TRUE'] : systemTexts['FALSE']),
+        },
+        {
+          title: texts['005'],
+          key: 'grades',
+          minWidth: 80,
+          render: (row, value) => (value ? systemTexts['TRUE'] : systemTexts['FALSE']),
+        },
+        {
+          title: texts['006'],
+          key: 'startTime',
+          minWidth: 160,
+          render: (row, value) => (value ? new Date(value).toLocaleString() : systemTexts['NULL']),
+        },
+        {
+          title: texts['007'],
+          key: 'endTime',
+          minWidth: 160,
+          render: (row, value) => new Date(value).toLocaleString(),
+        },
+        {
+          title: texts['008'],
+          key: 'duration',
+          minWidth: 100,
+          render: (row, value) => (value ? value : texts['009']),
         },
       ]);
     }
@@ -188,7 +223,17 @@ const ExamsPage: React.FC<ExamPageProps> = ({
               >{!queryExamsInputFocused ? texts['002'] : null}</Button>
             </div>
             <div className="app-page-table-wrapper">
-              <AppTable loading={queryExamsLoading} />
+              <AppTable
+                schema={schema}
+                data={examItems}
+                loading={queryExamsLoading}
+                TablePaginationProps={{
+                  count: totalExams,
+                  page,
+                  rowsPerPage: size,
+                  onChangePage: () => {},
+                }}
+              />
             </div>
           </Paper>
         </Grid>

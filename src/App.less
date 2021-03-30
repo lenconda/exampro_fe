@@ -48,11 +48,14 @@ p > code {
 .app-grid {
   &-container {
     padding-left: 240px;
+    height: 100%;
 
     .item {
       flex-direction: column;
       justify-content: flex-start;
       flex-wrap: nowrap;
+      max-height: 100%;
+      overflow: scroll;
     }
   }
 }
@@ -104,6 +107,10 @@ p > code {
     width: 28px !important;
     height: 28px !important;
   }
+}
+
+.app-page-table-wrapper {
+  flex-grow: 1;
 }
 
 @media screen and (max-width: 599px) {

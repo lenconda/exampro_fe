@@ -10,17 +10,19 @@ import Paper from '@material-ui/core/Paper';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import clsx from 'clsx';
 import _ from 'lodash';
-import { TablePagination, TablePaginationProps } from '@material-ui/core';
+import { TablePagination, TablePaginationProps, Typography } from '@material-ui/core';
 import { ConnectState } from '../../models';
 import { AppState } from '../../models/app';
 import { connect } from '../../patches/dva';
 import { Dispatch } from '../../interfaces';
 import { useTexts } from '../../utils/texts';
+import { FileQuestion } from 'mdi-material-ui';
 
 export interface TableSchema {
   title: string | React.ReactNode;
   key: string;
   TableCellProps?: TableCellProps;
+  minWidth?: number;
   render?: (row: any, value: any) => React.ReactNode;
 }
 
@@ -31,13 +33,46 @@ export interface AppTableProps extends TableProps, AppState, Dispatch {
   loading?: boolean;
 }
 
-const useStyles = makeStyles({
-  tableContainer: {
-    width: '100%',
-  },
-  table: {
-    width: '100%',
-  },
+const useStyles = makeStyles((theme) => {
+  return {
+    tableContainer: {
+      maxHeight: 440,
+      width: '100%',
+    },
+    table: {
+      width: '100%',
+      overflowX: 'scroll',
+    },
+    empty: {
+      position: 'relative',
+      height: 300,
+    },
+    tableEmpty: {
+      width: '100%',
+      height: '100%',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      position: 'absolute',
+      top: 0,
+      right: 0,
+      bottom: 0,
+      left: 0,
+    },
+    tableEmptyWrapper: {
+      borderBottom: 'none',
+      color: theme.palette.grey.A400,
+    },
+    tableEmptyIcon: {
+      width: 64,
+      height: 64,
+      color: theme.palette.grey.A200,
+    },
+    tableBody: {
+      maxHeight: '100%',
+      overflowY: 'scroll',
+    },
+  };
 });
 
 const renderTableCell = (
@@ -55,15 +90,21 @@ const renderTableCell = (
   return columnNode;
 };
 
-const AppTable: React.FC<AppTableProps> = ({
+const AppTable: React.FC<AppTableProps> = React.forwardRef(({
   schema = [],
   data = [],
   dispatch,
   loading = false,
+  TablePaginationProps = {
+    count: 0,
+    page: 0,
+    rowsPerPage: 10,
+    onChangePage: () => {},
+  },
   ...props
-}) => {
+}, ref) => {
   const classes = useStyles();
-  const texts = useTexts(dispatch, 'tablePagination');
+  const texts = useTexts(dispatch, 'table');
 
   const component = loading
     ? (
@@ -72,50 +113,82 @@ const AppTable: React.FC<AppTableProps> = ({
       </div>
     )
     : (
-      <TableContainer component={Paper} classes={{ root: clsx(classes.tableContainer) }}>
-        {
-          (data.length > 0 && schema.length > 0) && (
-            <Table {...props} classes={{ root: clsx(classes.table, _.get(props, 'classes.root')) }}>
-              <TableHead>
-                <TableRow>
-                  {
-                    schema.map((schemaItem, index) => (
-                      <TableCell
-                        key={index}
-                        {...(schemaItem.TableCellProps || {})}
-                      >{schemaItem.title}</TableCell>
-                    ))
-                  }
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {
-                  data.map((dataItem, index) => (
-                    <TableRow key={index}>
+      <Paper>
+        <TableContainer component={Paper} elevation={0} classes={{ root: clsx(classes.tableContainer) }}>
+          <Table
+            {...props}
+            stickyHeader={true}
+            classes={{
+              root: clsx(classes.table, _.get(props, 'classes.root', {
+                [classes.empty]: !loading && data.length === 0,
+              })),
+            }}
+          >
+            {
+              schema.length > 0 && (
+                <TableHead>
+                  <TableRow>
+                    {
+                      schema.map((schemaItem, index) => (
+                        <TableCell
+                          key={index}
+                          {...(schemaItem.TableCellProps || {})}
+                          style={{
+                            minWidth: schemaItem.minWidth || 140,
+                          }}
+                        >{schemaItem.title}</TableCell>
+                      ))
+                    }
+                  </TableRow>
+                </TableHead>
+              )
+            }
+            {
+              data.length > 0
+                ? (
+                  <>
+                    <TableBody classes={{ root: classes.tableBody }}>
                       {
-                        schema.map((schemaItem, index) => (
-                          <TableCell key={index}>{renderTableCell(dataItem, schemaItem)}</TableCell>
+                        data.map((dataItem, index) => (
+                          <TableRow key={index}>
+                            {
+                              schema.map((schemaItem, index) => (
+                                <TableCell key={index}>{renderTableCell(dataItem, schemaItem)}</TableCell>
+                              ))
+                            }
+                          </TableRow>
                         ))
                       }
+                    </TableBody>
+                  </>
+                )
+                : (
+                  <TableBody classes={{ root: clsx(classes.tableEmpty) }}>
+                    <TableRow>
+                      <TableCell colSpan={schema.length} variant="body" classes={{ root: clsx(classes.tableEmptyWrapper) }}>
+                        <FileQuestion classes={{ root: clsx(classes.tableEmptyIcon) }} />
+                        <Typography>{texts['005']}</Typography>
+                      </TableCell>
                     </TableRow>
-                  ))
-                }
-              </TableBody>
-              <TablePagination
-                {...(props.TablePaginationProps)}
-                rowsPerPageOptions={[10, 15, 20, 50]}
-                labelRowsPerPage={texts['001']}
-                backIconButtonText={texts['002']}
-                nextIconButtonText={texts['003']}
-                labelDisplayedRows={({ from, to, count }) => `${count}${texts['004']}${from}-${to}`}
-              />
-            </Table>
-          )
-        }
-      </TableContainer>
+                  </TableBody>
+                )
+            }
+          </Table>
+        </TableContainer>
+        <TablePagination
+          {...TablePaginationProps}
+          component="div"
+          page={(_.get(props, 'TablePaginationProps.page') || 1) - 1}
+          rowsPerPageOptions={[10, 15, 20, 50]}
+          labelRowsPerPage={texts['001']}
+          backIconButtonText={texts['002']}
+          nextIconButtonText={texts['003']}
+          labelDisplayedRows={({ from, to, count }) => `${count}${texts['004']}${from}-${to}`}
+        />
+      </Paper>
     );
 
   return component;
-};
+});
 
 export default connect(({ app }: ConnectState) => app)(AppTable);
