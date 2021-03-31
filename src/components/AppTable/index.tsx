@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, RefObject } from 'react';
 import { lighten, makeStyles } from '@material-ui/core/styles';
 import Table, { TableProps } from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -34,6 +34,7 @@ export interface AppTableProps extends TableProps, AppState, Dispatch {
   data?: Record<string, any>[];
   TablePaginationProps?: TablePaginationProps;
   loading?: boolean;
+  containerMinHeight?: number;
   onSelectionChange?: (items: Record<string, any>) => void;
 }
 
@@ -46,6 +47,12 @@ const useStyles = makeStyles((theme) => {
     table: {
       width: '100%',
       overflowX: 'scroll',
+    },
+    wrapper: {
+      boxSizing: 'border-box',
+      height: '100%',
+      paddingLeft: 12,
+      paddingRight: 12,
     },
     empty: {
       position: 'relative',
@@ -98,8 +105,9 @@ const renderTableCell = (
 const AppTable: React.FC<AppTableProps> = React.forwardRef(({
   schema = [],
   data = [],
-  dispatch,
   loading = false,
+  containerMinHeight = 150,
+  dispatch,
   onSelectionChange,
   TablePaginationProps = {
     count: 0,
@@ -114,7 +122,8 @@ const AppTable: React.FC<AppTableProps> = React.forwardRef(({
   const [selectedItemIndexes, setSelectedItemIndexes] = useState<number[]>([]);
   const tableContainer = useRef<HTMLDivElement>(undefined);
   const tablePaper = useRef<HTMLDivElement>(undefined);
-  const [tableContainerMaxHeight, setTableContainerMaxHeight] = useState<number>(440);
+  const tableWrapper = useRef<HTMLDivElement>(undefined);
+  const [tableContainerMaxHeight, setTableContainerMaxHeight] = useState<number>(0);
   const [innerWidth, innerHeight] = useWindowInnerSizes();
 
   const handleRowCheckboxChange = (
@@ -181,21 +190,27 @@ const AppTable: React.FC<AppTableProps> = React.forwardRef(({
   }, [loading]);
 
   useEffect(() => {
-    if (!loading && tableContainer.current && tablePaper.current) {
+    if (!loading && tableContainer.current && tablePaper.current && tableWrapper.current) {
+      const tableWrapperClientHeight = tableWrapper.current.clientHeight;
       const tableContainerHeight = tableContainer.current.clientHeight;
       const tablePaperHeight = tablePaper.current.clientHeight;
-      const tablePaperOffsetTop = tablePaper.current.offsetTop;
-      if (tablePaperOffsetTop + tablePaperHeight !== innerHeight - 20) {
-        const newTablePaperHeight = innerHeight - 20 - tablePaperOffsetTop;
-        const newTableContainerHeight = newTablePaperHeight - (tablePaperHeight - tableContainerHeight) - 20;
-        if (newTableContainerHeight > 150) {
-          setTableContainerMaxHeight(newTableContainerHeight);
-        } else {
-          setTableContainerMaxHeight(150);
-        }
+      const heightDifference = tablePaperHeight - tableContainerHeight;
+      const newTableContainerMaxHeight = tableWrapperClientHeight - heightDifference - 10;
+      if (newTableContainerMaxHeight > containerMinHeight) {
+        setTableContainerMaxHeight(newTableContainerMaxHeight);
+      } else {
+        setTableContainerMaxHeight(containerMinHeight);
       }
     }
-  }, [tableContainer.current, tablePaper.current, loading, selectedItemIndexes.length, innerWidth, innerHeight]);
+  }, [
+    tableContainer.current,
+    tablePaper.current,
+    loading,
+    selectedItemIndexes.length,
+    innerWidth,
+    innerHeight,
+    tableWrapper.current,
+  ]);
 
   const component = loading
     ? (
@@ -212,106 +227,108 @@ const AppTable: React.FC<AppTableProps> = React.forwardRef(({
           </div>
         )
         : (
-          <Paper ref={tablePaper}>
-            {
-              selectedItemIndexes.length > 0 && (
-                <AppTableToolbar selected={selectedItemIndexes.map((index) => data[index])} />
-              )
-            }
-            <TableContainer
-              component={Paper}
-              elevation={0}
-              ref={tableContainer}
-              classes={{ root: clsx(classes.tableContainer) }}
-              style={{
-                maxHeight: tableContainerMaxHeight,
-              }}
-            >
-              <Table
-                {...props}
-                stickyHeader={true}
-                classes={{
-                  root: clsx(classes.table, _.get(props, 'classes.root')),
+          <div className={clsx(classes.wrapper)} ref={tableWrapper}>
+            <Paper ref={tablePaper}>
+              {
+                selectedItemIndexes.length > 0 && (
+                  <AppTableToolbar selected={selectedItemIndexes.map((index) => data[index])} />
+                )
+              }
+              <TableContainer
+                component={Paper}
+                elevation={0}
+                ref={tableContainer}
+                classes={{ root: clsx(classes.tableContainer) }}
+                style={{
+                  maxHeight: tableContainerMaxHeight,
                 }}
               >
-                {
-                  schema.length > 0 && (
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>
-                          <Checkbox
-                            color="primary"
-                            indeterminate={
-                              selectedItemIndexes.length !== 0
+                <Table
+                  {...props}
+                  stickyHeader={true}
+                  classes={{
+                    root: clsx(classes.table, _.get(props, 'classes.root')),
+                  }}
+                >
+                  {
+                    schema.length > 0 && (
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>
+                            <Checkbox
+                              color="primary"
+                              indeterminate={
+                                selectedItemIndexes.length !== 0
                               && data.length !== 0
                               && selectedItemIndexes.length < data.length
-                            }
-                            checked={
-                              selectedItemIndexes.length !== 0
+                              }
+                              checked={
+                                selectedItemIndexes.length !== 0
                               && data.length !== 0
                               && selectedItemIndexes.length === data.length
-                            }
-                            onChange={handleHeadCheckboxChange}
-                          />
-                        </TableCell>
-                        {
-                          schema.map((schemaItem, index) => (
-                            <TableCell
-                              key={index}
-                              {...(schemaItem.TableCellProps || {})}
-                              style={{
-                                minWidth: schemaItem.minWidth || 140,
-                              }}
-                            >{schemaItem.title}</TableCell>
-                          ))
-                        }
-                      </TableRow>
-                    </TableHead>
-                  )
-                }
-                <TableBody classes={{ root: classes.tableBody }}>
-                  {
-                    data.map((dataItem, index) => (
-                      <TableRow
-                        key={index}
-                        classes={{
-                          root: clsx({
-                            [classes.tableRowSelected]: selectedItemIndexes.includes(index),
-                          }),
-                        }}
-                        onClick={() => handleRowClick(index)}
-                      >
-                        <TableCell>
-                          <Checkbox
-                            color="primary"
-                            checked={selectedItemIndexes.includes(index)}
-                            onChange={(event) => handleRowCheckboxChange(event, index)}
-                            onClick={(event) => event.stopPropagation()}
-                          />
-                        </TableCell>
-                        {
-                          schema.map((schemaItem, index) => (
-                            <TableCell key={index}>{renderTableCell(dataItem, schemaItem)}</TableCell>
-                          ))
-                        }
-                      </TableRow>
-                    ))
+                              }
+                              onChange={handleHeadCheckboxChange}
+                            />
+                          </TableCell>
+                          {
+                            schema.map((schemaItem, index) => (
+                              <TableCell
+                                key={index}
+                                {...(schemaItem.TableCellProps || {})}
+                                style={{
+                                  minWidth: schemaItem.minWidth || 140,
+                                }}
+                              >{schemaItem.title}</TableCell>
+                            ))
+                          }
+                        </TableRow>
+                      </TableHead>
+                    )
                   }
-                </TableBody>
-              </Table>
-            </TableContainer>
-            <TablePagination
-              {...TablePaginationProps}
-              component="div"
-              rowsPerPageOptions={[5, 10, 20, 50]}
-              labelRowsPerPage={texts['001']}
-              backIconButtonText={texts['002']}
-              nextIconButtonText={texts['003']}
-              labelDisplayedRows={({ from, to, count }) => `${count} ${texts['004']} ${from}-${to}`}
-              onChangePage={handleChangePage}
-              onChangeRowsPerPage={handleChangeRowsPerPage}
-            />
-          </Paper>
+                  <TableBody classes={{ root: classes.tableBody }}>
+                    {
+                      data.map((dataItem, index) => (
+                        <TableRow
+                          key={index}
+                          classes={{
+                            root: clsx({
+                              [classes.tableRowSelected]: selectedItemIndexes.includes(index),
+                            }),
+                          }}
+                          onClick={() => handleRowClick(index)}
+                        >
+                          <TableCell>
+                            <Checkbox
+                              color="primary"
+                              checked={selectedItemIndexes.includes(index)}
+                              onChange={(event) => handleRowCheckboxChange(event, index)}
+                              onClick={(event) => event.stopPropagation()}
+                            />
+                          </TableCell>
+                          {
+                            schema.map((schemaItem, index) => (
+                              <TableCell key={index}>{renderTableCell(dataItem, schemaItem)}</TableCell>
+                            ))
+                          }
+                        </TableRow>
+                      ))
+                    }
+                  </TableBody>
+                </Table>
+              </TableContainer>
+              <TablePagination
+                {...TablePaginationProps}
+                component="div"
+                rowsPerPageOptions={[5, 10, 20, 50]}
+                labelRowsPerPage={texts['001']}
+                backIconButtonText={texts['002']}
+                nextIconButtonText={texts['003']}
+                labelDisplayedRows={({ from, to, count }) => `${count} ${texts['004']} ${from}-${to}`}
+                onChangePage={handleChangePage}
+                onChangeRowsPerPage={handleChangeRowsPerPage}
+              />
+            </Paper>
+          </div>
         )
     );
 

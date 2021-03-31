@@ -225,7 +225,10 @@ const ExamsPage: React.FC<ExamPageProps> = ({
           md={9}
           lg={10}
           xl={11}
-          classes={{ item: 'item' }}
+          classes={{
+            item: 'item',
+            root: 'app-page-home__exams__content',
+          }}
         >
           <Paper
             elevation={0}
