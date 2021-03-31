@@ -14,7 +14,7 @@ const Dropdown: React.FC<DropdownProps> = ({
   ...props
 }) => {
   const [open, setOpen] = useState<boolean>(false);
-  const anchor = useRef(null);
+  const anchor = useRef<HTMLDivElement>(null);
 
   return (
     <>

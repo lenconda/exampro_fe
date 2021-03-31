@@ -112,8 +112,8 @@ const AppTable: React.FC<AppTableProps> = React.forwardRef(({
   const classes = useStyles();
   const texts = useTexts(dispatch, 'table');
   const [selectedItemIndexes, setSelectedItemIndexes] = useState<number[]>([]);
-  const tableContainer = useRef(undefined);
-  const tablePaper = useRef(undefined);
+  const tableContainer = useRef<HTMLDivElement>(undefined);
+  const tablePaper = useRef<HTMLDivElement>(undefined);
   const [tableContainerMaxHeight, setTableContainerMaxHeight] = useState<number>(440);
   const [innerWidth, innerHeight] = useWindowInnerSizes();
 

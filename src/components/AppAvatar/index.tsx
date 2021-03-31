@@ -25,7 +25,7 @@ const AppAvatar: React.FC<AvatarProps> = ({
   user,
   loading = false,
 }) => {
-  const ref = useRef(null);
+  const ref = useRef<HTMLButtonElement>(null);
   const classes = useStyles();
   const [name, setName] = useState<string>('');
   const [avatar, setAvatar] = useState<string>('');
