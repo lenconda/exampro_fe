@@ -113,6 +113,16 @@ p > code {
   flex-grow: 1;
 }
 
+.app-grid-container {
+  &.column {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    flex-wrap: nowrap;
+  }
+}
+
 @media screen and (max-width: 599px) {
   .app-grid-container {
     padding-left: 0;

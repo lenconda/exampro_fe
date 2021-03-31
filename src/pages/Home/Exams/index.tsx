@@ -1,7 +1,7 @@
-import { createStyles, makeStyles, Paper, Grid, Tab, Tabs, Theme, Typography, InputBase, Button, CircularProgress } from '@material-ui/core';
+import { createStyles, makeStyles, Paper, Grid, Tab, Tabs, Theme, Typography, InputBase, Button, CircularProgress, useMediaQuery, useTheme } from '@material-ui/core';
 import clsx from 'clsx';
 import _ from 'lodash';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { connect } from 'react-redux';
 import { useHistory } from 'react-router';
 import { Dispatch, Exam, ExamRole } from '../../../interfaces';
@@ -15,6 +15,7 @@ import { NotePlus } from 'mdi-material-ui';
 import { usePaginationRequest, useRequest } from '../../../utils/request';
 import AppTable, { TableSchema } from '../../../components/AppTable';
 import './index.less';
+import { useDebouncedValue } from '../../../utils/hooks';
 
 export interface ExamPageProps extends Dispatch, AppState {}
 
@@ -58,6 +59,12 @@ const ExamsPage: React.FC<ExamPageProps> = ({
     size,
   ] = usePaginationRequest<Exam>(queryExams, { roles: roleId });
   const [schema, setSchema] = useState<TableSchema[]>([]);
+  const theme = useTheme();
+  const matchSm = useMediaQuery(theme.breakpoints.down('sm'));
+  const tabs = useRef(undefined);
+  const [tabsFlexBasis, setTabsFlexBasis] = useState<number>(0);
+  const [searchValue, setSearchValue] = useState<string>(undefined);
+  const debouncedSearchValue = useDebouncedValue(searchValue);
 
   useEffect(() => {
     const queries = qs.parse(_.get(history, 'location.search').slice(1));
@@ -115,12 +122,28 @@ const ExamsPage: React.FC<ExamPageProps> = ({
     }
   }, [systemTexts, texts]);
 
+  useEffect(() => {
+    if (matchSm && tabs.current) {
+      setTabsFlexBasis((tabs.current.clientHeight || 48) + 24);
+    }
+  }, [tabs, matchSm]);
+
+  useEffect(() => {
+    history.push(pushSearch(history, {
+      search: debouncedSearchValue,
+    }));
+  }, [debouncedSearchValue]);
+
   return (
     <div className="app-page app-page-home__exams">
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: 'app-grid-container' }}
+        classes={{
+          container: clsx('app-grid-container', {
+            'column': matchSm,
+          }),
+        }}
       >
         <Grid
           item={true}
@@ -129,7 +152,16 @@ const ExamsPage: React.FC<ExamPageProps> = ({
           md={3}
           lg={2}
           xl={1}
-          classes={{ root: 'item' }}
+          classes={{ root: 'item app-page-home__exams__tabs' }}
+          style={
+            (
+              matchSm && tabsFlexBasis > 0
+                ? {
+                  flexBasis: tabsFlexBasis,
+                }
+                : {}
+            )
+          }
         >
           <Paper
             elevation={0}
@@ -144,9 +176,10 @@ const ExamsPage: React.FC<ExamPageProps> = ({
                 )
                 : (
                   <Tabs
-                    orientation="vertical"
+                    orientation={matchSm ? 'horizontal' : 'vertical'}
                     variant="scrollable"
                     value={selectedRoleIndex}
+                    ref={tabs}
                     indicatorColor="primary"
                     classes={{
                       root: 'app-exams-roles-card__tabs',
@@ -165,7 +198,9 @@ const ExamsPage: React.FC<ExamPageProps> = ({
                           }
                           classes={{
                             root: clsx('app-exams-roles-card__tabs__item', classes.roleTabItem),
-                            wrapper: 'app-exams-roles-card__tabs__item__wrapper',
+                            wrapper: clsx('app-exams-roles-card__tabs__item__wrapper', {
+                              'center': matchSm,
+                            }),
                           }}
                           onClick={() => {
                             history.push({
@@ -208,6 +243,10 @@ const ExamsPage: React.FC<ExamPageProps> = ({
                   placeholder={texts['001']}
                   onFocus={() => setQueryExamsInputFocused(true)}
                   onBlur={() => setQueryExamsInputFocused(false)}
+                  onChange={(event) => {
+                    const value = event.target.value || undefined;
+                    setSearchValue(value);
+                  }}
                 />
               </Paper>
               <Button

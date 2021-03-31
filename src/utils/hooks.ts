@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export const useUpdateEffect = (callback: Function, inputs?: any[]) => {
   const isFirstEffect = useRef(true);
@@ -11,4 +11,19 @@ export const useUpdateEffect = (callback: Function, inputs?: any[]) => {
       callback.call(this, ...inputs);
     }
   }, [...inputs]);
+};
+
+export const useDebouncedValue = <T>(value: T, delay: number = 500) => {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value]);
+
+  return debouncedValue;
 };

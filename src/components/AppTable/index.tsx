@@ -19,6 +19,7 @@ import { useTexts } from '../../utils/texts';
 import { FileQuestion } from 'mdi-material-ui';
 import { useUpdateEffect } from '../../utils/hooks';
 import AppTableToolbar from './Toolbar';
+import { useWindowInnerSizes } from '../../utils/window';
 
 export interface TableSchema {
   title: string | React.ReactNode;
@@ -39,7 +40,6 @@ export interface AppTableProps extends TableProps, AppState, Dispatch {
 const useStyles = makeStyles((theme) => {
   return {
     tableContainer: {
-      maxHeight: 440,
       width: '100%',
       userSelect: 'none',
     },
@@ -113,6 +113,9 @@ const AppTable: React.FC<AppTableProps> = React.forwardRef(({
   const texts = useTexts(dispatch, 'table');
   const [selectedItemIndexes, setSelectedItemIndexes] = useState<number[]>([]);
   const tableContainer = useRef(undefined);
+  const tablePaper = useRef(undefined);
+  const [tableContainerMaxHeight, setTableContainerMaxHeight] = useState<number>(440);
+  const [innerWidth, innerHeight] = useWindowInnerSizes();
 
   const handleRowCheckboxChange = (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -178,13 +181,21 @@ const AppTable: React.FC<AppTableProps> = React.forwardRef(({
   }, [loading]);
 
   useEffect(() => {
-    if (!loading && tableContainer && tableContainer.current) {
-      const screenHeight = window.innerHeight;
-      const clientHeight = tableContainer.current.clientHeight;
-      const offsetTop = tableContainer.current.offsetTop;
-      console.log(screenHeight, clientHeight, offsetTop);
+    if (!loading && tableContainer.current && tablePaper.current) {
+      const tableContainerHeight = tableContainer.current.clientHeight;
+      const tablePaperHeight = tablePaper.current.clientHeight;
+      const tablePaperOffsetTop = tablePaper.current.offsetTop;
+      if (tablePaperOffsetTop + tablePaperHeight !== innerHeight - 20) {
+        const newTablePaperHeight = innerHeight - 20 - tablePaperOffsetTop;
+        const newTableContainerHeight = newTablePaperHeight - (tablePaperHeight - tableContainerHeight) - 20;
+        if (newTableContainerHeight > 150) {
+          setTableContainerMaxHeight(newTableContainerHeight);
+        } else {
+          setTableContainerMaxHeight(150);
+        }
+      }
     }
-  }, [tableContainer, loading]);
+  }, [tableContainer.current, tablePaper.current, loading, selectedItemIndexes.length, innerWidth, innerHeight]);
 
   const component = loading
     ? (
@@ -201,7 +212,7 @@ const AppTable: React.FC<AppTableProps> = React.forwardRef(({
           </div>
         )
         : (
-          <Paper>
+          <Paper ref={tablePaper}>
             {
               selectedItemIndexes.length > 0 && (
                 <AppTableToolbar selected={selectedItemIndexes.map((index) => data[index])} />
@@ -212,6 +223,9 @@ const AppTable: React.FC<AppTableProps> = React.forwardRef(({
               elevation={0}
               ref={tableContainer}
               classes={{ root: clsx(classes.tableContainer) }}
+              style={{
+                maxHeight: tableContainerMaxHeight,
+              }}
             >
               <Table
                 {...props}
