@@ -65,16 +65,13 @@ const ExamsPage: React.FC<ExamPageProps> = ({
   const [tabsFlexBasis, setTabsFlexBasis] = useState<number>(0);
   const [searchValue, setSearchValue] = useState<string>(undefined);
   const debouncedSearchValue = useDebouncedValue(searchValue);
+  const defaultSearch = useLocationQuery('search');
 
   useEffect(() => {
-    const queries = qs.parse(_.get(history, 'location.search').slice(1));
     if (!roleId && roles.length > 0) {
-      history.push({
-        search: qs.stringify({
-          ...queries,
-          role: roles[0].id,
-        }),
-      });
+      history.push(pushSearch(history, {
+        role: roles[0].id,
+      }));
     }
     if (roleId && roles.length > 0) {
       setSelectedRoleIndex(roles.findIndex((role) => role.id === roleId));
@@ -129,9 +126,11 @@ const ExamsPage: React.FC<ExamPageProps> = ({
   }, [tabs, matchSm]);
 
   useEffect(() => {
-    history.push(pushSearch(history, {
-      search: debouncedSearchValue,
-    }));
+    if (debouncedSearchValue !== undefined) {
+      history.push(pushSearch(history, {
+        search: debouncedSearchValue,
+      }));
+    }
   }, [debouncedSearchValue]);
 
   return (
@@ -243,11 +242,12 @@ const ExamsPage: React.FC<ExamPageProps> = ({
                     root: 'app-search-wrapper__input__root',
                     input: 'app-search-wrapper__input__input',
                   }}
+                  defaultValue={defaultSearch}
                   placeholder={texts['001']}
                   onFocus={() => setQueryExamsInputFocused(true)}
                   onBlur={() => setQueryExamsInputFocused(false)}
                   onChange={(event) => {
-                    const value = event.target.value || undefined;
+                    const value = event.target.value || '';
                     setSearchValue(value);
                   }}
                 />
