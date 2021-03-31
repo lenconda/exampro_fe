@@ -1,19 +1,19 @@
-import React, { Suspense } from 'react';
 import { connect } from './patches/dva';
 import { ConnectState } from './models';
 import { AppState } from './models/app';
-import { Dispatch, AnyAction } from 'redux';
-import { StylesProvider, ThemeProvider } from '@material-ui/core';
+import { theme } from './theme';
+import Fallback from './components/Fallback';
+import AppAlertContainer from './components/AppAlert/Container';
+import AppRequestContainer from './components/AppRequest/Container';
 import {
   Route,
   Redirect,
   BrowserRouter as Router,
   Switch,
 } from 'react-router-dom';
-import { theme } from './theme';
-import Fallback from './components/Fallback';
-import AppAlertContainer from './components/AppAlert/Container';
-import AppRequestContainer from './components/AppRequest/Container';
+import { StylesProvider, ThemeProvider } from '@material-ui/core';
+import { Dispatch, AnyAction } from 'redux';
+import React, { Suspense } from 'react';
 import { SnackbarProvider } from 'notistack';
 import './App.less';
 

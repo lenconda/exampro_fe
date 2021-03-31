@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
 import Manager from './Manager';
+import React, { useEffect } from 'react';
 import { OptionsObject, useSnackbar } from 'notistack';
 
 const Container: React.FC = (props) => {

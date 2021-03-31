@@ -5,6 +5,7 @@ module.exports = {
   ],
   plugins: [
     'react-hooks',
+    'import',
   ],
   globals: {},
   parserOptions: {
@@ -19,6 +20,9 @@ module.exports = {
       'error',
       2
     ],
+    'import/order': ['error', {
+      groups: ['index', 'sibling', 'parent', 'internal', 'external', 'builtin', 'object'],
+    }],
     '@typescript-eslint/indent': 'off',
     'react/jsx-indent-props': [
       'error',

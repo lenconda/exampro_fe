@@ -1,6 +1,6 @@
-import { EventEmitter } from 'events';
 import { SnackbarProps } from '@material-ui/core/Snackbar';
 import { AxiosRequestConfig, AxiosResponse } from 'axios';
+import { EventEmitter } from 'events';
 
 const Constants = {
   REQUEST: 'request',

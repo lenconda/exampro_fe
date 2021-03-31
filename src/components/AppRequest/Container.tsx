@@ -1,14 +1,14 @@
-import React, { useEffect } from 'react';
-import { AxiosRequestConfig } from 'axios';
 import AppRequestManager from './Manager';
 import createAxiosInstance from '../../utils/http';
 import { connect } from '../../patches/dva';
 import { ConnectState } from '../../models';
 import { AppState } from '../../models/app';
-import _ from 'lodash';
-import { useHistory } from 'react-router';
 import { Dispatch } from '../../interfaces';
 import { useTexts } from '../../utils/texts';
+import _ from 'lodash';
+import { useHistory } from 'react-router';
+import { AxiosRequestConfig } from 'axios';
+import React, { useEffect } from 'react';
 
 export interface AppRequestContainerProps extends AppState, Dispatch {}
 

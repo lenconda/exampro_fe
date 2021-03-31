@@ -1,8 +1,8 @@
+import { useLocationQuery } from './history';
+import { PaginationResponse } from '../interfaces';
 import _ from 'lodash';
 import qs from 'qs';
 import { useEffect, useState } from 'react';
-import { PaginationResponse } from '../interfaces';
-import { useLocationQuery } from './history';
 
 export type UseRequestReturnType<T> = [T, boolean, Error?];
 export type UsePaginationRequestReturnType<T> = [T[], number, boolean, number, number, string?, Error?];

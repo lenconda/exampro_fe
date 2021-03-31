@@ -1,8 +1,11 @@
-import { Avatar, makeStyles, Paper, PaperProps, Typography } from '@material-ui/core';
+import { User } from '../../interfaces';
+import Avatar from '@material-ui/core/Avatar';
+import Paper, { PaperProps } from '@material-ui/core/Paper';
+import Typography from '@material-ui/core/Typography';
+import { makeStyles } from '@material-ui/core';
 import clsx from 'clsx';
 import _ from 'lodash';
 import React, { useEffect, useState } from 'react';
-import { User } from '../../interfaces';
 import './index.less';
 
 export interface AppUserCardProps extends PaperProps {

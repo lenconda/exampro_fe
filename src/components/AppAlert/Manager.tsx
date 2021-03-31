@@ -1,5 +1,5 @@
-import { EventEmitter } from 'events';
 import { OptionsObject } from 'notistack';
+import { EventEmitter } from 'events';
 
 const Constants = {
   CHANGE: 'change',

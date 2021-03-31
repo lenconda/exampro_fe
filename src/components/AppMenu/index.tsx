@@ -1,10 +1,10 @@
+import AppMenuItem from './Item';
+import { SidebarMenuItem } from '../../interfaces';
 import React from 'react';
 import { makeStyles, createStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
-import AppMenuItem from './Item';
 import { CircularProgress, Toolbar } from '@material-ui/core';
 import clsx from 'clsx';
-import { SidebarMenuItem } from '../../interfaces';
 import './index.less';
 
 export interface AppMenuProps {

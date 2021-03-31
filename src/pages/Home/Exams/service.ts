@@ -1,6 +1,6 @@
-import _ from 'lodash';
 import AppRequestManager from '../../../components/AppRequest/Manager';
 import { ExamRole } from '../../../interfaces';
+import _ from 'lodash';
 
 export const getExamRoleTypes = async (roleTexts: Record<string, string>) => {
   const data = await AppRequestManager.send({

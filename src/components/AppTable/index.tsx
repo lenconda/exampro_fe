@@ -1,3 +1,12 @@
+import AppTableToolbar from './Toolbar';
+import { ConnectState } from '../../models';
+import { AppState } from '../../models/app';
+import { connect } from '../../patches/dva';
+import { Dispatch } from '../../interfaces';
+import { useTexts } from '../../utils/texts';
+import { useUpdateEffect } from '../../utils/hooks';
+import { useWindowInnerSizes } from '../../utils/window';
+import { FileQuestion } from 'mdi-material-ui';
 import React, { useEffect, useState, useRef, RefObject } from 'react';
 import { lighten, makeStyles } from '@material-ui/core/styles';
 import Table, { TableProps } from '@material-ui/core/Table';
@@ -8,18 +17,11 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import Checkbox from '@material-ui/core/Checkbox';
+import TablePagination, { TablePaginationProps } from '@material-ui/core/TablePagination';
+import Typography from '@material-ui/core/Typography';
 import clsx from 'clsx';
 import _ from 'lodash';
-import { Checkbox, TablePagination, TablePaginationProps, Typography } from '@material-ui/core';
-import { ConnectState } from '../../models';
-import { AppState } from '../../models/app';
-import { connect } from '../../patches/dva';
-import { Dispatch } from '../../interfaces';
-import { useTexts } from '../../utils/texts';
-import { FileQuestion } from 'mdi-material-ui';
-import { useUpdateEffect } from '../../utils/hooks';
-import AppTableToolbar from './Toolbar';
-import { useWindowInnerSizes } from '../../utils/window';
 
 export interface TableSchema {
   title: string | React.ReactNode;

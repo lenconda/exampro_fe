@@ -1,19 +1,23 @@
+import { completeResetPassword, completeRegistration } from './service';
+import { ConnectState } from '../../../models';
+import { AppState } from '../../../models/app';
+import { getQuery } from '../../../utils/qs';
+import AppAlertManager from '../../../components/AppAlert/Manager';
+import { Dispatch } from '../../../interfaces';
+import { usePageTexts } from '../../../utils/texts';
 import React, { useState } from 'react';
-import { Button, Card, CssBaseline, LinearProgress, Typography } from '@material-ui/core';
+import Button from '@material-ui/core/Button';
+import Card from '@material-ui/core/Card';
+import CssBaseline from '@material-ui/core/CssBaseline';
+import LinearProgress from '@material-ui/core/LinearProgress';
+import Typography from '@material-ui/core/Typography';
 import { Field, Form as FormikForm, Formik } from 'formik';
 import { TextField } from 'formik-material-ui';
 import { ProgressCheck, ProgressClock } from 'mdi-material-ui';
 import { connect } from 'react-redux';
-import { ConnectState } from '../../../models';
-import { AppState } from '../../../models/app';
 import { useHistory } from 'react-router';
 import _ from 'lodash';
-import { getQuery } from '../../../utils/qs';
-import AppAlertManager from '../../../components/AppAlert/Manager';
-import { completeResetPassword, completeRegistration } from './service';
-import { Dispatch } from '../../../interfaces';
 import './index.less';
-import { usePageTexts } from '../../../utils/texts';
 
 const Form = FormikForm as any;
 

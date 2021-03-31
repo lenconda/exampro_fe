@@ -1,12 +1,16 @@
-import React from 'react';
-import { createStyles, IconButton, lighten, makeStyles, Theme, Toolbar, Tooltip, Typography } from '@material-ui/core';
-import clsx from 'clsx';
-import { Delete } from 'mdi-material-ui';
 import { connect } from '../../../patches/dva';
 import { ConnectState } from '../../../models';
 import { Dispatch } from '../../../interfaces';
 import { AppState } from '../../../models/app';
 import { useTexts } from '../../../utils/texts';
+import { Delete } from 'mdi-material-ui';
+import clsx from 'clsx';
+import IconButton from '@material-ui/core/IconButton';
+import Toolbar from '@material-ui/core/Toolbar';
+import Tooltip from '@material-ui/core/Tooltip';
+import Typography from '@material-ui/core/Typography';
+import { createStyles, lighten, makeStyles, Theme } from '@material-ui/core';
+import React from 'react';
 
 export interface AppTableToolBarProps<T = any> extends Dispatch, AppState {
   selected?: T[];

@@ -1,8 +1,8 @@
+import { encodeRedirectPathname } from './redirect';
+import AppAlertManager from '../components/AppAlert/Manager';
 import axios from 'axios';
 import { History } from 'history';
 import _ from 'lodash';
-import AppAlertManager from '../components/AppAlert/Manager';
-import { encodeRedirectPathname } from './redirect';
 
 const createAxiosInstance = (errorsMap: Record<string, string>, history: History<any>) => {
   const instance = axios.create({

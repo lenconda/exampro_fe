@@ -1,6 +1,6 @@
+import { patchedHistoryListener } from '../patches/history';
 import { History } from 'history';
 import { useState, useEffect } from 'react';
-import { patchedHistoryListener } from '../patches/history';
 import qs from 'qs';
 import _ from 'lodash';
 import { useHistory } from 'react-router';

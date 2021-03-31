@@ -1,4 +1,3 @@
-const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
@@ -9,6 +8,7 @@ const OptimizeCSSAssetsWebpackPlugin = require('optimize-css-assets-webpack-plug
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 const safePostCssParser = require('postcss-safe-parser');
 const postcssNormalize = require('postcss-normalize');
+const path = require('path');
 
 const APP_SRC_PATH = path.resolve(__dirname, '../src');
 const APP_DIST_PATH = path.resolve(__dirname, '../dist');

@@ -1,8 +1,8 @@
-import React from 'react';
 import dva from './patches/dva';
-import { createBrowserHistory } from 'history';
 import App from './App';
 import AppModel from './models/app';
+import { createBrowserHistory } from 'history';
+import React from 'react';
 import './index.less';
 
 const history = createBrowserHistory();

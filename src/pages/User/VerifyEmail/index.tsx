@@ -1,14 +1,21 @@
-import React, { useState } from 'react';
-import { Button, Card, CssBaseline, LinearProgress, Typography } from '@material-ui/core';
-import { EmailCheck, EmailRemove, ProgressClock, ShieldAccountVariant } from 'mdi-material-ui';
-import { connect } from 'react-redux';
+import { verifyEmail } from './service';
 import { ConnectState } from '../../../models';
 import { AppState } from '../../../models/app';
-import { useHistory } from 'react-router';
-import _ from 'lodash';
-import { verifyEmail } from './service';
 import { Dispatch } from '../../../interfaces';
 import { usePageTexts } from '../../../utils/texts';
+import React, { useState } from 'react';
+import Button from '@material-ui/core/Button';
+import Card from '@material-ui/core/Card';
+import CssBaseline from '@material-ui/core/CssBaseline';
+import LinearProgress from '@material-ui/core/LinearProgress';
+import Typography from '@material-ui/core/Typography';
+import EmailCheck from 'mdi-material-ui/EmailCheck';
+import EmailRemove from 'mdi-material-ui/EmailRemove';
+import ProgressClock from 'mdi-material-ui/ProgressClock';
+import ShieldAccountVariant from 'mdi-material-ui/ShieldAccountVariant';
+import { connect } from 'react-redux';
+import { useHistory } from 'react-router';
+import _ from 'lodash';
 import './index.less';
 
 export interface CompletePageProps extends AppState, Dispatch {}

@@ -1,3 +1,5 @@
+import { SidebarMenuItem } from '../../../interfaces';
+import { useAppPathname } from '../../../utils/history';
 import React, { useEffect, useState } from 'react';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -10,9 +12,7 @@ import IconExpandMore from '@material-ui/icons/ExpandMore';
 import * as icons from 'mdi-material-ui';
 import { SvgIconTypeMap, Tooltip, Typography } from '@material-ui/core';
 import { OverridableComponent } from '@material-ui/core/OverridableComponent';
-import { SidebarMenuItem } from '../../../interfaces';
 import { useHistory } from 'react-router';
-import { useAppPathname } from '../../../utils/history';
 import './index.less';
 
 export interface AppMenuItemProps {

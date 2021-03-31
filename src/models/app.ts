@@ -1,5 +1,5 @@
-import { Effect, Subscription } from 'dva';
 import { ConnectState } from '.';
+import { Effect, Subscription } from 'dva';
 import _ from 'lodash';
 
 export interface I18N {
