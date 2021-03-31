@@ -1,4 +1,4 @@
-import AppTableToolbar from './Toolbar';
+import AppTableToolbar, { ToolbarButton } from './Toolbar';
 import { ConnectState } from '../../models';
 import { AppState } from '../../models/app';
 import { connect } from '../../patches/dva';
@@ -7,7 +7,7 @@ import { useTexts } from '../../utils/texts';
 import { useUpdateEffect } from '../../utils/hooks';
 import { useWindowInnerSizes } from '../../utils/window';
 import { FileQuestion } from 'mdi-material-ui';
-import React, { useEffect, useState, useRef, RefObject } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { lighten, makeStyles } from '@material-ui/core/styles';
 import Table, { TableProps } from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -31,14 +31,17 @@ export interface TableSchema {
   render?: (row: any, value: any) => React.ReactNode;
 }
 
-export interface AppTableProps extends TableProps, AppState, Dispatch {
+export interface AppTableProps {
   schema?: TableSchema[];
   data?: Record<string, any>[];
   TablePaginationProps?: TablePaginationProps;
   loading?: boolean;
   containerMinHeight?: number;
-  onSelectionChange?: (items: Record<string, any>) => void;
+  toolbarButtons?: ToolbarButton[];
+  onSelectionChange?: (items: any[]) => void;
 }
+
+export interface AppTableComponentProps extends AppTableProps, TableProps, AppState, Dispatch {}
 
 const useStyles = makeStyles((theme) => {
   return {
@@ -104,11 +107,13 @@ const renderTableCell = (
   return columnNode;
 };
 
-const AppTable: React.FC<AppTableProps> = React.forwardRef(({
+
+const AppTable: React.FC<AppTableComponentProps> = ({
   schema = [],
   data = [],
   loading = false,
   containerMinHeight = 150,
+  toolbarButtons = [],
   dispatch,
   onSelectionChange,
   TablePaginationProps = {
@@ -118,7 +123,7 @@ const AppTable: React.FC<AppTableProps> = React.forwardRef(({
     onChangePage: () => {},
   },
   ...props
-}, ref) => {
+}) => {
   const classes = useStyles();
   const texts = useTexts(dispatch, 'table');
   const [selectedItemIndexes, setSelectedItemIndexes] = useState<number[]>([]);
@@ -233,7 +238,10 @@ const AppTable: React.FC<AppTableProps> = React.forwardRef(({
             <Paper ref={tablePaper}>
               {
                 selectedItemIndexes.length > 0 && (
-                  <AppTableToolbar selected={selectedItemIndexes.map((index) => data[index])} />
+                  <AppTableToolbar
+                    buttons={toolbarButtons}
+                    selected={selectedItemIndexes.map((index) => data[index])}
+                  />
                 )
               }
               <TableContainer
@@ -335,6 +343,6 @@ const AppTable: React.FC<AppTableProps> = React.forwardRef(({
     );
 
   return component;
-});
+};
 
-export default connect(({ app }: ConnectState) => app)(AppTable);
+export default connect(({ app }: ConnectState) => app)(AppTable) as React.FC<AppTableProps>;

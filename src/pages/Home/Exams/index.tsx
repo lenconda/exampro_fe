@@ -1,4 +1,4 @@
-import { getExamRoleTypes, queryExams } from './service';
+import { deleteExams, getExamRoleTypes, queryExams } from './service';
 import { Dispatch, Exam, ExamRole } from '../../../interfaces';
 import { ConnectState } from '../../../models';
 import { AppState } from '../../../models/app';
@@ -13,7 +13,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { connect } from 'react-redux';
 import { useHistory } from 'react-router';
 import qs from 'qs';
-import { NotePlus } from 'mdi-material-ui';
+import Delete from 'mdi-material-ui/Delete';
+import NotePlus from 'mdi-material-ui/NotePlus';
 import { createStyles, makeStyles, useTheme, useMediaQuery, Theme } from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
@@ -74,6 +75,7 @@ const ExamsPage: React.FC<ExamPageProps> = ({
   const [searchValue, setSearchValue] = useState<string>(undefined);
   const debouncedSearchValue = useDebouncedValue(searchValue);
   const defaultSearch = useLocationQuery('search');
+  const [selectedExams, setSelectedExams] = useState<Exam[]>([]);
 
   useEffect(() => {
     if (!roleId && roles.length > 0) {
@@ -273,31 +275,51 @@ const ExamsPage: React.FC<ExamPageProps> = ({
               >{!queryExamsInputFocused ? texts['002'] : null}</Button>
             </div>
             <div className="app-page-table-wrapper">
-              <AppTable
-                schema={schema}
-                data={examItems}
-                loading={queryExamsLoading}
-                TablePaginationProps={{
-                  count: totalExams,
-                  page: page - 1,
-                  rowsPerPage: size,
-                  onChangePage: (event, newPageNumber) => {
-                    history.push({
-                      search: pushSearch(history, {
-                        page: newPageNumber + 1,
-                      }),
-                    });
-                  },
-                  onChangeRowsPerPage: (event) => {
-                    history.push({
-                      search: pushSearch(history, {
-                        size: event.target.value,
-                        page: 1,
-                      }),
-                    });
-                  },
-                }}
-              />
+              {
+                roleId === 'resource/exam/participant'
+                  ? (<></>)
+                  : (
+                    <AppTable
+                      schema={schema}
+                      data={examItems}
+                      loading={queryExamsLoading}
+                      toolbarButtons={[
+                        {
+                          Icon: Delete,
+                          title: texts['010'],
+                          IconButtonProps: {
+                            onClick: () => {
+                              deleteExams(selectedExams).finally(() => {
+                                history.push({});
+                              });
+                            },
+                          },
+                        },
+                      ]}
+                      TablePaginationProps={{
+                        count: totalExams,
+                        page: page - 1,
+                        rowsPerPage: size,
+                        onChangePage: (event, newPageNumber) => {
+                          history.push({
+                            search: pushSearch(history, {
+                              page: newPageNumber + 1,
+                            }),
+                          });
+                        },
+                        onChangeRowsPerPage: (event) => {
+                          history.push({
+                            search: pushSearch(history, {
+                              size: event.target.value,
+                              page: 1,
+                            }),
+                          });
+                        },
+                      }}
+                      onSelectionChange={(items: Exam[]) => setSelectedExams(items)}
+                    />
+                  )
+              }
             </div>
           </Paper>
         </Grid>

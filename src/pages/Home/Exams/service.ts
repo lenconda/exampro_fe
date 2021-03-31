@@ -1,5 +1,5 @@
 import AppRequestManager from '../../../components/AppRequest/Manager';
-import { ExamRole } from '../../../interfaces';
+import { Exam, ExamRole } from '../../../interfaces';
 import _ from 'lodash';
 
 export const getExamRoleTypes = async (roleTexts: Record<string, string>) => {
@@ -20,4 +20,15 @@ export const queryExams = async (search) => {
   });
 
   return _.get(data, 'data.data');
+};
+
+export const deleteExams = async (exams: Exam[]) => {
+  const data = await AppRequestManager.send({
+    url: '/exam',
+    method: 'DELETE',
+    data: {
+      exams: exams.map((exam) => exam.id),
+    },
+  });
+  return data;
 };

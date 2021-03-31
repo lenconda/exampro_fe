@@ -3,17 +3,25 @@ import { ConnectState } from '../../../models';
 import { Dispatch } from '../../../interfaces';
 import { AppState } from '../../../models/app';
 import { useTexts } from '../../../utils/texts';
-import { Delete } from 'mdi-material-ui';
 import clsx from 'clsx';
-import IconButton from '@material-ui/core/IconButton';
+import IconButton, { IconButtonProps } from '@material-ui/core/IconButton';
 import Toolbar from '@material-ui/core/Toolbar';
 import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
-import { createStyles, lighten, makeStyles, Theme } from '@material-ui/core';
+import { OverridableComponent } from '@material-ui/core/OverridableComponent';
+import { createStyles, lighten, makeStyles, SvgIconTypeMap, Theme } from '@material-ui/core';
 import React from 'react';
+import _ from 'lodash';
+
+export interface ToolbarButton {
+  title: string;
+  Icon: OverridableComponent<SvgIconTypeMap<{}, 'svg'>>;
+  IconButtonProps?: IconButtonProps;
+}
 
 export interface AppTableToolBarProps<T = any> extends Dispatch, AppState {
   selected?: T[];
+  buttons?: ToolbarButton[];
 }
 
 const useToolbarStyles = makeStyles((theme: Theme) => createStyles({
@@ -38,10 +46,11 @@ const useToolbarStyles = makeStyles((theme: Theme) => createStyles({
 
 const AppTableToolbar: React.FC<AppTableToolBarProps> = ({
   selected = [],
+  buttons = [],
   dispatch,
 }) => {
   const classes = useToolbarStyles();
-  const texts = useTexts(dispatch, 'table');
+  const tableTexts = useTexts(dispatch, 'table');
 
   return (
     <Toolbar
@@ -50,13 +59,20 @@ const AppTableToolbar: React.FC<AppTableToolBarProps> = ({
       })}
     >
       <Typography className={classes.title} color="inherit" variant="subtitle1" component="div">
-        {selected.length}&nbsp;{texts['006']}
+        {selected.length}&nbsp;{tableTexts['006']}
       </Typography>
-      <Tooltip title="Delete">
-        <IconButton aria-label="delete">
-          <Delete />
-        </IconButton>
-      </Tooltip>
+      {
+        buttons.map((buttonConfig, index) => {
+          const { Icon, IconButtonProps, title } = buttonConfig;
+          return (
+            <Tooltip title={title} key={index}>
+              <IconButton aria-label={title} {...IconButtonProps}>
+                <Icon />
+              </IconButton>
+            </Tooltip>
+          );
+        })
+      }
     </Toolbar>
   );
 };
