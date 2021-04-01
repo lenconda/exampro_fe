@@ -16,6 +16,7 @@ export interface I18N {
     system?: Record<string, string>;
     examStatuses?: Record<ExamStatus, string>;
     dialog?: Record<string, string>;
+    examCard?: Record<string, string>;
   };
 }
 
@@ -109,6 +110,14 @@ const AppModel: AppModelType = {
           '004': '条记录中的',
           '005': '没有数据',
           '006': '个项目被选中',
+        },
+        examCard: {
+          '001': '开始时间',
+          '002': '截止时间',
+          '003': '限时 (分钟)',
+          '004': '未命名考试',
+          '005': '不限时',
+          '006': '无限制',
         },
         system: {
           'TRUE': '是',
