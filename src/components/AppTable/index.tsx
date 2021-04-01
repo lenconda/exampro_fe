@@ -56,8 +56,8 @@ const useStyles = makeStyles((theme) => {
     wrapper: {
       boxSizing: 'border-box',
       height: '100%',
-      paddingLeft: 12,
-      paddingRight: 12,
+      paddingLeft: theme.spacing(2),
+      paddingRight: theme.spacing(2),
     },
     empty: {
       position: 'relative',

@@ -1,5 +1,6 @@
 import { deleteExams, getExamRoleTypes, getExamStatus, queryExams } from './service';
 import StatusChip from './components/StatusChip';
+import ExamCard from './components/ExamCard';
 import { Dispatch, Exam, ExamRole } from '../../../interfaces';
 import { ConnectState } from '../../../models';
 import { AppState } from '../../../models/app';
@@ -49,6 +50,10 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     paddingRight: theme.spacing(4),
     paddingBottom: theme.spacing(1),
     paddingLeft: theme.spacing(4),
+  },
+  participantGridContainer: {
+    paddingRight: theme.spacing(2),
+    paddingLeft: theme.spacing(2),
   },
 }));
 
@@ -290,7 +295,31 @@ const ExamsPage: React.FC<ExamPageProps> = ({
             <div className="app-page-table-wrapper">
               {
                 roleId === 'resource/exam/participant'
-                  ? (<></>)
+                  ? (
+                    <Grid
+                      container={true}
+                      spacing={2}
+                      classes={{ root: classes.participantGridContainer }}
+                    >
+                      {
+                        examItems.map((exam, index) => {
+                          return (
+                            <Grid
+                              key={index}
+                              item={true}
+                              xs={12}
+                              sm={12}
+                              md={6}
+                              lg={4}
+                              xl={3}
+                            >
+                              <ExamCard exam={exam}></ExamCard>
+                            </Grid>
+                          );
+                        })
+                      }
+                    </Grid>
+                  )
                   : (
                     <AppTable
                       schema={schema}

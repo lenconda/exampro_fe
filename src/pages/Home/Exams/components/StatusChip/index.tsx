@@ -5,11 +5,12 @@ import { AppState } from '../../../../../models/app';
 import { Dispatch } from '../../../../../interfaces';
 import { useTexts } from '../../../../../utils/texts';
 import React from 'react';
-import Chip from '@material-ui/core/Chip';
+import Chip, { ChipProps } from '@material-ui/core/Chip';
 import _ from 'lodash';
 import { makeStyles } from '@material-ui/core';
+import clsx from 'clsx';
 
-interface StatusChipComponentProps {
+interface StatusChipComponentProps extends ChipProps {
   status: ExamStatus;
 }
 
@@ -27,9 +28,11 @@ const useStyles = makeStyles((theme) => {
 const StatusChip: React.FC<StatusChipProps> = ({
   status,
   dispatch,
+  ...props
 }) => {
   const classes = useStyles();
   const examStatusesTexts = useTexts(dispatch, 'examStatuses');
+  const rootClass = _.get(props, 'classes.root') || '';
 
   const generateChip = (status: ExamStatus) => {
     switch (status) {
@@ -38,19 +41,24 @@ const StatusChip: React.FC<StatusChipProps> = ({
         label={examStatusesTexts['PREPARING']}
         color="primary"
         size="small"
+        {...props}
+        classes={{ root: clsx(rootClass) }}
       />;
     }
     case 'IN_PROGRESS': {
       return <Chip
         label={examStatusesTexts['IN_PROGRESS']}
-        classes={{ root: classes.inProgress }}
         size="small"
+        {...props}
+        classes={{ root: clsx(classes.inProgress, rootClass) }}
       />;
     }
     case 'FINISHED': {
       return <Chip
         label={examStatusesTexts['FINISHED']}
         size="small"
+        {...props}
+        classes={{ root: clsx(rootClass) }}
       />;
     }
     default:
