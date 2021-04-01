@@ -8,6 +8,7 @@ import { pushSearch, useLocationQuery } from '../../../utils/history';
 import { usePaginationRequest, useRequest } from '../../../utils/request';
 import AppTable, { TableSchema } from '../../../components/AppTable';
 import { useDebouncedValue } from '../../../utils/hooks';
+import AppDialogManager from '../../../components/AppDialog/Manager';
 import clsx from 'clsx';
 import _ from 'lodash';
 import React, { useEffect, useRef, useState } from 'react';
@@ -324,10 +325,16 @@ const ExamsPage: React.FC<ExamPageProps> = ({
                         {
                           Icon: Delete,
                           title: texts['010'],
+                          show: roleId === 'resource/exam/initiator',
                           IconButtonProps: {
                             onClick: () => {
-                              deleteExams(selectedExams).finally(() => {
-                                history.push({});
+                              AppDialogManager.confirm(`${texts['014']} ${selectedExams.map((exam) => exam.title).join(', ')}`, {
+                                disableBackdropClick: true,
+                                onConfirm: () => {
+                                  deleteExams(selectedExams).finally(() => {
+                                    history.push({});
+                                  });
+                                },
                               });
                             },
                           },

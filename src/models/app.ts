@@ -15,6 +15,7 @@ export interface I18N {
     table?: Record<string, string>;
     system?: Record<string, string>;
     examStatuses?: Record<ExamStatus, string>;
+    dialog?: Record<string, string>;
   };
 }
 
@@ -91,6 +92,11 @@ const AppModel: AppModelType = {
           'resource/exam/participant': '我参加的',
           'resource/exam/reviewer': '参与阅卷',
         },
+        dialog: {
+          'CONFIRM': '好',
+          'PROMPT': '提示',
+          'WARN': '警告',
+        },
         examStatuses: {
           'PREPARING': '未开始',
           'IN_PROGRESS': '进行中',
@@ -163,6 +169,7 @@ const AppModel: AppModelType = {
             '011': '编辑考试',
             '012': '监考',
             '013': '状态',
+            '014': '是否确定删除考试：',
           },
         },
       },

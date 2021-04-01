@@ -5,6 +5,7 @@ import { theme } from './theme';
 import Fallback from './components/Fallback';
 import AppAlertContainer from './components/AppAlert/Container';
 import AppRequestContainer from './components/AppRequest/Container';
+import AppDialogContainer from './components/AppDialog/Container';
 import {
   Route,
   Redirect,
@@ -38,6 +39,7 @@ const App: React.FC<AppProps> = (props) => {
           <Router>
             <AppAlertContainer />
             <AppRequestContainer />
+            <AppDialogContainer />
             <Suspense fallback={<Fallback />}>
               <Switch>
                 <Route path="/home" component={() => <HomePage />} />
