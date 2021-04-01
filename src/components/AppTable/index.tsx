@@ -59,28 +59,6 @@ const useStyles = makeStyles((theme) => {
       paddingLeft: theme.spacing(2),
       paddingRight: theme.spacing(2),
     },
-    empty: {
-      position: 'relative',
-      height: 300,
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    tableEmpty: {
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    tableEmptyWrapper: {
-      borderBottom: 'none',
-      color: theme.palette.grey.A400,
-    },
-    tableEmptyIcon: {
-      width: 64,
-      height: 64,
-      color: theme.palette.grey.A200,
-    },
     tableBody: {
       maxHeight: '100%',
       overflowY: 'scroll',
@@ -228,9 +206,9 @@ const AppTable: React.FC<AppTableComponentProps> = ({
     : (
       data.length === 0
         ? (
-          <div className={clsx(classes.empty)}>
-            <FileQuestion classes={{ root: clsx(classes.tableEmptyIcon) }} />
-            <Typography>{texts['005']}</Typography>
+          <div className="app-empty">
+            <FileQuestion classes={{ root: 'app-empty__icon' }} />
+            <Typography classes={{ root: 'app-empty__text' }}>{texts['005']}</Typography>
           </div>
         )
         : (

@@ -28,6 +28,7 @@ import InputBase from '@material-ui/core/InputBase';
 import Button from '@material-ui/core/Button';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import FileDocumentEdit from 'mdi-material-ui/FileDocumentEdit';
+import FileQuestion from 'mdi-material-ui/FileQuestion';
 import FileEye from 'mdi-material-ui/FileEye';
 import './index.less';
 
@@ -296,29 +297,46 @@ const ExamsPage: React.FC<ExamPageProps> = ({
               {
                 roleId === 'resource/exam/participant'
                   ? (
-                    <Grid
-                      container={true}
-                      spacing={2}
-                      classes={{ root: classes.participantGridContainer }}
-                    >
-                      {
-                        examItems.map((exam, index) => {
-                          return (
+                    queryExamsLoading
+                      ? (
+                        <div className="app-loading">
+                          <CircularProgress classes={{ root: 'app-loading__icon' }} />
+                        </div>
+                      )
+                      : (
+                        examItems.length === 0
+                          ? (
+                            <div className="app-empty">
+                              <FileQuestion classes={{ root: 'app-empty__icon' }} />
+                              <Typography classes={{ root: 'app-empty__text' }}>{systemTexts['EMPTY']}</Typography>
+                            </div>
+                          )
+                          : (
                             <Grid
-                              key={index}
-                              item={true}
-                              xs={12}
-                              sm={12}
-                              md={6}
-                              lg={4}
-                              xl={3}
+                              container={true}
+                              spacing={2}
+                              classes={{ root: classes.participantGridContainer }}
                             >
-                              <ExamCard exam={exam}></ExamCard>
+                              {
+                                examItems.map((exam, index) => {
+                                  return (
+                                    <Grid
+                                      key={index}
+                                      item={true}
+                                      xs={12}
+                                      sm={12}
+                                      md={6}
+                                      lg={4}
+                                      xl={3}
+                                    >
+                                      <ExamCard exam={exam}></ExamCard>
+                                    </Grid>
+                                  );
+                                })
+                              }
                             </Grid>
-                          );
-                        })
-                      }
-                    </Grid>
+                          )
+                      )
                   )
                   : (
                     <AppTable

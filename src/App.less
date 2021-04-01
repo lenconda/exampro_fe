@@ -126,6 +126,25 @@ p > code {
   }
 }
 
+.app-empty {
+  position: relative;
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  &__icon {
+    width: 64px;
+    height: 64px;
+    color: @gray-500;
+  }
+
+  &__text {
+    color: @gray-600;
+  }
+}
+
 @media screen and (max-width: 599px) {
   .app-grid-container {
     padding-left: 0;

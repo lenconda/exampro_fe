@@ -117,6 +117,7 @@ const AppModel: AppModelType = {
           'CANCEL': '放弃',
           'NULL': '无',
           'DELETE': '删除',
+          'EMPTY': '没有数据',
         },
         ui: {
           '/user/auth': {
