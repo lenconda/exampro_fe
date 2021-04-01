@@ -1,4 +1,5 @@
 import { ConnectState } from '.';
+import { ExamStatus } from '../pages/Home/Exams/service';
 import { Effect, Subscription } from 'dva';
 import _ from 'lodash';
 
@@ -13,6 +14,7 @@ export interface I18N {
     examRoles?: Record<string, string>;
     table?: Record<string, string>;
     system?: Record<string, string>;
+    examStatuses?: Record<ExamStatus, string>;
   };
 }
 
@@ -89,6 +91,11 @@ const AppModel: AppModelType = {
           'resource/exam/participant': '我参加的',
           'resource/exam/reviewer': '参与阅卷',
         },
+        examStatuses: {
+          'PREPARING': '未开始',
+          'IN_PROGRESS': '进行中',
+          'FINISHED': '已结束',
+        },
         table: {
           '001': '每页数量',
           '002': '上一页',
@@ -153,7 +160,9 @@ const AppModel: AppModelType = {
             '008': '时长 (分钟)',
             '009': '不限时',
             '010': '删除',
-
+            '011': '编辑考试',
+            '012': '监考',
+            '013': '状态',
           },
         },
       },

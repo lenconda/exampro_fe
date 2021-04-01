@@ -1,4 +1,5 @@
-import { deleteExams, getExamRoleTypes, queryExams } from './service';
+import { deleteExams, getExamRoleTypes, getExamStatus, queryExams } from './service';
+import StatusChip from './components/StatusChip';
 import { Dispatch, Exam, ExamRole } from '../../../interfaces';
 import { ConnectState } from '../../../models';
 import { AppState } from '../../../models/app';
@@ -24,6 +25,8 @@ import Typography from '@material-ui/core/Typography';
 import InputBase from '@material-ui/core/InputBase';
 import Button from '@material-ui/core/Button';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import FileDocumentEdit from 'mdi-material-ui/FileDocumentEdit';
+import FileEye from 'mdi-material-ui/FileEye';
 import './index.less';
 
 export interface ExamPageProps extends Dispatch, AppState {}
@@ -94,6 +97,15 @@ const ExamsPage: React.FC<ExamPageProps> = ({
         {
           title: texts['003'],
           key: 'title',
+        },
+        {
+          title: texts['013'],
+          key: 'startTime',
+          minWidth: 64,
+          render: (row) => {
+            const status = getExamStatus(row);
+            return <StatusChip status={status} />;
+          },
         },
         {
           title: texts['004'],
@@ -284,6 +296,31 @@ const ExamsPage: React.FC<ExamPageProps> = ({
                       data={examItems}
                       loading={queryExamsLoading}
                       toolbarButtons={[
+                        {
+                          Icon: FileDocumentEdit,
+                          title: texts['011'],
+                          show: selectedExams.length === 1
+                            && ['resource/exam/initiator', 'resource/exam/maintainer'].includes(roleId)
+                            && (selectedExams[0].startTime ? Date.parse(selectedExams[0].startTime) > Date.now() : true)
+                            && Date.now() < Date.parse(selectedExams[0].endTime),
+                          IconButtonProps: {
+                            // TODO: push to edit exam page
+                            onClick: () => {},
+                          },
+                        },
+                        {
+                          Icon: FileEye,
+                          title: texts['012'],
+                          show: selectedExams.length === 1
+                            && selectedExams[0].startTime
+                            && Date.now() >= Date.parse(selectedExams[0].startTime)
+                            && Date.now() <= Date.parse(selectedExams[0].endTime)
+                            && roleId === 'resource/exam/invigilator',
+                          IconButtonProps: {
+                            // TODO: push to invigilator page
+                            onClick: () => {},
+                          },
+                        },
                         {
                           Icon: Delete,
                           title: texts['010'],

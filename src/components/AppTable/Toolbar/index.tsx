@@ -15,6 +15,7 @@ import _ from 'lodash';
 
 export interface ToolbarButton {
   title: string;
+  show?: boolean;
   Icon: OverridableComponent<SvgIconTypeMap<{}, 'svg'>>;
   IconButtonProps?: IconButtonProps;
 }
@@ -63,13 +64,15 @@ const AppTableToolbar: React.FC<AppTableToolBarProps> = ({
       </Typography>
       {
         buttons.map((buttonConfig, index) => {
-          const { Icon, IconButtonProps, title } = buttonConfig;
+          const { Icon, IconButtonProps, title, show = true } = buttonConfig;
           return (
-            <Tooltip title={title} key={index}>
-              <IconButton aria-label={title} {...IconButtonProps}>
-                <Icon />
-              </IconButton>
-            </Tooltip>
+            show && (
+              <Tooltip title={title} key={index}>
+                <IconButton aria-label={title} {...IconButtonProps}>
+                  <Icon />
+                </IconButton>
+              </Tooltip>
+            )
           );
         })
       }
