@@ -99,10 +99,12 @@ const ExamsPage: React.FC<ExamPageProps> = ({
   }, [roleId, roles]);
 
   useEffect(() => {
-    history.push(pushSearch(history, {
-      page: undefined,
-      size: undefined,
-    }));
+    if (roleId) {
+      history.push(pushSearch(history, {
+        page: undefined,
+        size: undefined,
+      }));
+    }
   }, [roleId]);
 
   useEffect(() => {
