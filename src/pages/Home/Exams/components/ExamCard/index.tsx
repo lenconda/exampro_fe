@@ -6,6 +6,7 @@ import { Dispatch, Exam } from '../../../../../interfaces';
 import { getExamStatus } from '../../service';
 import { useTexts } from '../../../../../utils/texts';
 import React, { useEffect, useState } from 'react';
+import Button from '@material-ui/core/Button';
 import Card, { CardProps } from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
@@ -59,6 +60,17 @@ const useStyles = makeStyles((theme) => {
       flexDirection: 'row',
       alignItems: 'center',
       marginRight: theme.spacing(1),
+    },
+    actions: {
+      display: 'flex',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingRight: theme.spacing(2),
+      paddingLeft: theme.spacing(2),
+    },
+    actionButton: {
+      flexGrow: 0,
+      flexShrink: 0,
     },
   };
 });
@@ -175,8 +187,20 @@ const ExamCard: React.FC<ExamCardProps> = ({
         }
       </CardContent>
       <Divider />
-      <CardActions>
-        {/* TODO: Button and grades */}
+      <CardActions classes={{ root: classes.actions }}>
+        {
+          status === 'FINISHED' && (
+            <Button
+              color="primary"
+              classes={{ root: classes.actionButton }}
+            >{examCardTexts['008']}</Button>
+          )
+        }
+        <Button
+          disabled={status !== 'IN_PROGRESS'}
+          color="primary"
+          classes={{ root: classes.actionButton }}
+        >{examCardTexts['007']}</Button>
       </CardActions>
     </Card>
   );

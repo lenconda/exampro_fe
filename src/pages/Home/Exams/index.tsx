@@ -99,6 +99,13 @@ const ExamsPage: React.FC<ExamPageProps> = ({
   }, [roleId, roles]);
 
   useEffect(() => {
+    history.push(pushSearch(history, {
+      page: undefined,
+      size: undefined,
+    }));
+  }, [roleId]);
+
+  useEffect(() => {
     if (!_.isEmpty(systemTexts) && !_.isEmpty(texts)) {
       setSchema([
         {
@@ -169,7 +176,7 @@ const ExamsPage: React.FC<ExamPageProps> = ({
         spacing={3}
         classes={{
           container: clsx('app-grid-container', {
-            'column': matchSm,
+            column: matchSm,
           }),
         }}
       >
@@ -297,13 +304,15 @@ const ExamsPage: React.FC<ExamPageProps> = ({
               {
                 roleId === 'resource/exam/participant'
                   ? (
-                    queryExamsLoading
-                      ? (
-                        <div className="app-loading">
-                          <CircularProgress classes={{ root: 'app-loading__icon' }} />
-                        </div>
-                      )
-                      : (
+                    <>
+                      {
+                        queryExamsLoading && (
+                          <div className="app-loading">
+                            <CircularProgress classes={{ root: 'app-loading__icon' }} />
+                          </div>
+                        )
+                      }
+                      {
                         examItems.length === 0
                           ? (
                             <div className="app-empty">
@@ -336,7 +345,8 @@ const ExamsPage: React.FC<ExamPageProps> = ({
                               }
                             </Grid>
                           )
-                      )
+                      }
+                    </>
                   )
                   : (
                     <AppTable
