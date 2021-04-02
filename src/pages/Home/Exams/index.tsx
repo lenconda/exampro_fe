@@ -8,8 +8,9 @@ import { usePageTexts, useTexts } from '../../../utils/texts';
 import { pushSearch, useLocationQuery } from '../../../utils/history';
 import { usePaginationRequest, useRequest } from '../../../utils/request';
 import AppTable, { TableSchema } from '../../../components/AppTable';
-import { useDebouncedValue } from '../../../utils/hooks';
+import { useDebouncedValue, useUpdateEffect } from '../../../utils/hooks';
 import AppDialogManager from '../../../components/AppDialog/Manager';
+import AppLoadMore from '../../../components/AppLoadMore';
 import clsx from 'clsx';
 import _ from 'lodash';
 import React, { useEffect, useRef, useState } from 'react';
@@ -72,7 +73,7 @@ const ExamsPage: React.FC<ExamPageProps> = ({
   const [roles = [], rolesLoading] = useRequest<ExamRole[]>(getExamRoleTypes, [examRoleTexts]);
   const [
     examItems,
-    totalExams,
+    totalExams = 0,
     queryExamsLoading,
     page,
     size,
@@ -98,7 +99,7 @@ const ExamsPage: React.FC<ExamPageProps> = ({
     }
   }, [roleId, roles]);
 
-  useEffect(() => {
+  useUpdateEffect(() => {
     if (roleId) {
       history.push(pushSearch(history, {
         page: undefined,
@@ -302,13 +303,17 @@ const ExamsPage: React.FC<ExamPageProps> = ({
                 variant="contained"
               >{!queryExamsInputFocused ? texts['002'] : null}</Button>
             </div>
-            <div className="app-page-table-wrapper">
+            <div
+              className={clsx('app-page-table-wrapper', {
+                scrollable: roleId === 'resource/exam/participant',
+              })}
+            >
               {
                 roleId === 'resource/exam/participant'
                   ? (
                     <>
                       {
-                        queryExamsLoading && (
+                        (examItems.length === 0 && queryExamsLoading) && (
                           <div className="app-loading">
                             <CircularProgress classes={{ root: 'app-loading__icon' }} />
                           </div>
@@ -345,6 +350,22 @@ const ExamsPage: React.FC<ExamPageProps> = ({
                                   );
                                 })
                               }
+                              <Grid item={true} style={{ width: '100%' }}>
+                                <AppLoadMore
+                                  total={totalExams}
+                                  currentCount={examItems.length}
+                                  pageSize={size}
+                                  loading={queryExamsLoading}
+                                  onLoadMore={() => {
+                                    const lastCursor = _.get(_.last(examItems), 'id');
+                                    if (lastCursor) {
+                                      history.push(pushSearch(history, {
+                                        last_cursor: lastCursor,
+                                      }));
+                                    }
+                                  }}
+                                />
+                              </Grid>
                             </Grid>
                           )
                       }

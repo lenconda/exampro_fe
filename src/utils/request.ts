@@ -64,19 +64,33 @@ export const usePaginationRequest = <T>(
   const [total, setTotal] = useState<number>(0);
 
   useEffect(() => {
+    if (lastCursor) {
+      setSearchString(qs.stringify({
+        size,
+        search,
+        last_cursor: lastCursor,
+        ...queries,
+      }));
+    } else {
+      setSearchString(qs.stringify({
+        page,
+        size,
+        search,
+        ...queries,
+      }));
+    }
+  }, [queries]);
+
+  useEffect(() => {
     if (result) {
-      setItems(result.items || []);
+      if (lastCursor) {
+        setItems(items.concat(result.items || []));
+      } else {
+        setItems(result.items || []);
+      }
       setTotal(result.total || 0);
     }
-    const stringifiedQueries = qs.stringify({
-      page,
-      size,
-      search,
-      last_cursor: lastCursor,
-      ...queries,
-    });
-    setSearchString(stringifiedQueries);
-  }, [result, queries]);
+  }, [result]);
 
   useEffect(() => {
     if (previousSearchString !== searchString && _.isFunction(handler)) {

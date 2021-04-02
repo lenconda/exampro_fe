@@ -129,6 +129,7 @@ const AppModel: AppModelType = {
           'NULL': '无',
           'DELETE': '删除',
           'EMPTY': '没有数据',
+          'LOAD_MORE': '加载更多',
         },
         ui: {
           '/user/auth': {

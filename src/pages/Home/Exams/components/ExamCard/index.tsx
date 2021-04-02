@@ -199,6 +199,7 @@ const ExamCard: React.FC<ExamCardProps> = ({
         <Button
           disabled={status !== 'IN_PROGRESS'}
           color="primary"
+          variant="contained"
           classes={{ root: classes.actionButton }}
         >{examCardTexts['007']}</Button>
       </CardActions>
