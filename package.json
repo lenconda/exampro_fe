@@ -73,6 +73,7 @@
     "@material-ui/core": "^4.11.3",
     "@material-ui/icons": "^4.11.2",
     "axios": "^0.21.1",
+    "braft-editor": "^2.3.9",
     "clsx": "^1.1.1",
     "connected-react-router": "^6.8.0",
     "dva": "^2.4.1",
@@ -86,13 +87,17 @@
     "js-base64": "^3.6.0",
     "lodash": "^4.17.21",
     "mdi-material-ui": "^6.22.0",
+    "mui-rte": "^1.29.0",
     "notistack": "^1.0.5",
     "qs": "^6.10.1",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
+    "react-katex": "^2.0.2",
+    "react-markdown": "^5.0.3",
     "react-redux": "^7.2.2",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
-    "redux": "^4.0.5"
+    "redux": "^4.0.5",
+    "remark-math": "^4.0.0"
   }
 }

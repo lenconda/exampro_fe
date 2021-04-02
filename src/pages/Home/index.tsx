@@ -28,6 +28,7 @@ import _ from 'lodash';
 import './index.less';
 
 const HomeExamsPage = React.lazy(() => import('./Exams'));
+const HomeQuestionsPage = React.lazy(() => import('./Questions'));
 
 const drawerWidth = 240;
 
@@ -174,6 +175,7 @@ const HomePage: React.FC<HomePageProps> = (props) => {
         <Suspense fallback={<Fallback />}>
           <Switch>
             <Route path="/home/exams" component={HomeExamsPage} />
+            <Route path="/home/questions" component={HomeQuestionsPage} />
             <Redirect from="/home" to="/home/exams" exact={true} />
           </Switch>
         </Suspense>

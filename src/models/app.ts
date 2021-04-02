@@ -17,6 +17,7 @@ export interface I18N {
     examStatuses?: Record<ExamStatus, string>;
     dialog?: Record<string, string>;
     examCard?: Record<string, string>;
+    editor?: Record<string, string>;
   };
 }
 
@@ -130,6 +131,9 @@ const AppModel: AppModelType = {
           'DELETE': '删除',
           'EMPTY': '没有数据',
           'LOAD_MORE': '加载更多',
+        },
+        editor: {
+          'CLICK_TO_UPLOAD': '单击此处以上传图片',
         },
         ui: {
           '/user/auth': {
