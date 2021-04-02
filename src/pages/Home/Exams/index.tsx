@@ -87,6 +87,7 @@ const ExamsPage: React.FC<ExamPageProps> = ({
   const debouncedSearchValue = useDebouncedValue(searchValue);
   const defaultSearch = useLocationQuery('search');
   const [selectedExams, setSelectedExams] = useState<Exam[]>([]);
+  const [loadMoreMode, setLoadMoreMode] = useState<boolean>(false);
 
   useEffect(() => {
     if (!roleId && roles.length > 0) {
@@ -104,7 +105,9 @@ const ExamsPage: React.FC<ExamPageProps> = ({
       history.push(pushSearch(history, {
         page: undefined,
         size: undefined,
+        last_cursor: undefined,
       }));
+      setLoadMoreMode(false);
     }
   }, [roleId]);
 
@@ -313,7 +316,10 @@ const ExamsPage: React.FC<ExamPageProps> = ({
                   ? (
                     <>
                       {
-                        (examItems.length === 0 && queryExamsLoading) && (
+                        (
+                          queryExamsLoading
+                          && (!loadMoreMode || examItems.length === 0)
+                        ) && (
                           <div className="app-loading">
                             <CircularProgress classes={{ root: 'app-loading__icon' }} />
                           </div>
@@ -357,6 +363,7 @@ const ExamsPage: React.FC<ExamPageProps> = ({
                                   pageSize={size}
                                   loading={queryExamsLoading}
                                   onLoadMore={() => {
+                                    setLoadMoreMode(true);
                                     const lastCursor = _.get(_.last(examItems), 'id');
                                     if (lastCursor) {
                                       history.push(pushSearch(history, {
