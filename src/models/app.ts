@@ -134,6 +134,7 @@ const AppModel: AppModelType = {
         },
         editor: {
           'CLICK_TO_UPLOAD': '单击此处以上传图片',
+          'IMAGE_UPLOADING': '图片上传中...',
         },
         ui: {
           '/user/auth': {

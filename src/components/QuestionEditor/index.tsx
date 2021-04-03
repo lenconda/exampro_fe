@@ -61,7 +61,7 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
   };
 
   const handleFileUpload = (file: File) => {
-    ref.current?.insertAtomicBlockAsync('IMAGE', uploadImage(file), 'Uploading now...');
+    ref.current?.insertAtomicBlockAsync('IMAGE', uploadImage(file), questionEditorTexts['IMAGE_UPLOADING']);
   };
 
   return (
