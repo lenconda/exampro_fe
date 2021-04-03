@@ -15,6 +15,10 @@ interface TUploadImageData {
   file?: File;
 }
 
+interface TKatexData {
+  equation?: string;
+}
+
 interface IUploadImagePopoverProps {
   anchor: TAnchor;
   texts?: Record<string, string>;
@@ -59,7 +63,7 @@ const cardPopoverStyles = makeStyles((theme) => {
   };
 });
 
-const UploadImagePopover: React.FC<IUploadImagePopoverProps> = ({
+const KatexPopover: React.FC<IUploadImagePopoverProps> = ({
   texts = {},
   ...props
 }) => {
@@ -171,4 +175,4 @@ const UploadImagePopover: React.FC<IUploadImagePopoverProps> = ({
   );
 };
 
-export default UploadImagePopover;
+export default KatexPopover;

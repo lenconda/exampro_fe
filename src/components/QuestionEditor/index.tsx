@@ -1,4 +1,5 @@
 import UploadImagePopover from './UploadImage';
+import MyCardPopover, { MyCard } from './Katex';
 import { AppState } from '../../models/app';
 import { ConnectState } from '../../models';
 import { connect } from '../../patches/dva';
@@ -82,7 +83,7 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
           hidePlaceholder: classes.hidePlaceholder,
         }}
         ref={ref}
-        controls={['save', 'undo', 'redo', 'title', 'bold', 'italic', 'underline', 'strikethrough', 'highlight', 'link', 'upload-image', 'numberList', 'bulletList', 'quote', 'code', 'media', 'clear']}
+        controls={['save', 'undo', 'redo', 'title', 'bold', 'italic', 'underline', 'strikethrough', 'highlight', 'link', 'upload-image', 'numberList', 'bulletList', 'quote', 'code', 'media', 'clear', 'my-card']}
         customControls={[
           {
             name: 'upload-image',
@@ -91,6 +92,11 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
             onClick: (_editorState, _name, anchor) => {
               setAnchor(anchor);
             },
+          },
+          {
+            name: 'katex',
+            type: 'atomic',
+            atomicComponent: MyCard,
           },
         ]}
         {...props}

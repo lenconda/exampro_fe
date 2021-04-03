@@ -16,6 +16,7 @@
     "@babel/preset-typescript": "7.1.0",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.4.3",
     "@types/history": "^4.7.8",
+    "@types/katex": "^0.11.0",
     "@types/lodash": "^4.14.168",
     "@types/node": "12.0.10",
     "@types/qs": "^6.9.6",
@@ -85,6 +86,7 @@
     "invariant": "^2.2.4",
     "isomorphic-fetch": "^3.0.0",
     "js-base64": "^3.6.0",
+    "katex": "^0.13.0",
     "lodash": "^4.17.21",
     "mdi-material-ui": "^6.22.0",
     "mui-rte": "^1.29.0",
@@ -93,11 +95,9 @@
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-katex": "^2.0.2",
-    "react-markdown": "^5.0.3",
     "react-redux": "^7.2.2",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
-    "redux": "^4.0.5",
-    "remark-math": "^4.0.0"
+    "redux": "^4.0.5"
   }
 }
