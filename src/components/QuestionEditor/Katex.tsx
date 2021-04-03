@@ -123,6 +123,7 @@ const KatexPopover: React.FC<IKatexPopoverProps> = ({
             label={texts['USE_BLOCK_EQUATION']}
             control={
               <Checkbox
+                color="primary"
                 checked={style === 'block'}
                 onChange={(event) => {
                   setStyle(event.target.checked ? 'block' : 'inline');
