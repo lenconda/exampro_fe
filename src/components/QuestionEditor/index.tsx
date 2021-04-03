@@ -4,10 +4,14 @@ import { ConnectState } from '../../models';
 import { connect } from '../../patches/dva';
 import { Dispatch } from '../../interfaces';
 import { useTexts } from '../../utils/texts';
+import { uploadImage as uploadImageToServer } from '../../service';
 import { makeStyles } from '@material-ui/core';
 import Image from '@material-ui/icons/Image';
 import React, { useRef, useState } from 'react';
-import MUITextEditor, { TDraftEditorProps, TMUIRichTextEditorRef } from 'mui-rte';
+import MUITextEditor, {
+  TDraftEditorProps,
+  TMUIRichTextEditorRef,
+} from 'mui-rte';
 
 export interface QuestionEditorLanguage {
   CLICK_TO_UPLOAD: string;
@@ -40,6 +44,26 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
   const ref = useRef<TMUIRichTextEditorRef>(null);
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
 
+  const uploadImage = async (file: File) => {
+    const url = await uploadImageToServer(file);
+    if (!url) {
+      return;
+    }
+    return {
+      data: {
+        url,
+        width: 300,
+        height: 200,
+        alignment: 'left',
+        type: 'image',
+      },
+    };
+  };
+
+  const handleFileUpload = (file: File) => {
+    ref.current?.insertAtomicBlockAsync('IMAGE', uploadImage(file), 'Uploading now...');
+  };
+
   return (
     <>
       <UploadImagePopover
@@ -47,7 +71,7 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
         texts={questionEditorTexts}
         onSubmit={(data, insert) => {
           if (insert && data.file) {
-            // handleFileUpload(data.file);
+            handleFileUpload(data.file);
           }
           setAnchor(null);
         }}
@@ -65,7 +89,6 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
             icon: <Image />,
             type: 'callback',
             onClick: (_editorState, _name, anchor) => {
-              console.log(anchor);
               setAnchor(anchor);
             },
           },
