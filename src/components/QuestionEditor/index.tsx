@@ -14,7 +14,6 @@ import MUITextEditor, {
   TDraftEditorProps,
   TMUIRichTextEditorRef,
 } from 'mui-rte';
-import { InlineMath, BlockMath } from 'react-katex';
 
 export interface QuestionEditorLanguage {
   CLICK_TO_UPLOAD: string;
@@ -112,7 +111,7 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
           hidePlaceholder: classes.hidePlaceholder,
         }}
         ref={ref}
-        controls={['save', 'undo', 'redo', 'title', 'bold', 'italic', 'underline', 'strikethrough', 'highlight', 'link', 'upload-image', 'numberList', 'bulletList', 'quote', 'code', 'media', 'clear', 'add-katex']}
+        controls={['save', 'undo', 'redo', 'title', 'bold', 'italic', 'underline', 'strikethrough', 'highlight', 'link', 'upload-image', 'numberList', 'bulletList', 'quote', 'code', 'add-katex', 'media', 'clear']}
         customControls={[
           {
             name: 'upload-image',
