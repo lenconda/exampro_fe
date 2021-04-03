@@ -1,212 +1,163 @@
-import React, { useRef, useState, FunctionComponent, useEffect } from 'react';
-import {
-  Card, CardHeader, Avatar, CardMedia, CardContent,
-  Typography, IconButton, CardActions, Grid,
-} from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
+import { useDebouncedValue } from '../../utils/hooks';
+import Close from '@material-ui/icons/Close';
+import Done from '@material-ui/icons/Done';
+import Button from '@material-ui/core/Button';
+import Checkbox from '@material-ui/core/Checkbox';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Grid from '@material-ui/core/Grid';
 import Popover from '@material-ui/core/Popover';
 import TextField from '@material-ui/core/TextField';
-import Button from '@material-ui/core/Button';
-import ShareIcon from '@material-ui/icons/Share';
-import FavoriteIcon from '@material-ui/icons/Favorite';
-import DoneIcon from '@material-ui/icons/Done';
-import CloseIcon from '@material-ui/icons/Close';
-
-interface TMyCardData {
-    title?: string;
-    name?: string;
-    date?: Date;
-    text?: string;
-    image?: string;
-}
+import { makeStyles } from '@material-ui/core';
+import React, { useEffect, useState } from 'react';
+import { BlockMath, InlineMath } from 'react-katex';
+import _ from 'lodash';
 
 type TAnchor = HTMLElement | null;
+export type TEquationStyle = 'block' | 'inline';
 
-interface IMyCardPopoverProps {
-    anchor: TAnchor;
-    onSubmit: (data: TMyCardData, insert: boolean) => void;
+interface TKatexData {
+  equation: string;
+  style: TEquationStyle;
 }
 
-interface TMyCardPopoverState {
-    anchor: TAnchor;
-    isCancelled: boolean;
+export interface IKatexContainerProps {
+  blockProps: TKatexData;
 }
 
-const cardPopverStyles = makeStyles({
-  root: {
-    padding: 10,
-    maxWidth: 350,
-  },
-  textField: {
-    width: '100%',
-  },
-});
-
-const cardStyles = makeStyles({
-  root: {
-    maxWidth: 345,
-  },
-  media: {
-    height: 0,
-    paddingTop: '56.25%',
-  },
-  avatar: {
-    backgroundColor: 'tomato',
-  },
-});
-
-export const MyCard: FunctionComponent<any> = (props) => {
-  const { blockProps } = props;
-  const classes = cardStyles(props);
-
-  const handleLiked = () => {
-    alert('Favorited');
-  };
-
-  const handleShared = () => {
-    alert('Shared');
-  };
-
+export const KatexContainer: React.FC<IKatexContainerProps> = ({
+  blockProps,
+}) => {
+  const { equation, style } = blockProps;
+  const Math = style === 'block' ? BlockMath : InlineMath;
   return (
-    <Card className={classes.root}>
-      <CardHeader
-        avatar={
-          <Avatar aria-label="name" className={classes.avatar}>
-            {blockProps.name && blockProps.name.substring(0, 1)}
-          </Avatar>
-        }
-        title={blockProps.title}
-        subheader={blockProps.date && blockProps.date.toLocaleDateString()}
-      />
-      <CardMedia
-        className={classes.media}
-        image={blockProps.image || 'default'}
-        title={blockProps.title}
-      />
-      <CardContent>
-        <Typography variant="body2" color="textSecondary" component="p">
-          {blockProps.text}
-        </Typography>
-      </CardContent>
-      <CardActions disableSpacing>
-        <IconButton
-          aria-label="like card"
-          onClick={handleLiked}>
-          <FavoriteIcon />
-        </IconButton>
-        <IconButton
-          aria-label="share"
-          onClick={handleShared}
-        >
-          <ShareIcon />
-        </IconButton>
-      </CardActions>
-    </Card>
+    <Math>{equation}</Math>
   );
 };
 
-const MyCardPopover: FunctionComponent<IMyCardPopoverProps> = (props) => {
-  const classes = cardPopverStyles(props);
-  const [state, setState] = useState<TMyCardPopoverState>({
-    anchor: null,
-    isCancelled: false,
-  });
-  const [data, setData] = useState<TMyCardData>({});
+interface IKatexPopoverProps {
+  anchor: TAnchor;
+  texts?: Record<string, string>;
+  onSubmit: (data: TKatexData, insert: boolean) => void;
+}
 
-  useEffect(() => {
-    setState({
-      anchor: props.anchor,
-      isCancelled: false,
-    });
-    setData({
-      date: new Date(),
-    });
-  }, [props.anchor]);
-
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setData({
-      ...data,
-      [event.target.name]: event.target.value,
-    });
-  };
-
-  const textFieldProps = {
-    className: classes.textField,
-    onChange: handleChange,
-    InputLabelProps: {
-      shrink: true,
+const katexPopoverStyles = makeStyles((theme) => {
+  return {
+    popoverPaper: {
+      overflowY: 'hidden',
+    },
+    root: {
+      padding: 10,
+      maxWidth: 350,
+    },
+    textField: {
+      width: '100%',
+    },
+    input: {
+      display: 'none',
+    },
+    cardRoot: {
+      borderStyle: 'dashed',
+      width: '100%',
+      minHeight: 120,
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+      color: theme.palette.grey.A200,
+      userSelect: 'none',
+      cursor: 'pointer',
     },
   };
+});
+
+const KatexPopover: React.FC<IKatexPopoverProps> = ({
+  texts = {},
+  onSubmit,
+  ...props
+}) => {
+  const classes = katexPopoverStyles(props);
+  const [anchor, setAnchor] = useState<TAnchor>(null);
+  const [equation, setEquation] = useState<string>('');
+  const [style, setStyle] = useState<TEquationStyle>('block');
+  const [isCancelled, setIsCancelled] = useState<boolean>(false);
+  const debouncedEquation = useDebouncedValue<string>(equation);
+
+  useEffect(() => {
+    setIsCancelled(false);
+    setEquation('');
+    setAnchor(props.anchor);
+  }, [props.anchor]);
 
   return (
     <Popover
-      anchorEl={state.anchor}
-      open={state.anchor !== null}
+      anchorEl={anchor}
+      open={anchor !== null}
       onExited={() => {
-        props.onSubmit(data, !state.isCancelled);
+        if (_.isFunction(onSubmit)) {
+          onSubmit({ equation, style }, !isCancelled);
+        }
       }}
       anchorOrigin={{
         vertical: 'bottom',
-        horizontal: 'right',
+        horizontal: 'left',
       }}
       transformOrigin={{
         vertical: 'top',
         horizontal: 'left',
       }}
+      classes={{
+        paper: classes.popoverPaper,
+      }}
     >
-      <Grid container spacing={1} className={classes.root}>
-        <Grid item xs={6}>
+      <Grid container={true} spacing={1} className={classes.root}>
+        <Grid item={true} style={{ width: '100%' }}>
           <TextField
-            {...textFieldProps}
-            autoFocus={true}
-            label="Title"
-            name="title"
+            fullWidth={true}
+            multiline={true}
+            label={texts['EQUATION_CONTENT']}
+            onChange={(event) => {
+              setEquation(event.target.value);
+            }}
+          />
+          <FormControlLabel
+            label={texts['USE_BLOCK_EQUATION']}
+            control={
+              <Checkbox
+                checked={style === 'block'}
+                onChange={(event) => {
+                  setStyle(event.target.checked ? 'block' : 'inline');
+                }}
+              />
+            }
           />
         </Grid>
-        <Grid item xs={6}>
-          <TextField
-            {...textFieldProps}
-            label="Name"
-            name="name"
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <TextField
-            {...textFieldProps}
-            label="Text"
-            name="text"
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <TextField
-            {...textFieldProps}
-            label="Image URL"
-            name="image"
-          />
-        </Grid>
-        <Grid item container xs={12} justify="flex-end">
-          <Button onClick={() => {
-            setState({
-              anchor: null,
-              isCancelled: true,
-            });
-          }}
-          >
-            <CloseIcon />
-          </Button>
-          <Button onClick={() => {
-            setState({
-              anchor: null,
-              isCancelled: false,
-            });
-          }}
-          >
-            <DoneIcon />
-          </Button>
+        {
+          debouncedEquation && (
+            <Grid
+              item={true}
+              style={{ width: '100%', overflowX: 'scroll' }}
+            >
+              <BlockMath>{debouncedEquation}</BlockMath>
+            </Grid>
+          )
+        }
+        <Grid item={true} container={true} xs={12} justify="flex-end">
+          <Button
+            onClick={() => {
+              setAnchor(null);
+              setIsCancelled(true);
+            }}
+          ><Close /></Button>
+          <Button
+            onClick={() => {
+              setAnchor(null);
+              setIsCancelled(false);
+            }}
+          ><Done /></Button>
         </Grid>
       </Grid>
     </Popover>
   );
 };
 
-export default MyCardPopover;
+export default KatexPopover;

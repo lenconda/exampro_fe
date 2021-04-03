@@ -1,5 +1,5 @@
 import UploadImagePopover from './UploadImage';
-import KatexPopover from './Katex.bak';
+import KatexPopover, { TEquationStyle, KatexContainer } from './Katex';
 import { AppState } from '../../models/app';
 import { ConnectState } from '../../models';
 import { connect } from '../../patches/dva';
@@ -68,6 +68,21 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
     ref.current?.insertAtomicBlockAsync('IMAGE', uploadImage(file), questionEditorTexts['IMAGE_UPLOADING']);
   };
 
+  const handleKatexInsertion = (equation: string, style: TEquationStyle) => {
+    if (equation) {
+      ref.current?.insertAtomicBlockAsync(
+        'katex',
+        Promise.resolve({
+          data: {
+            style,
+            equation,
+          },
+        }),
+        '',
+      );
+    }
+  };
+
   return (
     <>
       <UploadImagePopover
@@ -84,8 +99,9 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
         anchor={katexAnchor}
         texts={questionEditorTexts}
         onSubmit={(data, insert) => {
-          if (insert && data.equation) {
-            // handleFileUpload(data.file);
+          if (insert && data) {
+            const { style, equation } = data;
+            handleKatexInsertion(equation, style);
           }
           setKatexAnchor(null);
         }}
@@ -115,14 +131,9 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
             },
           },
           {
-            name: 'katex-block',
+            name: 'katex',
             type: 'atomic',
-            atomicComponent: BlockMath,
-          },
-          {
-            name: 'katex-inline',
-            type: 'atomic',
-            atomicComponent: InlineMath,
+            atomicComponent: KatexContainer as React.FC<{}>,
           },
         ]}
         {...props}
