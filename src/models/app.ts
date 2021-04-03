@@ -135,6 +135,7 @@ const AppModel: AppModelType = {
         editor: {
           'CLICK_TO_UPLOAD': '单击此处以上传图片',
           'IMAGE_UPLOADING': '图片上传中...',
+          'EQUATION_CONTENT': '公式内容',
         },
         ui: {
           '/user/auth': {

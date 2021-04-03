@@ -148,7 +148,7 @@ const UploadImagePopover: React.FC<IUploadImagePopoverProps> = ({
             </Card>
           </label>
         </Grid>
-        <Grid item container xs={12} justify="flex-end">
+        <Grid item={true} container={true} xs={12} justify="flex-end">
           <Button
             onClick={() => {
               setState({

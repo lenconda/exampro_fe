@@ -1,36 +1,28 @@
-import Card from '@material-ui/core/Card';
+import { useDebouncedValue } from '../../utils/hooks';
 import Close from '@material-ui/icons/Close';
 import Done from '@material-ui/icons/Done';
-import Backup from '@material-ui/icons/Backup';
 import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
 import Popover from '@material-ui/core/Popover';
-import Typography from '@material-ui/core/Typography';
+import TextField from '@material-ui/core/TextField';
 import { makeStyles } from '@material-ui/core';
 import React, { useEffect, useState } from 'react';
+import { BlockMath } from 'react-katex';
+import _ from 'lodash';
 
 type TAnchor = HTMLElement | null;
-
-interface TUploadImageData {
-  file?: File;
-}
 
 interface TKatexData {
   equation?: string;
 }
 
-interface IUploadImagePopoverProps {
+interface IKatexPopoverProps {
   anchor: TAnchor;
   texts?: Record<string, string>;
-  onSubmit: (data: TUploadImageData, insert: boolean) => void;
+  onSubmit: (data: TKatexData, insert: boolean) => void;
 }
 
-interface TUploadImagePopoverState {
-  anchor: TAnchor;
-  isCancelled: boolean;
-}
-
-const cardPopoverStyles = makeStyles((theme) => {
+const katexPopoverStyles = makeStyles((theme) => {
   return {
     popoverPaper: {
       overflowY: 'hidden',
@@ -57,50 +49,34 @@ const cardPopoverStyles = makeStyles((theme) => {
       userSelect: 'none',
       cursor: 'pointer',
     },
-    uploadIcon: {
-      fontSize: 36,
-    },
   };
 });
 
-const KatexPopover: React.FC<IUploadImagePopoverProps> = ({
+const KatexPopover: React.FC<IKatexPopoverProps> = ({
   texts = {},
+  onSubmit,
   ...props
 }) => {
-  const classes = cardPopoverStyles(props);
-  const [state, setState] = useState<TUploadImagePopoverState>({
-    anchor: null,
-    isCancelled: false,
-  });
-  const [imageBase64Content, setImageBase64Content] = useState<string>('');
-  const [data, setData] = useState<TUploadImageData>({});
+  const classes = katexPopoverStyles(props);
+  const [anchor, setAnchor] = useState<TAnchor>(null);
+  const [equation, setEquation] = useState<string>('');
+  const [isCancelled, setIsCancelled] = useState<boolean>(false);
+  const debouncedEquation = useDebouncedValue<string>(equation);
 
   useEffect(() => {
-    setState({
-      anchor: props.anchor,
-      isCancelled: false,
-    });
-    setData({
-      file: undefined,
-    });
+    setIsCancelled(false);
+    setEquation('');
+    setAnchor(props.anchor);
   }, [props.anchor]);
-
-  useEffect(() => {
-    if (data.file) {
-      const reader = new FileReader();
-      reader.readAsDataURL(data.file);
-      reader.onload = (event) => {
-        setImageBase64Content(event?.target?.result?.toString());
-      };
-    }
-  }, [data.file]);
 
   return (
     <Popover
-      anchorEl={state.anchor}
-      open={state.anchor !== null}
+      anchorEl={anchor}
+      open={anchor !== null}
       onExited={() => {
-        props.onSubmit(data, !state.isCancelled);
+        if (_.isFunction(onSubmit)) {
+          onSubmit(equation, !isCancelled);
+        }
       }}
       anchorOrigin={{
         vertical: 'bottom',
@@ -116,57 +92,36 @@ const KatexPopover: React.FC<IUploadImagePopoverProps> = ({
     >
       <Grid container={true} spacing={1} className={classes.root}>
         <Grid item={true} style={{ width: '100%' }}>
-          <input
-            accept="image/*"
-            className={classes.input}
-            id="editor-upload-file"
-            type="file"
+          <TextField
+            fullWidth={true}
+            multiline={true}
+            label={texts['EQUATION_CONTENT']}
             onChange={(event) => {
-              setData({
-                ...data,
-                file: event.target.files![0],
-              });
+              setEquation(event.target.value);
             }}
           />
-          <label htmlFor="editor-upload-file">
-            <Card
-              elevation={0}
-              variant="outlined"
-              raised={true}
-              classes={{ root: classes.cardRoot }}
-            >
-              {
-                data.file
-                  ? (
-                    <>
-                      <img src={imageBase64Content} width="100%" />
-                    </>
-                  )
-                  : (
-                    <>
-                      <Backup classes={{ root: classes.uploadIcon }} />
-                      <Typography noWrap={true}>{texts['CLICK_TO_UPLOAD']}</Typography>
-                    </>
-                  )
-              }
-            </Card>
-          </label>
         </Grid>
-        <Grid item container xs={12} justify="flex-end">
+        {
+          debouncedEquation && (
+            <Grid
+              item={true}
+              style={{ width: '100%', overflowX: 'scroll' }}
+            >
+              <BlockMath>{debouncedEquation}</BlockMath>
+            </Grid>
+          )
+        }
+        <Grid item={true} container={true} xs={12} justify="flex-end">
           <Button
             onClick={() => {
-              setState({
-                anchor: null,
-                isCancelled: true,
-              });
+              setAnchor(null);
+              setIsCancelled(true);
             }}
           ><Close /></Button>
           <Button
             onClick={() => {
-              setState({
-                anchor: null,
-                isCancelled: false,
-              });
+              setAnchor(null);
+              setIsCancelled(false);
             }}
           ><Done /></Button>
         </Grid>

@@ -1,5 +1,5 @@
 import UploadImagePopover from './UploadImage';
-import MyCardPopover, { MyCard } from './Katex';
+import KatexPopover from './Katex.bak';
 import { AppState } from '../../models/app';
 import { ConnectState } from '../../models';
 import { connect } from '../../patches/dva';
@@ -8,11 +8,13 @@ import { useTexts } from '../../utils/texts';
 import { uploadImage as uploadImageToServer } from '../../service';
 import { makeStyles } from '@material-ui/core';
 import Image from '@material-ui/icons/Image';
+import Functions from '@material-ui/icons/Functions';
 import React, { useRef, useState } from 'react';
 import MUITextEditor, {
   TDraftEditorProps,
   TMUIRichTextEditorRef,
 } from 'mui-rte';
+import { InlineMath, BlockMath } from 'react-katex';
 
 export interface QuestionEditorLanguage {
   CLICK_TO_UPLOAD: string;
@@ -43,7 +45,8 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
   const classes = useStyles();
   const questionEditorTexts = useTexts(dispatch, 'editor');
   const ref = useRef<TMUIRichTextEditorRef>(null);
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+  const [uploadImageAnchor, setUploadImageAnchor] = useState<HTMLElement | null>(null);
+  const [katexAnchor, setKatexAnchor] = useState<HTMLElement | null>(null);
 
   const uploadImage = async (file: File) => {
     const url = await uploadImageToServer(file);
@@ -68,13 +71,23 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
   return (
     <>
       <UploadImagePopover
-        anchor={anchor}
+        anchor={uploadImageAnchor}
         texts={questionEditorTexts}
         onSubmit={(data, insert) => {
           if (insert && data.file) {
             handleFileUpload(data.file);
           }
-          setAnchor(null);
+          setUploadImageAnchor(null);
+        }}
+      />
+      <KatexPopover
+        anchor={katexAnchor}
+        texts={questionEditorTexts}
+        onSubmit={(data, insert) => {
+          if (insert && data.equation) {
+            // handleFileUpload(data.file);
+          }
+          setKatexAnchor(null);
         }}
       />
       <MUITextEditor
@@ -83,20 +96,33 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
           hidePlaceholder: classes.hidePlaceholder,
         }}
         ref={ref}
-        controls={['save', 'undo', 'redo', 'title', 'bold', 'italic', 'underline', 'strikethrough', 'highlight', 'link', 'upload-image', 'numberList', 'bulletList', 'quote', 'code', 'media', 'clear', 'my-card']}
+        controls={['save', 'undo', 'redo', 'title', 'bold', 'italic', 'underline', 'strikethrough', 'highlight', 'link', 'upload-image', 'numberList', 'bulletList', 'quote', 'code', 'media', 'clear', 'add-katex']}
         customControls={[
           {
             name: 'upload-image',
             icon: <Image />,
             type: 'callback',
             onClick: (_editorState, _name, anchor) => {
-              setAnchor(anchor);
+              setUploadImageAnchor(anchor);
             },
           },
           {
-            name: 'katex',
+            name: 'add-katex',
+            icon: <Functions />,
+            type: 'callback',
+            onClick: (_editorState, _name, anchor) => {
+              setKatexAnchor(anchor);
+            },
+          },
+          {
+            name: 'katex-block',
             type: 'atomic',
-            atomicComponent: MyCard,
+            atomicComponent: BlockMath,
+          },
+          {
+            name: 'katex-inline',
+            type: 'atomic',
+            atomicComponent: InlineMath,
           },
         ]}
         {...props}
