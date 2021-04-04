@@ -22,6 +22,7 @@ import TablePagination, { TablePaginationProps } from '@material-ui/core/TablePa
 import Typography from '@material-ui/core/Typography';
 import clsx from 'clsx';
 import _ from 'lodash';
+import { Box } from '@material-ui/core';
 
 export interface TableSchema {
   title: string | React.ReactNode;
@@ -309,7 +310,7 @@ const AppTable: React.FC<AppTableComponentProps> = ({
                 </TableContainer>
                 <TablePagination
                   {...TablePaginationProps}
-                  component="div"
+                  component={Box}
                   rowsPerPageOptions={[5, 10, 20, 50]}
                   labelRowsPerPage={texts['001']}
                   backIconButtonText={texts['002']}
