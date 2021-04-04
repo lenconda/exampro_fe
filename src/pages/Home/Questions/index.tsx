@@ -2,6 +2,7 @@ import { ConnectState } from '../../../models';
 import { AppState } from '../../../models/app';
 import { connect } from '../../../patches/dva';
 import QuestionEditor from '../../../components/QuestionEditor';
+import Editor from '../../../components/Editor';
 import Paper from '@material-ui/core/Paper';
 import React from 'react';
 
@@ -12,7 +13,8 @@ const QuestionsPage: React.FC<QuestionPageProps> = (props) => {
     <div className="app-page app-page-home__questions">
       <div className="app-grid-container">
         <Paper>
-          <QuestionEditor />
+          <Editor />
+          {/* <QuestionEditor /> */}
         </Paper>
       </div>
     </div>

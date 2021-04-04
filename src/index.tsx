@@ -4,6 +4,7 @@ import AppModel from './models/app';
 import { createBrowserHistory } from 'history';
 import React from 'react';
 import './index.less';
+import 'draft-js/dist/Draft.css';
 
 const history = createBrowserHistory();
 const app = dva({ history });
