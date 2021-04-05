@@ -141,14 +141,6 @@ const HeadingSelector: React.FC<ControlsProps> = ({
     setBlockType(blockType);
   }, [editorState]);
 
-  useEffect(() => {
-    const currentStyleArray = currentStyle.toArray();
-    const intersectedStyles = _.intersection(
-      currentStyleArray,
-      VARIANTS.map((variant) => `header-${variant}`),
-    );
-  }, [currentStyle]);
-
   return (
     <Dropdown
       trigger={
