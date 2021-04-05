@@ -1,4 +1,9 @@
+import addLinkPlugin from './plugins/add_link';
+import AddLinkPopover from './AddLinkPopover';
+import UploadImagePopover from './UploadImagePopover';
+import createImagePlugin from './plugins/upload_image';
 import Dropdown from '../Dropdown';
+import { uploadImage } from '../../service';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   EditorState,
@@ -6,8 +11,8 @@ import {
   DraftBlockType,
   DraftInlineStyleType,
   DraftHandleValue,
-  DraftInlineStyle,
   EditorProps as DraftEditorProps,
+  AtomicBlockUtils,
 } from 'draft-js';
 import Divider from '@material-ui/core/Divider';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -26,13 +31,14 @@ import Button from '@material-ui/core/Button';
 import Code from '@material-ui/icons/Code';
 import CodeJson from 'mdi-material-ui/CodeJson';
 import StrikethroughS from '@material-ui/icons/StrikethroughS';
+import Link from '@material-ui/icons/Link';
+import Image from '@material-ui/icons/Image';
 import FormatBold from 'mdi-material-ui/FormatBold';
 import FormatItalic from 'mdi-material-ui/FormatItalic';
 import FormatUnderline from 'mdi-material-ui/FormatUnderline';
 import DraftEditor, { composeDecorators } from '@draft-js-plugins/editor';
 import createResizeablePlugin from '@draft-js-plugins/resizeable';
 import createFocusPlugin from '@draft-js-plugins/focus';
-import createImagePlugin from '@draft-js-plugins/image';
 import { OverridableComponent } from '@material-ui/core/OverridableComponent';
 
 const focusPlugin = createFocusPlugin();
@@ -74,7 +80,6 @@ const StyleButton: React.FC<StyleButtonProps> = ({
   label,
   style,
   active,
-  texts,
   Icon,
   onToggle,
 }) => {
@@ -114,6 +119,13 @@ const useHeadingSelectorStyles = makeStyles((theme) => {
     activeItem: {
       color: theme.palette.primary.main,
     },
+    button: {
+      textTransform: 'none',
+      width: 90,
+    },
+    buttonLabel: {
+      justifyContent: 'flex-start',
+    },
   };
 });
 
@@ -124,10 +136,6 @@ const HeadingSelector: React.FC<ControlsProps> = ({
 }) => {
   const VARIANTS = ['one', 'two', 'three', 'four', 'five', 'six'];
 
-  const [
-    currentStyle,
-    setCurrentStyle,
-  ] = useState<DraftInlineStyle>(editorState.getCurrentInlineStyle());
   const [blockType, setBlockType] = useState<DraftBlockType>(undefined);
   const classes = useHeadingSelectorStyles();
 
@@ -137,19 +145,30 @@ const HeadingSelector: React.FC<ControlsProps> = ({
       .getCurrentContent()
       .getBlockForKey(selection.getStartKey())
       .getType();
-    setCurrentStyle(editorState.getCurrentInlineStyle());
-    setBlockType(blockType);
+    if (!VARIANTS.map((variant) => `header-${variant}`).includes(blockType)) {
+      setBlockType('unstyled');
+    } else {
+      setBlockType(blockType);
+    }
   }, [editorState]);
 
   return (
     <Dropdown
       trigger={
-        <Button style={{ textTransform: 'none' }}>
-          {
-            blockType === 'unstyled'
-              ? texts['header-paragraph']
-              : texts[blockType]
-          }
+        <Button
+          classes={{
+            root: clsx(classes.button),
+            label: clsx(classes.buttonLabel),
+          }}
+          style={{ textTransform: 'none', width: 72 }}
+        >
+          <Typography noWrap={true}>
+            {
+              blockType === 'unstyled'
+                ? texts['header-paragraph']
+                : texts[blockType]
+            }
+          </Typography>
         </Button>
       }
       closeOnClickBody={true}
@@ -309,6 +328,11 @@ const useEditorStyles = makeStyles((theme) => {
       paddingTop: theme.spacing(1),
       paddingBottom: theme.spacing(1),
     },
+    popover: {
+      minWidth: 320,
+      maxWidth: 480,
+      padding: theme.spacing(2),
+    },
   };
 });
 
@@ -345,8 +369,20 @@ const Editor: React.FC<EditorProps> = ({
     'UNDERLINE': 'Underline',
     'CODE': 'Inline Code',
     'STRIKETHROUGH': 'Strike Through',
+    'CANCEL': 'Cancel',
+    'OK': 'OK',
+    'CLICK_TO_UPLOAD': 'Click here to upload image',
+    'IMAGE_UPLOADING': 'Image uploading...',
+    'EQUATION_CONTENT': 'Math equation content',
+    'USE_BLOCK_EQUATION': 'Blocked equation',
+    'ADD_LINK': 'Add link',
+    'UPLOAD_IMAGE': 'Upload image',
   });
   const ref = useRef(null);
+  const [addLinkAnchor, setAddLinkAnchor] = useState<HTMLElement | null>(null);
+  const addLinkButton = useRef(null);
+  const [uploadImageAnchor, setUploadImageAnchor] = useState<HTMLElement | null>(null);
+  const uploadImageButton = useRef(null);
 
   const VerticalDivider = () => <Divider
     orientation="vertical"
@@ -394,6 +430,57 @@ const Editor: React.FC<EditorProps> = ({
 
   return (
     <>
+      <AddLinkPopover
+        anchor={addLinkAnchor}
+        texts={editorTexts}
+        onSubmit={(url) => {
+          setAddLinkAnchor(null);
+          const selection = editorState.getSelection();
+          if (!url) {
+            handleStateChange(RichUtils.toggleLink(editorState, selection, null));
+          }
+          const content = editorState.getCurrentContent();
+          const contentWithEntity = content.createEntity('LINK', 'MUTABLE', {
+            url,
+          });
+          const newEditorState = EditorState.push(
+            editorState,
+            contentWithEntity,
+            'apply-entity',
+          );
+          const entityKey = contentWithEntity.getLastCreatedEntityKey();
+          handleStateChange(RichUtils.toggleLink(newEditorState, selection, entityKey));
+        }}
+      />
+      <UploadImagePopover
+        anchor={uploadImageAnchor}
+        texts={editorTexts}
+        onSubmit={(data) => {
+          setUploadImageAnchor(null);
+          if (data.file) {
+            uploadImage(data.file).then((url) => {
+              if (url) {
+                const contentState = editorState.getCurrentContent();
+                const contentStateWithEntity = contentState.createEntity(
+                  'IMAGE',
+                  'IMMUTABLE',
+                  { src: url, width: 32 },
+                );
+                const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
+                const newEditorState = EditorState.set(
+                  editorState,
+                  { currentContent: contentStateWithEntity },
+                );
+                handleStateChange(AtomicBlockUtils.insertAtomicBlock(
+                  newEditorState,
+                  entityKey,
+                  ' ',
+                ));
+              }
+            });
+          }
+        }}
+      />
       <Toolbar classes={{ root: clsx(classes.controlBar) }}>
         <HeadingSelector
           editorState={editorState}
@@ -411,6 +498,27 @@ const Editor: React.FC<EditorProps> = ({
           texts={editorTexts}
           onToggle={toggleBlockType}
         />
+        <VerticalDivider />
+        <Tooltip title={editorTexts['ADD_LINK']}>
+          <IconButton
+            ref={addLinkButton}
+            onClick={() => {
+              setAddLinkAnchor(addLinkButton?.current);
+            }}
+          >
+            <Link />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title={editorTexts['UPLOAD_IMAGE']}>
+          <IconButton
+            ref={uploadImageButton}
+            onClick={() => {
+              setUploadImageAnchor(uploadImageButton?.current);
+            }}
+          >
+            <Image />
+          </IconButton>
+        </Tooltip>
       </Toolbar>
       <Divider />
       <Box className={clsx(classes.editorContainer)}>
@@ -420,6 +528,7 @@ const Editor: React.FC<EditorProps> = ({
           plugins={[
             focusPlugin,
             resizeablePlugin,
+            addLinkPlugin,
             imagePlugin,
           ]}
           ref={ref}

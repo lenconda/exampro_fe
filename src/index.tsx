@@ -5,6 +5,8 @@ import { createBrowserHistory } from 'history';
 import React from 'react';
 import './index.less';
 import 'draft-js/dist/Draft.css';
+import '@draft-js-plugins/image/lib/plugin.css';
+import '@draft-js-plugins/focus/lib/plugin.css';
 
 const history = createBrowserHistory();
 const app = dva({ history });
