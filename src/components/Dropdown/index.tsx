@@ -6,11 +6,13 @@ import _ from 'lodash';
 export interface DropdownProps extends Omit<MenuProps, 'open'> {
   trigger: React.ReactNode;
   children: React.ReactNode;
+  closeOnClickBody?: boolean;
 }
 
 const Dropdown: React.FC<DropdownProps> = ({
   trigger,
   children,
+  closeOnClickBody = false,
   ...props
 }) => {
   const [open, setOpen] = useState<boolean>(false);
@@ -27,6 +29,11 @@ const Dropdown: React.FC<DropdownProps> = ({
         })}
         anchorEl={anchor.current}
         onClose={() => setOpen(false)}
+        onClick={() => {
+          if (closeOnClickBody) {
+            setOpen(false);
+          }
+        }}
       >{children}</Menu>
     </>
   );

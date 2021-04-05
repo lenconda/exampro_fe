@@ -14,7 +14,6 @@ const QuestionsPage: React.FC<QuestionPageProps> = (props) => {
       <div className="app-grid-container">
         <Paper>
           <Editor />
-          {/* <QuestionEditor /> */}
         </Paper>
       </div>
     </div>
