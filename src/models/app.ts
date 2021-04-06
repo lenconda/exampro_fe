@@ -157,6 +157,9 @@ const AppModel: AppModelType = {
           'USE_BLOCK_EQUATION': '另起一行',
           'ADD_LINK': '添加链接',
           'UPLOAD_IMAGE': '上传图片',
+          'FUNCTIONS': '数学公式',
+          'UNDO': '撤销',
+          'REDO': '重做',
         },
         ui: {
           '/user/auth': {

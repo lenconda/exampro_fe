@@ -2,6 +2,8 @@ import addLinkPlugin from './plugins/add_link';
 import AddLinkPopover from './AddLinkPopover';
 import UploadImagePopover from './UploadImagePopover';
 import createImagePlugin from './plugins/upload_image';
+import createMathPlugin from './plugins/add_math';
+import MathPopover from './MathPopover';
 import Dropdown from '../Dropdown';
 import { uploadImage } from '../../service';
 import React, { useEffect, useRef, useState } from 'react';
@@ -33,6 +35,9 @@ import CodeJson from 'mdi-material-ui/CodeJson';
 import StrikethroughS from '@material-ui/icons/StrikethroughS';
 import Link from '@material-ui/icons/Link';
 import Image from '@material-ui/icons/Image';
+import Undo from '@material-ui/icons/Undo';
+import Redo from '@material-ui/icons/Redo';
+import Functions from '@material-ui/icons/Functions';
 import FormatBold from 'mdi-material-ui/FormatBold';
 import FormatItalic from 'mdi-material-ui/FormatItalic';
 import FormatUnderline from 'mdi-material-ui/FormatUnderline';
@@ -41,6 +46,7 @@ import createResizeablePlugin from '@draft-js-plugins/resizeable';
 import createFocusPlugin from '@draft-js-plugins/focus';
 import { OverridableComponent } from '@material-ui/core/OverridableComponent';
 
+const mathPlugin = createMathPlugin();
 const focusPlugin = createFocusPlugin();
 const resizeablePlugin = createResizeablePlugin({
   vertical: 'relative',
@@ -121,7 +127,7 @@ const useHeadingSelectorStyles = makeStyles((theme) => {
     },
     button: {
       textTransform: 'none',
-      width: 90,
+      maxWidth: 120,
     },
     buttonLabel: {
       justifyContent: 'flex-start',
@@ -160,7 +166,6 @@ const HeadingSelector: React.FC<ControlsProps> = ({
             root: clsx(classes.button),
             label: clsx(classes.buttonLabel),
           }}
-          style={{ textTransform: 'none', width: 72 }}
         >
           <Typography noWrap={true}>
             {
@@ -377,12 +382,17 @@ const Editor: React.FC<EditorProps> = ({
     'USE_BLOCK_EQUATION': 'Blocked equation',
     'ADD_LINK': 'Add link',
     'UPLOAD_IMAGE': 'Upload image',
+    'FUNCTIONS': 'Math equation',
+    'UNDO': 'Undo',
+    'REDO': 'Redo',
   });
   const ref = useRef(null);
   const [addLinkAnchor, setAddLinkAnchor] = useState<HTMLElement | null>(null);
   const addLinkButton = useRef(null);
   const [uploadImageAnchor, setUploadImageAnchor] = useState<HTMLElement | null>(null);
   const uploadImageButton = useRef(null);
+  const [addMathAnchor, setAddMathAnchor] = useState<HTMLElement | null>(null);
+  const addMathButton = useRef(null);
 
   const VerticalDivider = () => <Divider
     orientation="vertical"
@@ -455,9 +465,9 @@ const Editor: React.FC<EditorProps> = ({
       <UploadImagePopover
         anchor={uploadImageAnchor}
         texts={editorTexts}
-        onSubmit={(data) => {
+        onSubmit={(data, notCancelled) => {
           setUploadImageAnchor(null);
-          if (data.file) {
+          if (data.file && notCancelled) {
             uploadImage(data.file).then((url) => {
               if (url) {
                 const contentState = editorState.getCurrentContent();
@@ -481,7 +491,71 @@ const Editor: React.FC<EditorProps> = ({
           }
         }}
       />
+      <MathPopover
+        anchor={addMathAnchor}
+        texts={editorTexts}
+        onSubmit={(data, notCancelled) => {
+          setAddMathAnchor(null);
+          if (data.content && notCancelled) {
+            const contentState = editorState.getCurrentContent();
+            const contentStateWithEntity = contentState.createEntity(
+              'MATH',
+              'IMMUTABLE',
+              { content: data.content },
+            );
+            const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
+            const newEditorState = EditorState.set(
+              editorState,
+              { currentContent: contentStateWithEntity },
+            );
+            handleStateChange(AtomicBlockUtils.insertAtomicBlock(
+              newEditorState,
+              entityKey,
+              ' ',
+            ));
+          }
+        }}
+      />
       <Toolbar classes={{ root: clsx(classes.controlBar) }}>
+        {
+          editorState.getUndoStack().toArray().length === 0
+            ? (
+              <IconButton disabled={true}>
+                <Undo />
+              </IconButton>
+            )
+            : (
+              <Tooltip title={editorTexts['UNDO']}>
+                <IconButton
+                  onClick={() => {
+                    handleStateChange(EditorState.undo(editorState));
+                  }}
+                >
+                  <Undo />
+                </IconButton>
+              </Tooltip>
+            )
+        }
+        {
+          editorState.getRedoStack().toArray().length === 0
+            ? (
+              <IconButton disabled={true}>
+                <Redo />
+              </IconButton>
+            )
+            : (
+              <Tooltip title={editorTexts['REDO']}>
+                <IconButton
+                  onClick={() => {
+                    handleStateChange(EditorState.redo(editorState));
+                  }}
+                >
+                  <Redo />
+                </IconButton>
+              </Tooltip>
+            )
+        }
+        <VerticalDivider />
         <HeadingSelector
           editorState={editorState}
           texts={editorTexts}
@@ -519,6 +593,16 @@ const Editor: React.FC<EditorProps> = ({
             <Image />
           </IconButton>
         </Tooltip>
+        <Tooltip title={editorTexts['FUNCTIONS']}>
+          <IconButton
+            ref={addMathButton}
+            onClick={() => {
+              setAddMathAnchor(addMathButton?.current);
+            }}
+          >
+            <Functions />
+          </IconButton>
+        </Tooltip>
       </Toolbar>
       <Divider />
       <Box className={clsx(classes.editorContainer)}>
@@ -530,6 +614,7 @@ const Editor: React.FC<EditorProps> = ({
             resizeablePlugin,
             addLinkPlugin,
             imagePlugin,
+            mathPlugin,
           ]}
           ref={ref}
           onChange={handleStateChange}
