@@ -164,6 +164,11 @@ const AppModel: AppModelType = {
           'REDO': '重做',
         },
         questionEditor: {
+          'EDIT_QUESTION': '编辑试题',
+          'TYPE_SINGLE_CHOICE': '单项选择',
+          'TYPE_MULTIPLE_CHOICES': '多项选择',
+          'TYPE_FILL_IN_BLANK': '填空',
+          'TYPE_SHORT_ANSWER': '简答',
         },
         ui: {
           '/user/auth': {

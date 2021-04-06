@@ -55,9 +55,12 @@ export interface Exam {
   deletedAt?: string;
 }
 
+export type QuestionType = 'single_choice' | 'multiple_choices' | 'fill_in_blank' | 'short_answer';
+export type QuestionMode = 'full' | 'partial' | 'nil';
+
 export interface Question {
   id: number;
   content: string;
-  mode: 'full' | 'partial' | 'nil';
-  type: 'single_choice' | 'multiple_choices' | 'fill_in_blank' | 'short_answer';
+  mode: QuestionMode;
+  type: QuestionType;
 }
