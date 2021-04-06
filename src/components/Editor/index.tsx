@@ -8,13 +8,13 @@ import Dropdown from '../Dropdown';
 import { uploadImage } from '../../service';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  EditorState,
   RichUtils,
   DraftBlockType,
   DraftInlineStyleType,
   DraftHandleValue,
   EditorProps as DraftEditorProps,
   AtomicBlockUtils,
+  EditorState,
 } from 'draft-js';
 import Divider from '@material-ui/core/Divider';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -45,18 +45,6 @@ import DraftEditor, { composeDecorators } from '@draft-js-plugins/editor';
 import createResizeablePlugin from '@draft-js-plugins/resizeable';
 import createFocusPlugin from '@draft-js-plugins/focus';
 import { OverridableComponent } from '@material-ui/core/OverridableComponent';
-
-const mathPlugin = createMathPlugin();
-const focusPlugin = createFocusPlugin();
-const resizeablePlugin = createResizeablePlugin({
-  vertical: 'relative',
-  horizontal: 'relative',
-});
-const decorator = composeDecorators(
-  resizeablePlugin.decorator,
-  focusPlugin.decorator,
-);
-const imagePlugin = createImagePlugin({ decorator });
 
 export type StyleButtonStyle = DraftBlockType | DraftInlineStyleType;
 export interface StyleButtonProps {
@@ -319,13 +307,15 @@ const InlineStyleControls: React.FC<ControlsProps> = ({
 const useEditorStyles = makeStyles((theme) => {
   return {
     controlBar: {
-      flexWrap: 'wrap',
+      flexWrap: 'nowrap',
+      overflowX: 'scroll',
     },
     editorContainer: {
       paddingTop: theme.spacing(1.5),
       paddingRight: theme.spacing(3),
       paddingBottom: theme.spacing(1.5),
       paddingLeft: theme.spacing(3),
+      overflowY: 'scroll',
     },
     divider: {
       marginRight: theme.spacing(3),
@@ -347,15 +337,23 @@ export interface EditorProps {
   draftEditorProps?: DraftEditorProps;
   styleTypeGroups?: EditorStyleGroup[];
   texts?: Record<string, string>;
+  readonly?: boolean;
+  editorState?: EditorState;
+  wrapperClass?: string;
+  onChange?(state: EditorState): void;
 }
 
 const Editor: React.FC<EditorProps> = ({
   texts = {},
+  readonly = false,
+  editorState: defaultEditorState,
+  wrapperClass,
+  onChange,
 }) => {
   const [
     editorState,
     setEditorState,
-  ] = useState<EditorState>(EditorState.createEmpty());
+  ] = useState<EditorState>(defaultEditorState || EditorState.createEmpty());
   const classes = useEditorStyles();
   const [editorTexts, setEditorTexts] = useState <Record<string, string>>({
     'header-one': 'Heading 1',
@@ -394,17 +392,37 @@ const Editor: React.FC<EditorProps> = ({
   const [addMathAnchor, setAddMathAnchor] = useState<HTMLElement | null>(null);
   const addMathButton = useRef(null);
 
-  const VerticalDivider = () => <Divider
-    orientation="vertical"
-    flexItem={true}
-    classes={{
-      root: classes.divider,
-    }}
-  />;
+  const mathPlugin = createMathPlugin();
+  const focusPlugin = createFocusPlugin();
+  const resizeablePlugin = createResizeablePlugin({
+    vertical: 'relative',
+    horizontal: 'relative',
+  });
+  const decorator = composeDecorators(
+    resizeablePlugin.decorator,
+    ...(readonly ? [] : [focusPlugin.decorator]),
+  );
+  const imagePlugin = createImagePlugin({ decorator });
+
+  const VerticalDivider = () => (
+    <Divider
+      orientation="vertical"
+      flexItem={true}
+      classes={{
+        root: classes.divider,
+      }}
+    />
+  );
 
   useEffect(() => {
     setEditorTexts(_.merge(editorTexts, texts));
   }, [texts]);
+
+  useEffect(() => {
+    if (_.isFunction(onChange)) {
+      onChange(editorState);
+    }
+  }, [editorState]);
 
   const handleStateChange = (currentEditorState: EditorState) => {
     setEditorState(currentEditorState);
@@ -516,96 +534,106 @@ const Editor: React.FC<EditorProps> = ({
           }
         }}
       />
-      <Toolbar classes={{ root: clsx(classes.controlBar) }}>
-        {
-          editorState.getUndoStack().toArray().length === 0
-            ? (
-              <IconButton disabled={true}>
-                <Undo />
-              </IconButton>
-            )
-            : (
-              <Tooltip title={editorTexts['UNDO']}>
+      {
+        !readonly && (
+          <>
+            <Toolbar classes={{ root: clsx(classes.controlBar) }}>
+              {
+                editorState.getUndoStack().toArray().length === 0
+                  ? (
+                    <IconButton disabled={true}>
+                      <Undo />
+                    </IconButton>
+                  )
+                  : (
+                    <Tooltip title={editorTexts['UNDO']}>
+                      <IconButton
+                        onClick={() => {
+                          handleStateChange(EditorState.undo(editorState));
+                        }}
+                      >
+                        <Undo />
+                      </IconButton>
+                    </Tooltip>
+                  )
+              }
+              {
+                editorState.getRedoStack().toArray().length === 0
+                  ? (
+                    <IconButton disabled={true}>
+                      <Redo />
+                    </IconButton>
+                  )
+                  : (
+                    <Tooltip title={editorTexts['REDO']}>
+                      <IconButton
+                        onClick={() => {
+                          handleStateChange(EditorState.redo(editorState));
+                        }}
+                      >
+                        <Redo />
+                      </IconButton>
+                    </Tooltip>
+                  )
+              }
+              <VerticalDivider />
+              <HeadingSelector
+                editorState={editorState}
+                texts={editorTexts}
+                onToggle={toggleBlockType}
+              />
+              <InlineStyleControls
+                editorState={editorState}
+                texts={editorTexts}
+                onToggle={toggleInlineStyle}
+              />
+              <VerticalDivider />
+              <BlockStyleControls
+                editorState={editorState}
+                texts={editorTexts}
+                onToggle={toggleBlockType}
+              />
+              <VerticalDivider />
+              <Tooltip title={editorTexts['ADD_LINK']}>
                 <IconButton
+                  ref={addLinkButton}
                   onClick={() => {
-                    handleStateChange(EditorState.undo(editorState));
+                    setAddLinkAnchor(addLinkButton?.current);
                   }}
                 >
-                  <Undo />
+                  <Link />
                 </IconButton>
               </Tooltip>
-            )
-        }
-        {
-          editorState.getRedoStack().toArray().length === 0
-            ? (
-              <IconButton disabled={true}>
-                <Redo />
-              </IconButton>
-            )
-            : (
-              <Tooltip title={editorTexts['REDO']}>
+              <Tooltip title={editorTexts['UPLOAD_IMAGE']}>
                 <IconButton
+                  ref={uploadImageButton}
                   onClick={() => {
-                    handleStateChange(EditorState.redo(editorState));
+                    setUploadImageAnchor(uploadImageButton?.current);
                   }}
                 >
-                  <Redo />
+                  <Image />
                 </IconButton>
               </Tooltip>
-            )
-        }
-        <VerticalDivider />
-        <HeadingSelector
-          editorState={editorState}
-          texts={editorTexts}
-          onToggle={toggleBlockType}
-        />
-        <InlineStyleControls
-          editorState={editorState}
-          texts={editorTexts}
-          onToggle={toggleInlineStyle}
-        />
-        <VerticalDivider />
-        <BlockStyleControls
-          editorState={editorState}
-          texts={editorTexts}
-          onToggle={toggleBlockType}
-        />
-        <VerticalDivider />
-        <Tooltip title={editorTexts['ADD_LINK']}>
-          <IconButton
-            ref={addLinkButton}
-            onClick={() => {
-              setAddLinkAnchor(addLinkButton?.current);
-            }}
-          >
-            <Link />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title={editorTexts['UPLOAD_IMAGE']}>
-          <IconButton
-            ref={uploadImageButton}
-            onClick={() => {
-              setUploadImageAnchor(uploadImageButton?.current);
-            }}
-          >
-            <Image />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title={editorTexts['FUNCTIONS']}>
-          <IconButton
-            ref={addMathButton}
-            onClick={() => {
-              setAddMathAnchor(addMathButton?.current);
-            }}
-          >
-            <Functions />
-          </IconButton>
-        </Tooltip>
-      </Toolbar>
-      <Divider />
-      <Box className={clsx(classes.editorContainer)}>
+              <Tooltip title={editorTexts['FUNCTIONS']}>
+                <IconButton
+                  ref={addMathButton}
+                  onClick={() => {
+                    setAddMathAnchor(addMathButton?.current);
+                  }}
+                >
+                  <Functions />
+                </IconButton>
+              </Tooltip>
+            </Toolbar>
+            <Divider />
+          </>
+        )
+      }
+      <Box
+        className={clsx(classes.editorContainer, {
+          [wrapperClass]: wrapperClass,
+        })}
+      >
         <DraftEditor
           editorState={editorState}
           handleKeyCommand={handleKeyCommand}
@@ -617,6 +645,7 @@ const Editor: React.FC<EditorProps> = ({
             mathPlugin,
           ]}
           ref={ref}
+          readOnly={readonly}
           onChange={handleStateChange}
         />
       </Box>

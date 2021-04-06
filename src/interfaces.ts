@@ -54,3 +54,10 @@ export interface Exam {
   updatedAt?: string;
   deletedAt?: string;
 }
+
+export interface Question {
+  id: number;
+  content: string;
+  mode: 'full' | 'partial' | 'nil';
+  type: 'single_choice' | 'multiple_choices' | 'fill_in_blank' | 'short_answer';
+}

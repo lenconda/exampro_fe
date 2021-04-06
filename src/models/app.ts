@@ -18,6 +18,7 @@ export interface I18N {
     dialog?: Record<string, string>;
     examCard?: Record<string, string>;
     editor?: Record<string, string>;
+    questionEditor?: Record<string, string>;
   };
 }
 
@@ -131,6 +132,7 @@ const AppModel: AppModelType = {
           'DELETE': '删除',
           'EMPTY': '没有数据',
           'LOAD_MORE': '加载更多',
+          'SUBMIT': '提交',
         },
         editor: {
           'header-one': '标题 1',
@@ -160,6 +162,8 @@ const AppModel: AppModelType = {
           'FUNCTIONS': '数学公式',
           'UNDO': '撤销',
           'REDO': '重做',
+        },
+        questionEditor: {
         },
         ui: {
           '/user/auth': {
