@@ -1,7 +1,6 @@
 import { ConnectState } from '../../../models';
 import { AppState } from '../../../models/app';
 import { connect } from '../../../patches/dva';
-import QuestionEditor from '../../../components/QuestionEditor';
 import Editor from '../../../components/Editor';
 import { useTexts } from '../../../utils/texts';
 import { Dispatch } from '../../../interfaces';
