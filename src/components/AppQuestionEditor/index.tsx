@@ -11,14 +11,19 @@ import Dialog, { DialogProps } from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import FormControl from '@material-ui/core/FormControl';
+import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
 import React, { useState } from 'react';
-import { FormGroup, makeStyles } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core';
 import DraftEditor, { ContentState, EditorState } from 'draft-js';
 import _ from 'lodash';
+import Typography from '@material-ui/core/Typography';
+import { DragDropContext, Droppable } from 'react-beautiful-dnd';
 
 export interface AppQuestionEditorProps extends DialogProps {
+  mode?: 'create' | 'edit';
   onSubmitQuestion?(question: Question): void;
 }
 export interface AppQuestionEditorConnectedProps extends Dispatch, AppState, AppQuestionEditorProps {}
@@ -29,6 +34,7 @@ const useStyles = makeStyles((theme) => {
       borderWidth: 1,
       borderColor: theme.palette.grey[300],
       borderStyle: 'solid',
+      marginBottom: theme.spacing(2),
     },
     content: {
     },
@@ -36,16 +42,22 @@ const useStyles = makeStyles((theme) => {
       height: 240,
       overflowY: 'scroll',
     },
-    questionTypeWrapper: {
+    selectorsWrapper: {
       width: '100%',
       marginBottom: theme.spacing(2),
+    },
+    formControl: {
+      minWidth: 120,
+      marginRight: theme.spacing(2),
     },
   };
 });
 
 const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
+  mode = 'create',
   dispatch,
   onClose,
+  onSubmitQuestion,
   ...props
 }) => {
   const texts = useTexts(dispatch, 'questionEditor');
@@ -56,11 +68,12 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
   const debouncedContentState = useDebouncedValue<ContentState>(contentState);
 
   const [questionType, setQuestionType] = useState<QuestionType>('short_answer');
+  const [questionChoices, setQuestionChoices] = useState([]);
 
-  const defaultEditorStateString = localStorage.getItem('questionContent');
-  const defaultEditorState = defaultEditorStateString
-    ? DraftEditor.convertFromRaw(JSON.parse(defaultEditorStateString))
-    : null;
+  const cachedContentState = localStorage.getItem('questionContent');
+  const defaultContentState = (cachedContentState && mode === 'create')
+    ? DraftEditor.convertFromRaw(JSON.parse(cachedContentState))
+    : EditorState.createEmpty().getCurrentContent();
 
   useUpdateEffect(() => {
     let contentStateString = JSON.stringify(DraftEditor.convertToRaw(EditorState.createEmpty().getCurrentContent()));
@@ -75,26 +88,31 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
       {...props}
       fullWidth={true}
       maxWidth="md"
+      scroll="paper"
     >
       <DialogTitle>{texts['EDIT_QUESTION']}</DialogTitle>
       <DialogContent classes={{ root: classes.content }}>
-        <Box className={classes.questionTypeWrapper}>
-          <Select
-            value={questionType}
-            onChange={(event) => setQuestionType(event.target.value as QuestionType)}
-          >
-            {
-              ['short_answer', 'fill_in_blank', 'single_choice', 'multiple_choices'].map((type, index) => {
-                return (
-                  <MenuItem key={index} value={type}>{texts[`TYPE_${type.toUpperCase()}`]}</MenuItem>
-                );
-              })
-            }
-          </Select>
+        <Box className={classes.selectorsWrapper}>
+          <FormControl classes={{ root: classes.formControl }}>
+            <InputLabel htmlFor="question-type-select-label">{texts['TYPE']}</InputLabel>
+            <Select
+              label="question-type-select-label"
+              value={questionType}
+              onChange={(event) => setQuestionType(event.target.value as QuestionType)}
+            >
+              {
+                ['short_answer', 'fill_in_blank', 'single_choice', 'multiple_choices'].map((type, index) => {
+                  return (
+                    <MenuItem key={index} value={type}>{texts[`TYPE_${type.toUpperCase()}`]}</MenuItem>
+                  );
+                })
+              }
+            </Select>
+          </FormControl>
         </Box>
         <Box className={classes.wrapper}>
           <Editor
-            editorState={defaultEditorState ? EditorState.createWithContent(defaultEditorState) : null}
+            editorState={EditorState.createWithContent(defaultContentState)}
             wrapperClass={classes.editorWrapper}
             texts={editorTexts}
             onChange={(data) => {
@@ -102,11 +120,29 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
             }}
           />
         </Box>
+        {
+          (questionType === 'multiple_choices' || questionType === 'single_choice') && (
+            <Box>
+              <Typography variant="h6">{texts['CHOICES']}</Typography>
+              <DragDropContext onDragEnd={() => {}}>
+                <Droppable droppableId="question-choices">
+                  {
+                    (provided) => {
+                      return (<></>);
+                    }
+                  }
+                </Droppable>
+              </DragDropContext>
+              <Button fullWidth={true}>fuck</Button>
+            </Box>
+          )
+        }
       </DialogContent>
       <DialogActions>
         <Button
           color="primary"
           onClick={() => {
+            localStorage.removeItem('questionContainer');
             if (_.isFunction(onClose)) {
               onClose();
             }
@@ -115,8 +151,8 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
         <Button
           color="primary"
           onClick={() => {
-            if (_.isFunction(onClose)) {
-              onClose();
+            if (_.isFunction(onSubmitQuestion)) {
+              onSubmitQuestion();
             }
           }}
         >{systemTexts['SUBMIT']}</Button>

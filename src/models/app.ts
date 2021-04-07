@@ -128,6 +128,7 @@ const AppModel: AppModelType = {
           'FALSE': '否',
           'OK': '好',
           'CANCEL': '放弃',
+          'SAVE_DRAFT': '保存草稿',
           'NULL': '无',
           'DELETE': '删除',
           'EMPTY': '没有数据',
@@ -169,6 +170,8 @@ const AppModel: AppModelType = {
           'TYPE_MULTIPLE_CHOICES': '多项选择',
           'TYPE_FILL_IN_BLANK': '填空',
           'TYPE_SHORT_ANSWER': '简答',
+          'TYPE': '试题类型',
+          'CHOICES': '试题选项',
         },
         ui: {
           '/user/auth': {
