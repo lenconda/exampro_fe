@@ -172,6 +172,7 @@ const AppModel: AppModelType = {
           'TYPE_SHORT_ANSWER': '简答',
           'TYPE': '试题类型',
           'CHOICES': '试题选项',
+          'CREATE_CHOICE': '创建选项',
         },
         ui: {
           '/user/auth': {

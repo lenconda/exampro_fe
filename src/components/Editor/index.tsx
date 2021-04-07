@@ -45,6 +45,7 @@ import DraftEditor, { composeDecorators } from '@draft-js-plugins/editor';
 import createResizeablePlugin from '@draft-js-plugins/resizeable';
 import createFocusPlugin from '@draft-js-plugins/focus';
 import { OverridableComponent } from '@material-ui/core/OverridableComponent';
+import './index.less';
 
 export type StyleButtonStyle = DraftBlockType | DraftInlineStyleType;
 export interface StyleButtonProps {

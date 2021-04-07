@@ -1,4 +1,4 @@
-import { Dispatch, Question, QuestionType } from '../../interfaces';
+import { Dispatch, Question, QuestionChoice, QuestionType } from '../../interfaces';
 import { AppState } from '../../models/app';
 import Editor from '../Editor';
 import { connect } from '../../patches/dva';
@@ -7,14 +7,17 @@ import { useTexts } from '../../utils/texts';
 import { useDebouncedValue, useUpdateEffect } from '../../utils/hooks';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
+import Checkbox from '@material-ui/core/Checkbox';
 import Dialog, { DialogProps } from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import FormControl from '@material-ui/core/FormControl';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
+import PlaylistAdd from '@material-ui/icons/PlaylistAdd';
 import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/core';
 import DraftEditor, { ContentState, EditorState } from 'draft-js';
@@ -27,6 +30,12 @@ export interface AppQuestionEditorProps extends DialogProps {
   onSubmitQuestion?(question: Question): void;
 }
 export interface AppQuestionEditorConnectedProps extends Dispatch, AppState, AppQuestionEditorProps {}
+
+export const CACHE_KEYS = {
+  SAVE_DRAFT: 'saveQuestionDraft',
+  QUESTION_CONTENT: 'questionContent',
+  QUESTION_TYPE: 'questionType',
+};
 
 const useStyles = makeStyles((theme) => {
   return {
@@ -50,6 +59,9 @@ const useStyles = makeStyles((theme) => {
       minWidth: 120,
       marginRight: theme.spacing(2),
     },
+    choicesTitle: {
+      marginBottom: theme.spacing(1.5),
+    },
   };
 });
 
@@ -67,21 +79,34 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
   const [contentState, setContentState] = useState<ContentState>(null);
   const debouncedContentState = useDebouncedValue<ContentState>(contentState);
 
-  const [questionType, setQuestionType] = useState<QuestionType>('short_answer');
-  const [questionChoices, setQuestionChoices] = useState([]);
+  const [saveDraft, setSaveDraft] = useState<boolean>(JSON.parse(localStorage.getItem(CACHE_KEYS.SAVE_DRAFT) || 'false'));
+  const [questionType, setQuestionType] = useState<QuestionType>(localStorage.getItem(CACHE_KEYS.QUESTION_TYPE) as QuestionType || 'short_answer');
+  const [questionChoices, setQuestionChoices] = useState<QuestionChoice[]>([]);
 
-  const cachedContentState = localStorage.getItem('questionContent');
+  const cachedContentState = localStorage.getItem(CACHE_KEYS.QUESTION_CONTENT);
   const defaultContentState = (cachedContentState && mode === 'create')
     ? DraftEditor.convertFromRaw(JSON.parse(cachedContentState))
     : EditorState.createEmpty().getCurrentContent();
 
+  const handleRemoveCache = (keys) => {
+    Object.keys(keys).forEach((key) => {
+      localStorage.removeItem(keys[key]);
+    });
+  };
+
   useUpdateEffect(() => {
-    let contentStateString = JSON.stringify(DraftEditor.convertToRaw(EditorState.createEmpty().getCurrentContent()));
-    if (debouncedContentState) {
-      contentStateString = JSON.stringify(DraftEditor.convertToRaw(debouncedContentState));
+    if (saveDraft) {
+      let contentStateString = JSON.stringify(DraftEditor.convertToRaw(EditorState.createEmpty().getCurrentContent()));
+      if (debouncedContentState) {
+        contentStateString = JSON.stringify(DraftEditor.convertToRaw(debouncedContentState));
+      }
+      localStorage.setItem(CACHE_KEYS.SAVE_DRAFT, JSON.stringify(true));
+      localStorage.setItem(CACHE_KEYS.QUESTION_CONTENT, contentStateString);
+      localStorage.setItem(CACHE_KEYS.QUESTION_TYPE, questionType);
+    } else {
+      handleRemoveCache(CACHE_KEYS);
     }
-    localStorage.setItem('questionContent', contentStateString);
-  }, [debouncedContentState]);
+  }, [debouncedContentState, questionType, saveDraft]);
 
   return (
     <Dialog
@@ -123,7 +148,10 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
         {
           (questionType === 'multiple_choices' || questionType === 'single_choice') && (
             <Box>
-              <Typography variant="h6">{texts['CHOICES']}</Typography>
+              <Typography
+                variant="h6"
+                classes={{ root: classes.choicesTitle }}
+              >{texts['CHOICES']}</Typography>
               <DragDropContext onDragEnd={() => {}}>
                 <Droppable droppableId="question-choices">
                   {
@@ -133,16 +161,32 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
                   }
                 </Droppable>
               </DragDropContext>
-              <Button fullWidth={true}>fuck</Button>
+              {
+                questionChoices.length < 10 && (
+                  <Button
+                    variant="outlined"
+                    startIcon={<PlaylistAdd />}
+                  >{texts['CREATE_CHOICE']}</Button>
+                )
+              }
             </Box>
           )
         }
       </DialogContent>
       <DialogActions>
+        <FormControlLabel
+          control={
+            <Checkbox
+              color="primary"
+              checked={saveDraft}
+              onChange={() => setSaveDraft(!saveDraft)}
+            />
+          }
+          label={systemTexts['SAVE_DRAFT']}
+        />
         <Button
           color="primary"
           onClick={() => {
-            localStorage.removeItem('questionContainer');
             if (_.isFunction(onClose)) {
               onClose();
             }
@@ -151,6 +195,7 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
         <Button
           color="primary"
           onClick={() => {
+            handleRemoveCache(CACHE_KEYS);
             if (_.isFunction(onSubmitQuestion)) {
               onSubmitQuestion();
             }

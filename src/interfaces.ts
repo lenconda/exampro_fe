@@ -61,4 +61,17 @@ export interface Question {
   id: number;
   content: string;
   type: QuestionType;
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string;
+}
+
+export interface QuestionChoice {
+  id: number;
+  content: string;
+  order: number;
+  question: Question;
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string;
 }
