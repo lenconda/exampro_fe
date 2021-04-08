@@ -8,22 +8,27 @@ import { useDebouncedValue, useUpdateEffect } from '../../utils/hooks';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Checkbox from '@material-ui/core/Checkbox';
+import Chip from '@material-ui/core/Chip';
 import Dialog, { DialogProps } from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import FormControl from '@material-ui/core/FormControl';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
+import IconButton from '@material-ui/core/IconButton';
 import InputBase from '@material-ui/core/InputBase';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import Paper from '@material-ui/core/Paper';
 import Radio from '@material-ui/core/Radio';
 import Select from '@material-ui/core/Select';
+import Tooltip from '@material-ui/core/Tooltip';
 import PlaylistAdd from '@material-ui/icons/PlaylistAdd';
 import PlaylistAddCheck from '@material-ui/icons/PlaylistAddCheck';
 import DragIndicator from '@material-ui/icons/DragIndicator';
+import Check from '@material-ui/icons/Check';
 import Close from '@material-ui/icons/Close';
+import Delete from '@material-ui/icons/Delete';
 import React, { useEffect, useState } from 'react';
 import { lighten, makeStyles } from '@material-ui/core';
 import DraftEditor, { ContentState, EditorState } from 'draft-js';
@@ -76,6 +81,9 @@ const useStyles = makeStyles((theme) => {
     addQuestionChoice: {
       position: 'relative',
       marginBottom: theme.spacing(2),
+      '&:hover .delete-icon-button': {
+        display: 'initial',
+      },
     },
     addQuestionChoiceInputWrapper: {
       fontSize: theme.typography.h6.fontSize,
@@ -100,6 +108,8 @@ const useStyles = makeStyles((theme) => {
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
+      flexShrink: 0,
+      flexGrow: 0,
     },
     dragging: {
       boxShadow: theme.shadows[10],
@@ -109,6 +119,13 @@ const useStyles = makeStyles((theme) => {
     },
     button: {
       marginRight: theme.spacing(1),
+    },
+    isAnswerTagWrapper: {
+      display: 'flex',
+      alignItems: 'center',
+    },
+    deleteButton: {
+      display: 'none',
     },
   };
 });
@@ -215,12 +232,19 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
     setQuestionChoices(newChoices);
   };
 
+  const handleDeleteQuestionChoice = (index: number) => {
+    setQuestionChoices(Array.from(questionChoices).filter((questionChoice, currentIndex) => {
+      return index !== currentIndex;
+    }));
+  };
+
   const generateAnswerSelector = (
     type: QuestionType,
     index: number,
     choices: Partial<QuestionChoiceWithAnswer>[],
   ) => {
     let Selector;
+    const currentChoice = choices[index];
 
     if (type === 'single_choice') {
       Selector = Radio;
@@ -232,7 +256,8 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
 
     return (
       <Selector
-        checked={choices[index].isAnswer}
+        checked={currentChoice.isAnswer}
+        disabled={!currentChoice || !currentChoice.content}
         color="primary"
         onChange={() => {
           handleSetAnswerChoice(type, index, choices);
@@ -349,12 +374,32 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
                                                   : generateAnswerSelector(questionType, index, questionChoices)
                                               }
                                             </Box>
+                                            {
+                                              (!showSetAnswer && questionChoice.isAnswer) && (
+                                                <Box className={classes.isAnswerTagWrapper}>
+                                                  <Chip
+                                                    color="primary"
+                                                    label={texts['IS_ANSWER']}
+                                                    size="small"
+                                                    icon={<Check />}
+                                                  />
+                                                </Box>
+                                              )
+                                            }
                                             <InputBase
                                               classes={{ root: classes.addQuestionInput }}
                                               placeholder={texts['INPUT_HERE']}
                                               fullWidth={true}
                                               onChange={(event) => handleQuestionChoiceChange(event, index)}
                                             />
+                                            <Tooltip title={texts['DELETE']}>
+                                              <IconButton
+                                                classes={{ root: clsx(classes.deleteButton, 'delete-icon-button') }}
+                                                onClick={() => handleDeleteQuestionChoice(index)}
+                                              >
+                                                <Delete />
+                                              </IconButton>
+                                            </Tooltip>
                                           </Paper>
                                         </Paper>
                                       );
@@ -402,10 +447,7 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
                     <Button
                       variant="outlined"
                       classes={{ root: classes.button }}
-                      disabled={
-                        !validateChoiceCount(questionType, questionChoices)
-                        || !validateChoiceContent(questionChoices)
-                      }
+                      disabled={!validateChoiceCount(questionType, questionChoices)}
                       startIcon={<PlaylistAddCheck />}
                       onClick={() => setShowSetAnswer(true)}
                     >{texts['SELECT_ANSWERS']}</Button>

@@ -176,6 +176,8 @@ const AppModel: AppModelType = {
           'INPUT_HERE': '在此键入选项内容...',
           'SELECT_ANSWERS': '设置答案',
           'CLOSE': '关闭',
+          'IS_ANSWER': '答案',
+          'DELETE': '删除选项',
         },
         ui: {
           '/user/auth': {
