@@ -428,7 +428,7 @@ const Editor: React.FC<EditorProps> = ({
   }, [editorState]);
 
   const handleStateChange = (currentEditorState: EditorState) => {
-    setEditorState(EditorState.moveFocusToEnd(currentEditorState));
+    setEditorState(currentEditorState);
   };
 
   const handleKeyCommand = (

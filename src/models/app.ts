@@ -173,6 +173,9 @@ const AppModel: AppModelType = {
           'TYPE': '试题类型',
           'CHOICES': '试题选项',
           'CREATE_CHOICE': '创建选项',
+          'INPUT_HERE': '在此键入选项内容...',
+          'SELECT_ANSWERS': '设置答案',
+          'CLOSE': '关闭',
         },
         ui: {
           '/user/auth': {
