@@ -47,6 +47,20 @@ import createFocusPlugin from '@draft-js-plugins/focus';
 import { OverridableComponent } from '@material-ui/core/OverridableComponent';
 import './index.less';
 
+const mathPlugin = createMathPlugin();
+const focusPlugin = createFocusPlugin();
+const resizeablePlugin = createResizeablePlugin({
+  vertical: 'relative',
+  horizontal: 'relative',
+});
+const decorator = composeDecorators(
+  resizeablePlugin.decorator,
+  focusPlugin.decorator,
+);
+const readonlyDecorator = composeDecorators(resizeablePlugin.decorator);
+const resizableImagePlugin = createImagePlugin({ decorator });
+const imagePlugin = createImagePlugin({ decorator: readonlyDecorator });
+
 export type StyleButtonStyle = DraftBlockType | DraftInlineStyleType;
 export interface StyleButtonProps {
   style?: StyleButtonStyle;
@@ -393,18 +407,6 @@ const Editor: React.FC<EditorProps> = ({
   const [addMathAnchor, setAddMathAnchor] = useState<HTMLElement | null>(null);
   const addMathButton = useRef(null);
 
-  const mathPlugin = createMathPlugin();
-  const focusPlugin = createFocusPlugin();
-  const resizeablePlugin = createResizeablePlugin({
-    vertical: 'relative',
-    horizontal: 'relative',
-  });
-  const decorator = composeDecorators(
-    resizeablePlugin.decorator,
-    ...(readonly ? [] : [focusPlugin.decorator]),
-  );
-  const imagePlugin = createImagePlugin({ decorator });
-
   const VerticalDivider = () => (
     <Divider
       orientation="vertical"
@@ -426,7 +428,7 @@ const Editor: React.FC<EditorProps> = ({
   }, [editorState]);
 
   const handleStateChange = (currentEditorState: EditorState) => {
-    setEditorState(currentEditorState);
+    setEditorState(EditorState.moveFocusToEnd(currentEditorState));
   };
 
   const handleKeyCommand = (
@@ -639,10 +641,18 @@ const Editor: React.FC<EditorProps> = ({
           editorState={editorState}
           handleKeyCommand={handleKeyCommand}
           plugins={[
-            focusPlugin,
             resizeablePlugin,
+            ...(
+              readonly
+                ? [
+                  imagePlugin,
+                ]
+                : [
+                  focusPlugin,
+                  resizableImagePlugin,
+                ]
+            ),
             addLinkPlugin,
-            imagePlugin,
             mathPlugin,
           ]}
           ref={ref}
