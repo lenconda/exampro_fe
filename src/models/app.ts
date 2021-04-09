@@ -177,7 +177,9 @@ const AppModel: AppModelType = {
           'SELECT_ANSWERS': '设置答案',
           'CLOSE': '关闭',
           'IS_ANSWER': '答案',
-          'DELETE': '删除选项',
+          'DELETE_CHOICE': '删除选项',
+          'DELETE_ANSWER': '删除答案',
+          'ADD_BLANK_ANSWER': '添加答案',
         },
         ui: {
           '/user/auth': {

@@ -71,7 +71,7 @@ const useStyles = makeStyles((theme) => {
       minWidth: 120,
       marginRight: theme.spacing(2),
     },
-    choicesTitle: {
+    title: {
       marginBottom: theme.spacing(1.5),
     },
     addQuestionPopover: {
@@ -97,11 +97,11 @@ const useStyles = makeStyles((theme) => {
       transform: 'translateY(-50%)',
       color: theme.palette.grey[600],
     },
-    addQuestionInput: {
+    inputBase: {
       paddingTop: theme.spacing(1),
       paddingRight: theme.spacing(2),
       paddingBottom: theme.spacing(1),
-      paddingLeft: theme.spacing(2),
+      paddingLeft: theme.spacing(0.5),
     },
     addQuestionIndicatorWrapper: {
       width: theme.spacing(5),
@@ -126,6 +126,22 @@ const useStyles = makeStyles((theme) => {
     },
     deleteButton: {
       display: 'none',
+    },
+    blankAnswerWrapper: {
+      padding: theme.spacing(0.5),
+      display: 'flex',
+      flexDirection: 'row',
+      '&:hover .delete-icon-button': {
+        display: 'block',
+      },
+    },
+    blankAnswerIndexIndicatorWrapper: {
+      width: theme.spacing(5),
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      flexShrink: 0,
+      flexGrow: 0,
     },
   };
 });
@@ -152,6 +168,7 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
   const [saveDraft, setSaveDraft] = useState<boolean>(JSON.parse(localStorage.getItem(CACHE_KEYS.SAVE_DRAFT) || 'false'));
   const [questionType, setQuestionType] = useState<QuestionType>(localStorage.getItem(CACHE_KEYS.QUESTION_TYPE) as QuestionType || 'short_answer');
   const [questionChoices, setQuestionChoices] = useState<Partial<QuestionChoiceWithAnswer>[]>([]);
+  const [questionBlankAnswers, setQuestionBlankAnswers] = useState<string[]>([]);
 
   const cachedContentState = localStorage.getItem(CACHE_KEYS.QUESTION_CONTENT);
   const defaultContentState = (cachedContentState && mode === 'create')
@@ -161,6 +178,15 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
   const validateChoiceContent = (choices: Partial<QuestionChoiceWithAnswer>[]) => {
     for (const choice of choices) {
       if (!choice.content) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const validateBlankAnswerContent = (answers: string[]) => {
+    for (const answer of answers) {
+      if (!answer) {
         return false;
       }
     }
@@ -195,6 +221,18 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
         };
       }
       return choice;
+    }));
+  };
+
+  const handleBlankAnswerChange = (
+    event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
+    index: number,
+  ) => {
+    setQuestionBlankAnswers(questionBlankAnswers.map((answer, currentIndex) => {
+      if (currentIndex === index) {
+        return event.target.value;
+      }
+      return answer;
     }));
   };
 
@@ -234,6 +272,12 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
 
   const handleDeleteQuestionChoice = (index: number) => {
     setQuestionChoices(Array.from(questionChoices).filter((questionChoice, currentIndex) => {
+      return index !== currentIndex;
+    }));
+  };
+
+  const handleDeleteQuestionBlankAnswer = (index: number) => {
+    setQuestionBlankAnswers(questionBlankAnswers.filter((answer, currentIndex) => {
       return index !== currentIndex;
     }));
   };
@@ -331,7 +375,7 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
             <Box>
               <Typography
                 variant="h6"
-                classes={{ root: classes.choicesTitle }}
+                classes={{ root: classes.title }}
               >{texts['CHOICES']}</Typography>
               <DragDropContext onDragEnd={() => {}}>
                 <Droppable droppableId="question-choices">
@@ -387,12 +431,12 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
                                               )
                                             }
                                             <InputBase
-                                              classes={{ root: classes.addQuestionInput }}
+                                              classes={{ root: classes.inputBase }}
                                               placeholder={texts['INPUT_HERE']}
                                               fullWidth={true}
                                               onChange={(event) => handleQuestionChoiceChange(event, index)}
                                             />
-                                            <Tooltip title={texts['DELETE']}>
+                                            <Tooltip title={texts['DELETE_CHOICE']}>
                                               <IconButton
                                                 classes={{ root: clsx(classes.deleteButton, 'delete-icon-button') }}
                                                 onClick={() => handleDeleteQuestionChoice(index)}
@@ -453,6 +497,56 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
                     >{texts['SELECT_ANSWERS']}</Button>
                   )
               }
+            </Box>
+          )
+        }
+        {
+          questionType === 'fill_in_blank' && (
+            <Box>
+              <Typography
+                variant="h6"
+                classes={{ root: classes.title }}
+              >{texts['SELECT_ANSWERS']}</Typography>
+              <Paper elevation={0}>
+                {
+                  questionBlankAnswers.map((answer, index) => {
+                    return (
+                      <Paper
+                        key={index}
+                        elevation={0}
+                        classes={{ root: classes.blankAnswerWrapper }}
+                      >
+                        <Box
+                          className={classes.blankAnswerIndexIndicatorWrapper}
+                        >{index + 1}.</Box>
+                        <InputBase
+                          fullWidth={true}
+                          classes={{ root: classes.inputBase }}
+                          onChange={(event) => handleBlankAnswerChange(event, index)}
+                        />
+                        <Tooltip title={texts['DELETE_ANSWER']}>
+                          <IconButton
+                            classes={{
+                              root: clsx(classes.deleteButton, 'delete-icon-button'),
+                            }}
+                            onClick={() => handleDeleteQuestionBlankAnswer(index)}
+                          >
+                            <Delete />
+                          </IconButton>
+                        </Tooltip>
+                      </Paper>
+                    );
+                  })
+                }
+              </Paper>
+              <Button
+                disabled={!validateBlankAnswerContent(questionBlankAnswers)}
+                variant="outlined"
+                startIcon={<PlaylistAdd />}
+                onClick={() => {
+                  setQuestionBlankAnswers(questionBlankAnswers.concat(['']));
+                }}
+              >{texts['ADD_BLANK_ANSWER']}</Button>
             </Box>
           )
         }
