@@ -37,8 +37,20 @@ import Typography from '@material-ui/core/Typography';
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 import clsx from 'clsx';
 
+export type QuestionChoiceWithAnswer = QuestionChoice & {
+  isAnswer: boolean;
+};
+
+export interface AppQuestionMetaData {
+  type: QuestionType;
+  content?: ContentState;
+  choices?: QuestionChoice[];
+  answer?: string[] | ContentState;
+}
+
 export interface AppQuestionEditorProps extends DialogProps {
   mode?: 'create' | 'edit';
+  question?: AppQuestionMetaData;
   onSubmitQuestion?(question: Question): void;
 }
 export interface AppQuestionEditorConnectedProps extends Dispatch, AppState, AppQuestionEditorProps {}
@@ -149,13 +161,10 @@ const useStyles = makeStyles((theme) => {
   };
 });
 
-export type QuestionChoiceWithAnswer = QuestionChoice & {
-  isAnswer: boolean;
-};
-
 const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
   mode = 'create',
   dispatch,
+  question,
   onClose,
   onSubmitQuestion,
   ...props
@@ -378,6 +387,49 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
 
         setQuestionChoices(JSON.parse(cachedQuestionChoices));
         setQuestionBlankAnswers(JSON.parse(cachedQuestionBlankAnswers));
+      }
+    } else if (mode === 'edit') {
+      const {
+        type,
+        answer,
+        content = EditorState.createEmpty().getCurrentContent(),
+        choices = [],
+      } = question;
+      setQuestionType(type);
+      setQuestionContentState(content);
+      switch (type) {
+      case 'single_choice': {
+        const currentAnswer = _.first((answer || []) as string[]);
+        setQuestionChoices(choices.map((choice, index) => {
+          return {
+            ...choice,
+            isAnswer: currentAnswer === (index + 1).toString(),
+          };
+        }));
+        break;
+      }
+      case 'multiple_choices': {
+        const currentAnswers = (answer || []) as string[];
+        setQuestionChoices(choices.map((choice, index) => {
+          return {
+            ...choice,
+            isAnswer: currentAnswers.indexOf((index + 1).toString()) !== -1,
+          };
+        }));
+        break;
+      }
+      case 'fill_in_blank': {
+        setQuestionBlankAnswers(answer as string[]);
+        break;
+      }
+      case 'short_answer': {
+        if (answer instanceof ContentState) {
+          setQuestionShortAnswerContentState(answer);
+        }
+        break;
+      }
+      default:
+        break;
       }
     }
   }, [mode, saveDraft]);
