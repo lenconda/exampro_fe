@@ -434,6 +434,7 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
                                               classes={{ root: classes.inputBase }}
                                               placeholder={texts['INPUT_HERE']}
                                               fullWidth={true}
+                                              value={questionChoice.content}
                                               onChange={(event) => handleQuestionChoiceChange(event, index)}
                                             />
                                             <Tooltip title={texts['DELETE_CHOICE']}>
@@ -522,6 +523,7 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
                         <InputBase
                           fullWidth={true}
                           classes={{ root: classes.inputBase }}
+                          value={answer}
                           onChange={(event) => handleBlankAnswerChange(event, index)}
                         />
                         <Tooltip title={texts['DELETE_ANSWER']}>
