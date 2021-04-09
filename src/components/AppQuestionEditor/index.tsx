@@ -47,6 +47,9 @@ export const CACHE_KEYS = {
   SAVE_DRAFT: 'saveQuestionDraft',
   QUESTION_CONTENT: 'questionContent',
   QUESTION_TYPE: 'questionType',
+  QUESTION_SHORT_ANSWER_CONTENT: 'questionShortAnswerContent',
+  QUESTION_CHOICES: 'questionChoices',
+  QUESTION_BLANK_ANSWERS: 'questionBlankAnswers',
 };
 
 const useStyles = makeStyles((theme) => {
@@ -161,19 +164,29 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
   const editorTexts = useTexts(dispatch, 'editor');
   const systemTexts = useTexts(dispatch, 'system');
   const classes = useStyles();
-  const [contentState, setContentState] = useState<ContentState>(null);
-  const debouncedContentState = useDebouncedValue<ContentState>(contentState);
   const [showSetAnswer, setShowSetAnswer] = useState<boolean>(false);
 
-  const [saveDraft, setSaveDraft] = useState<boolean>(JSON.parse(localStorage.getItem(CACHE_KEYS.SAVE_DRAFT) || 'false'));
-  const [questionType, setQuestionType] = useState<QuestionType>(localStorage.getItem(CACHE_KEYS.QUESTION_TYPE) as QuestionType || 'short_answer');
+  const [
+    questionContentState,
+    setQuestionContentState,
+  ] = useState<ContentState>(EditorState.createEmpty().getCurrentContent());
+  const [
+    saveDraft,
+    setSaveDraft,
+  ] = useState<boolean>(JSON.parse(localStorage.getItem(CACHE_KEYS.SAVE_DRAFT) || 'false'));
+  const [
+    questionType,
+    setQuestionType,
+  ] = useState<QuestionType>(localStorage.getItem(CACHE_KEYS.QUESTION_TYPE) as QuestionType || 'short_answer');
   const [questionChoices, setQuestionChoices] = useState<Partial<QuestionChoiceWithAnswer>[]>([]);
   const [questionBlankAnswers, setQuestionBlankAnswers] = useState<string[]>([]);
+  const [
+    questionShortAnswerContentState,
+    setQuestionShortAnswerContentState,
+  ] = useState<ContentState>(EditorState.createEmpty().getCurrentContent());
 
-  const cachedContentState = localStorage.getItem(CACHE_KEYS.QUESTION_CONTENT);
-  const defaultContentState = (cachedContentState && mode === 'create')
-    ? DraftEditor.convertFromRaw(JSON.parse(cachedContentState))
-    : EditorState.createEmpty().getCurrentContent();
+  const debouncedQuestionContentState = useDebouncedValue<ContentState>(questionContentState);
+  const debouncedQuestionShortAnswerContentState = useDebouncedValue<ContentState>(questionShortAnswerContentState);
 
   const validateChoiceContent = (choices: Partial<QuestionChoiceWithAnswer>[]) => {
     for (const choice of choices) {
@@ -310,28 +323,64 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
     );
   };
 
-  useEffect(() => {
-    setQuestionChoices(Array.from(questionChoices).map((choice) => {
-      return {
-        ...choice,
-        isAnswer: false,
-      };
-    }));
-  }, [questionType]);
-
   useUpdateEffect(() => {
     if (saveDraft) {
-      let contentStateString = JSON.stringify(DraftEditor.convertToRaw(EditorState.createEmpty().getCurrentContent()));
-      if (debouncedContentState) {
-        contentStateString = JSON.stringify(DraftEditor.convertToRaw(debouncedContentState));
+      let questionContentStateString
+        = JSON.stringify(DraftEditor.convertToRaw(EditorState.createEmpty().getCurrentContent()));
+      let questionShortAnswerContentStateString
+        = JSON.stringify(DraftEditor.convertToRaw(EditorState.createEmpty().getCurrentContent()));
+
+      if (debouncedQuestionContentState) {
+        questionContentStateString = JSON.stringify(DraftEditor.convertToRaw(debouncedQuestionContentState));
       }
+
+      if (debouncedQuestionShortAnswerContentState) {
+        questionShortAnswerContentStateString = JSON.stringify(DraftEditor.convertToRaw(debouncedQuestionShortAnswerContentState));
+      }
+
       localStorage.setItem(CACHE_KEYS.SAVE_DRAFT, JSON.stringify(true));
-      localStorage.setItem(CACHE_KEYS.QUESTION_CONTENT, contentStateString);
+      localStorage.setItem(CACHE_KEYS.QUESTION_CONTENT, questionContentStateString);
       localStorage.setItem(CACHE_KEYS.QUESTION_TYPE, questionType);
+      localStorage.setItem(CACHE_KEYS.QUESTION_SHORT_ANSWER_CONTENT, questionShortAnswerContentStateString);
+      if (questionChoices.length !== 0) {
+        localStorage.setItem(CACHE_KEYS.QUESTION_CHOICES, JSON.stringify(questionChoices));
+      }
+      if (questionBlankAnswers.length !== 0) {
+        localStorage.setItem(CACHE_KEYS.QUESTION_BLANK_ANSWERS, JSON.stringify(questionBlankAnswers));
+      }
     } else {
       handleRemoveCache(CACHE_KEYS);
     }
-  }, [debouncedContentState, questionType, saveDraft]);
+  }, [
+    debouncedQuestionContentState,
+    debouncedQuestionShortAnswerContentState,
+    questionType,
+    questionChoices,
+    questionBlankAnswers,
+    saveDraft,
+  ]);
+
+  useEffect(() => {
+    if (mode === 'create') {
+      if (saveDraft) {
+        const cachedQuestionContentState = localStorage.getItem(CACHE_KEYS.QUESTION_CONTENT);
+        const cachedShortAnswerContentState = localStorage.getItem(CACHE_KEYS.QUESTION_SHORT_ANSWER_CONTENT);
+        const cachedQuestionChoices = localStorage.getItem(CACHE_KEYS.QUESTION_CHOICES) || '[]';
+        const cachedQuestionBlankAnswers = localStorage.getItem(CACHE_KEYS.QUESTION_BLANK_ANSWERS) || '[]';
+
+        setQuestionContentState(cachedQuestionContentState
+          ? DraftEditor.convertFromRaw(JSON.parse(cachedQuestionContentState))
+          : EditorState.createEmpty().getCurrentContent());
+
+        setQuestionShortAnswerContentState(cachedShortAnswerContentState
+          ? DraftEditor.convertFromRaw(JSON.parse(cachedShortAnswerContentState))
+          : EditorState.createEmpty().getCurrentContent());
+
+        setQuestionChoices(JSON.parse(cachedQuestionChoices));
+        setQuestionBlankAnswers(JSON.parse(cachedQuestionBlankAnswers));
+      }
+    }
+  }, [mode, saveDraft]);
 
   return (
     <Dialog
@@ -362,11 +411,11 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
         </Box>
         <Box className={classes.wrapper}>
           <Editor
-            editorState={EditorState.createWithContent(defaultContentState)}
+            editorState={EditorState.createWithContent(questionContentState)}
             wrapperClass={classes.editorWrapper}
             texts={editorTexts}
             onChange={(data) => {
-              setContentState(data.getCurrentContent());
+              setQuestionContentState(data.getCurrentContent());
             }}
           />
         </Box>
@@ -549,6 +598,26 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
                   setQuestionBlankAnswers(questionBlankAnswers.concat(['']));
                 }}
               >{texts['ADD_BLANK_ANSWER']}</Button>
+            </Box>
+          )
+        }
+        {
+          questionType === 'short_answer' && (
+            <Box>
+              <Typography
+                variant="h6"
+                classes={{ root: classes.title }}
+              >{texts['SELECT_ANSWERS']}</Typography>
+              <Box className={classes.wrapper}>
+                <Editor
+                  editorState={EditorState.createWithContent(questionShortAnswerContentState)}
+                  wrapperClass={classes.editorWrapper}
+                  texts={editorTexts}
+                  onChange={(data) => {
+                    setQuestionShortAnswerContentState(data.getCurrentContent());
+                  }}
+                />
+              </Box>
             </Box>
           )
         }
