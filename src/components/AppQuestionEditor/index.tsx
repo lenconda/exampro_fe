@@ -164,9 +164,9 @@ const useStyles = makeStyles((theme) => {
 
 const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
   mode = 'create',
-  dispatch,
   question,
   submitting = false,
+  dispatch,
   onClose,
   onSubmitQuestion,
   ...props

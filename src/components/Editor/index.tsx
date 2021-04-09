@@ -7,7 +7,7 @@ import MathPopover from './MathPopover';
 import Dropdown from '../Dropdown';
 import { uploadImage } from '../../service';
 import React, { useEffect, useRef, useState } from 'react';
-import {
+import DraftEditorUtils, {
   RichUtils,
   DraftBlockType,
   DraftInlineStyleType,
@@ -15,6 +15,7 @@ import {
   EditorProps as DraftEditorProps,
   AtomicBlockUtils,
   EditorState,
+  getDefaultKeyBinding,
 } from 'draft-js';
 import Divider from '@material-ui/core/Divider';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -24,12 +25,14 @@ import IconButton from '@material-ui/core/IconButton';
 import Toolbar, { ToolbarProps } from '@material-ui/core/Toolbar';
 import _ from 'lodash';
 import clsx from 'clsx';
-import { Box, BoxProps, makeStyles, SvgIconTypeMap } from '@material-ui/core';
+import Box, { BoxProps } from '@material-ui/core/Box';
+import { makeStyles, SvgIconTypeMap } from '@material-ui/core';
 import FormatQuote from '@material-ui/icons/FormatQuote';
 import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
 import FormatListNumbered from '@material-ui/icons/FormatListNumbered';
 import Check from '@material-ui/icons/Check';
 import Button from '@material-ui/core/Button';
+import Paper from '@material-ui/core/Paper';
 import Code from '@material-ui/icons/Code';
 import CodeJson from 'mdi-material-ui/CodeJson';
 import StrikethroughS from '@material-ui/icons/StrikethroughS';
@@ -328,7 +331,7 @@ const useEditorStyles = makeStyles((theme) => {
     editorContainer: {
       paddingTop: theme.spacing(1.5),
       paddingRight: theme.spacing(3),
-      paddingBottom: theme.spacing(1.5),
+      paddingBottom: theme.spacing(3),
       paddingLeft: theme.spacing(3),
       overflowY: 'scroll',
     },
@@ -406,6 +409,7 @@ const Editor: React.FC<EditorProps> = ({
   const uploadImageButton = useRef(null);
   const [addMathAnchor, setAddMathAnchor] = useState<HTMLElement | null>(null);
   const addMathButton = useRef(null);
+  const editorContainerBottom = useRef<HTMLDivElement>(null);
 
   const VerticalDivider = () => (
     <Divider
@@ -441,6 +445,18 @@ const Editor: React.FC<EditorProps> = ({
       return 'handled';
     }
     return 'not-handled';
+  };
+
+  const keyBindingFn = (event: React.KeyboardEvent<HTMLElement>) => {
+    if (event.keyCode === 13) {
+      const selectionState = editorState.getSelection();
+      const selectionEndBlock = selectionState.getEndKey();
+      const contentEndKey = _.last(DraftEditorUtils.convertToRaw(editorState.getCurrentContent()).blocks).key;
+      if (selectionEndBlock && contentEndKey && editorContainerBottom?.current) {
+        editorContainerBottom?.current?.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+    return getDefaultKeyBinding(event);
   };
 
   const toggleBlockType = (blockType: DraftBlockType) => {
@@ -632,7 +648,8 @@ const Editor: React.FC<EditorProps> = ({
           </>
         )
       }
-      <Box
+      <Paper
+        elevation={0}
         className={clsx(classes.editorContainer, {
           [wrapperClass]: wrapperClass,
         })}
@@ -657,9 +674,11 @@ const Editor: React.FC<EditorProps> = ({
           ]}
           ref={ref}
           readOnly={readonly}
+          keyBindingFn={keyBindingFn}
           onChange={handleStateChange}
         />
-      </Box>
+        <div ref={editorContainerBottom}></div>
+      </Paper>
     </>
   );
 };
