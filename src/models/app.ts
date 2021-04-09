@@ -180,6 +180,7 @@ const AppModel: AppModelType = {
           'DELETE_CHOICE': '删除选项',
           'DELETE_ANSWER': '删除答案',
           'ADD_BLANK_ANSWER': '添加答案',
+          'SUBMITTING': '提交中',
         },
         ui: {
           '/user/auth': {

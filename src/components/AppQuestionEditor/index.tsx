@@ -51,7 +51,8 @@ export interface AppQuestionMetaData {
 export interface AppQuestionEditorProps extends DialogProps {
   mode?: 'create' | 'edit';
   question?: AppQuestionMetaData;
-  onSubmitQuestion?(question: Question): void;
+  submitting?: boolean;
+  onSubmitQuestion?(questionMetaData: AppQuestionMetaData): void;
 }
 export interface AppQuestionEditorConnectedProps extends Dispatch, AppState, AppQuestionEditorProps {}
 
@@ -165,6 +166,7 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
   mode = 'create',
   dispatch,
   question,
+  submitting = false,
   onClose,
   onSubmitQuestion,
   ...props
@@ -221,6 +223,52 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
     } else if (type === 'single_choice') {
       return choices.length >= 2;
     } else {
+      return false;
+    }
+  };
+
+  const validateChoiceAnswerCount = (type: QuestionType, choices: Partial<QuestionChoiceWithAnswer>[]) => {
+    const answerLength = choices.filter((choice) => choice.isAnswer).length;
+    if (type === 'multiple_choices') {
+      return answerLength >= 2;
+    } else if (type === 'single_choice') {
+      return answerLength === 1;
+    } else {
+      return false;
+    }
+  };
+
+  const validateContent = (content: ContentState) => {
+    return !content.isEmpty();
+  };
+
+  const validateSubmit = (
+    type: QuestionType,
+    content: ContentState,
+    answer: ContentState,
+    answers: string[],
+    choices: Partial<QuestionChoiceWithAnswer>[],
+  ) => {
+    const contentValidation = validateContent(content);
+    const choiceValidation = validateChoiceContent(choices) && validateChoiceCount(type, choices);
+    const fillInBlankValidation = validateBlankAnswerContent(answers);
+    const shortAnswerValidation = validateContent(answer);
+    const choiceAnswerCountValidation = validateChoiceAnswerCount(type, choices);
+
+    switch (type) {
+    case 'single_choice': {
+      return contentValidation && choiceValidation && choiceAnswerCountValidation;
+    }
+    case 'multiple_choices': {
+      return contentValidation && choiceValidation && choiceAnswerCountValidation;
+    }
+    case 'fill_in_blank': {
+      return contentValidation && fillInBlankValidation;
+    }
+    case 'short_answer': {
+      return contentValidation && shortAnswerValidation;
+    }
+    default:
       return false;
     }
   };
@@ -695,13 +743,23 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
         >{systemTexts['CANCEL']}</Button>
         <Button
           color="primary"
+          disabled={
+            submitting
+            || !validateSubmit(
+              questionType,
+              questionContentState,
+              questionShortAnswerContentState,
+              questionBlankAnswers,
+              questionChoices,
+            )
+          }
           onClick={() => {
             handleRemoveCache(CACHE_KEYS);
             if (_.isFunction(onSubmitQuestion)) {
               onSubmitQuestion();
             }
           }}
-        >{systemTexts['SUBMIT']}</Button>
+        >{submitting ? systemTexts['SUBMITTING'] : systemTexts['SUBMIT']}</Button>
       </DialogActions>
     </Dialog>
   );
