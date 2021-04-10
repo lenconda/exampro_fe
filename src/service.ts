@@ -17,4 +17,11 @@ export const renderKatex = (equation: string): string => {
   return katex.renderToString(equation);
 };
 
+export const searchCategory = async (search: string) => {
+  const data = await AppRequestManager.send({
+    url: `/question/category?search=${search}`,
+  });
+  return _.get(data, 'data.data');
+};
+
 export const createQuestion = () => {};

@@ -1,4 +1,4 @@
-import { Dispatch, Question, QuestionChoice, QuestionType } from '../../interfaces';
+import { Dispatch, QuestionChoice, QuestionType } from '../../interfaces';
 import { AppState } from '../../models/app';
 import Editor from '../Editor';
 import { connect } from '../../patches/dva';
