@@ -273,6 +273,29 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
     }
   };
 
+  const getQuestionAnswer = (): string[] | ContentState => {
+    switch (questionType) {
+    case 'single_choice': {
+      return questionChoices
+        .filter((choice) => choice.isAnswer)
+        .map((choice, index) => (index + 1).toString());
+    }
+    case 'multiple_choices': {
+      return questionChoices
+        .filter((choice) => choice.isAnswer)
+        .map((choice, index) => (index + 1).toString());
+    }
+    case 'fill_in_blank': {
+      return questionBlankAnswers;
+    }
+    case 'short_answer': {
+      return questionShortAnswerContentState;
+    }
+    default:
+      return null;
+    }
+  };
+
   const handleRemoveCache = (keys) => {
     Object.keys(keys).forEach((key) => {
       localStorage.removeItem(keys[key]);
@@ -756,7 +779,12 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
           onClick={() => {
             handleRemoveCache(CACHE_KEYS);
             if (_.isFunction(onSubmitQuestion)) {
-              onSubmitQuestion();
+              onSubmitQuestion({
+                type: questionType,
+                content: questionContentState,
+                choices: questionChoices,
+                answer: getQuestionAnswer(),
+              } as AppQuestionMetaData);
             }
           }}
         >{submitting ? systemTexts['SUBMITTING'] : systemTexts['SUBMIT']}</Button>
