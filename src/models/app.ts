@@ -134,6 +134,7 @@ const AppModel: AppModelType = {
           'EMPTY': '没有数据',
           'LOAD_MORE': '加载更多',
           'SUBMIT': '提交',
+          'LOADING': '加载中',
         },
         editor: {
           'header-one': '标题 1',
@@ -182,6 +183,7 @@ const AppModel: AppModelType = {
           'ADD_BLANK_ANSWER': '添加答案',
           'SUBMITTING': '提交中',
           'QUESTION_CONTENT': '题干内容',
+          'QUESTION_CATEGORY': '题目分类',
         },
         ui: {
           '/user/auth': {

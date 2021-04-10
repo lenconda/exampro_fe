@@ -1,10 +1,13 @@
-import { Dispatch, QuestionChoice, QuestionType } from '../../interfaces';
+import { Dispatch, QuestionCategory, QuestionChoice, QuestionType } from '../../interfaces';
 import { AppState } from '../../models/app';
 import Editor from '../Editor';
 import { connect } from '../../patches/dva';
 import { ConnectState } from '../../models';
 import { useTexts } from '../../utils/texts';
 import { useDebouncedValue, useUpdateEffect } from '../../utils/hooks';
+import { useRequest } from '../../utils/request';
+import { getAllCategoriesWithoutPagination } from '../../service';
+import AutoComplete from '@material-ui/lab/Autocomplete';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Checkbox from '@material-ui/core/Checkbox';
@@ -22,7 +25,9 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Paper from '@material-ui/core/Paper';
 import Radio from '@material-ui/core/Radio';
 import Select from '@material-ui/core/Select';
+import TextField from '@material-ui/core/TextField';
 import Tooltip from '@material-ui/core/Tooltip';
+import Typography from '@material-ui/core/Typography';
 import PlaylistAdd from '@material-ui/icons/PlaylistAdd';
 import PlaylistAddCheck from '@material-ui/icons/PlaylistAddCheck';
 import DragIndicator from '@material-ui/icons/DragIndicator';
@@ -33,7 +38,6 @@ import React, { useEffect, useState } from 'react';
 import { lighten, makeStyles } from '@material-ui/core';
 import DraftEditor, { ContentState, EditorState } from 'draft-js';
 import _ from 'lodash';
-import Typography from '@material-ui/core/Typography';
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 import clsx from 'clsx';
 
@@ -86,6 +90,10 @@ const useStyles = makeStyles((theme) => {
     formControl: {
       minWidth: 120,
       marginRight: theme.spacing(2),
+    },
+    questionCategorySelector: {
+      marginTop: theme.spacing(2),
+      marginBottom: theme.spacing(2),
     },
     title: {
       marginBottom: theme.spacing(1.5),
@@ -195,6 +203,11 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
     questionShortAnswerContentState,
     setQuestionShortAnswerContentState,
   ] = useState<ContentState>(EditorState.createEmpty().getCurrentContent());
+  const [
+    questionCategories = [],
+    questionCategoriesLoading,
+    questionCategoriesError,
+  ] = useRequest<QuestionCategory[]>(getAllCategoriesWithoutPagination);
 
   const debouncedQuestionContentState = useDebouncedValue<ContentState>(questionContentState);
   const debouncedQuestionShortAnswerContentState = useDebouncedValue<ContentState>(questionShortAnswerContentState);
@@ -748,6 +761,25 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
             </Box>
           )
         }
+        <AutoComplete
+          id="question-tags"
+          multiple={true}
+          freeSolo={true}
+          filterSelectedOptions={true}
+          loading={questionCategoriesLoading}
+          options={questionCategories}
+          loadingText={systemTexts['LOADING']}
+          getOptionLabel={(category) => category.name}
+          renderInput={(autoCompleteProps) => {
+            return (
+              <TextField
+                {...autoCompleteProps}
+                classes={{ root: classes.questionCategorySelector }}
+                label={texts['QUESTION_CATEGORY']}
+              />
+            );
+          }}
+        />
       </DialogContent>
       <DialogActions>
         <FormControlLabel

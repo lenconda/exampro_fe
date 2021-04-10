@@ -24,4 +24,16 @@ export const searchCategory = async (search: string) => {
   return _.get(data, 'data.data');
 };
 
+export const getAllCategories = async () => {
+  const data = await AppRequestManager.send({
+    url: '/question/category',
+  });
+  return _.get(data, 'data.data');
+};
+
+export const getAllCategoriesWithoutPagination = async () => {
+  const data = await getAllCategories();
+  return _.get(data, 'items') || [];
+};
+
 export const createQuestion = () => {};
