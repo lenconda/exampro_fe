@@ -16,3 +16,5 @@ export const uploadImage = async (image: File) => {
 export const renderKatex = (equation: string): string => {
   return katex.renderToString(equation);
 };
+
+export const createQuestion = () => {};

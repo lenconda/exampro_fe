@@ -239,7 +239,7 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
   };
 
   const validateContent = (content: ContentState) => {
-    return !content.isEmpty();
+    return content.hasText();
   };
 
   const validateSubmit = (
@@ -532,6 +532,10 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
             </Select>
           </FormControl>
         </Box>
+        <Typography
+          variant="subtitle2"
+          classes={{ root: classes.title }}
+        >{texts['QUESTION_CONTENT']}</Typography>
         <Box className={classes.wrapper}>
           <Editor
             editorState={EditorState.createWithContent(questionContentState)}
@@ -546,7 +550,7 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
           (questionType === 'multiple_choices' || questionType === 'single_choice') && (
             <Box>
               <Typography
-                variant="h6"
+                variant="subtitle2"
                 classes={{ root: classes.title }}
               >{texts['CHOICES']}</Typography>
               <DragDropContext onDragEnd={() => {}}>
@@ -677,7 +681,7 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
           questionType === 'fill_in_blank' && (
             <Box>
               <Typography
-                variant="h6"
+                variant="subtitle2"
                 classes={{ root: classes.title }}
               >{texts['SELECT_ANSWERS']}</Typography>
               <Paper elevation={0}>
@@ -728,7 +732,7 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
           questionType === 'short_answer' && (
             <Box>
               <Typography
-                variant="h6"
+                variant="subtitle2"
                 classes={{ root: classes.title }}
               >{texts['SELECT_ANSWERS']}</Typography>
               <Box className={classes.wrapper}>
@@ -759,6 +763,7 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
         <Button
           color="primary"
           onClick={() => {
+            handleRemoveCache(CACHE_KEYS);
             if (_.isFunction(onClose)) {
               onClose();
             }

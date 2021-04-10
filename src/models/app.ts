@@ -181,6 +181,7 @@ const AppModel: AppModelType = {
           'DELETE_ANSWER': '删除答案',
           'ADD_BLANK_ANSWER': '添加答案',
           'SUBMITTING': '提交中',
+          'QUESTION_CONTENT': '题干内容',
         },
         ui: {
           '/user/auth': {
