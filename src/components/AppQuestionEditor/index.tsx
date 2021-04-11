@@ -464,7 +464,7 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
       localStorage.setItem(CACHE_KEYS.QUESTION_CONTENT, questionContentStateString);
       localStorage.setItem(CACHE_KEYS.QUESTION_TYPE, questionType);
       localStorage.setItem(CACHE_KEYS.QUESTION_SHORT_ANSWER_CONTENT, questionShortAnswerContentStateString);
-      localStorage.setItem(CACHE_KEYS.QUESTION_CATEGORIES, JSON.stringify(questionCategories));
+      localStorage.setItem(CACHE_KEYS.QUESTION_CATEGORIES, JSON.stringify(selectedQuestionCategories));
       if (questionChoices.length !== 0) {
         localStorage.setItem(CACHE_KEYS.QUESTION_CHOICES, JSON.stringify(questionChoices));
       }
@@ -480,7 +480,7 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
     questionType,
     questionChoices,
     questionBlankAnswers,
-    questionCategories,
+    selectedQuestionCategories,
     saveDraft,
   ]);
 
@@ -804,6 +804,13 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
           loading={questionCategoriesLoading}
           options={questionCategories}
           loadingText={systemTexts['LOADING']}
+          getOptionSelected={(option, value) => {
+            if (typeof option === 'string') {
+              return option === value;
+            } else {
+              return (option as QuestionCategory).name === (value as QuestionCategory).name;
+            }
+          }}
           getOptionLabel={(category) => (typeof category === 'string' ? category : category.name)}
           renderInput={(autoCompleteProps) => {
             return (
