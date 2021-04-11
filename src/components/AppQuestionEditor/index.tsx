@@ -38,7 +38,7 @@ import React, { useEffect, useState } from 'react';
 import { lighten, makeStyles } from '@material-ui/core';
 import DraftEditor, { ContentState, EditorState } from 'draft-js';
 import _ from 'lodash';
-import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
+import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautiful-dnd';
 import clsx from 'clsx';
 
 export type QuestionChoiceWithAnswer = QuestionChoice & {
@@ -169,6 +169,17 @@ const useStyles = makeStyles((theme) => {
     },
   };
 });
+
+const reorderQuestionChoices = (
+  list: Partial<QuestionChoiceWithAnswer>[],
+  startIndex: number,
+  endIndex: number,
+): Partial<QuestionChoiceWithAnswer>[] => {
+  const result = Array.from(list);
+  const [removed] = result.splice(startIndex - 1, 1);
+  result.splice(endIndex - 1, 0, removed);
+  return result;
+};
 
 const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
   mode = 'create',
@@ -310,6 +321,20 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
     default:
       return null;
     }
+  };
+
+  const handleDragEnd = (result: DropResult) => {
+    const { source, destination } = result;
+    if (!destination || !source) {
+      return;
+    }
+    const currentQuestionChoices = reorderQuestionChoices(Array.from(questionChoices), source.index, destination.index);
+    setQuestionChoices(currentQuestionChoices.map((choice, index) => {
+      return {
+        ...choice,
+        order: index + 1,
+      };
+    }));
   };
 
   const handleRemoveCache = (keys) => {
@@ -573,7 +598,7 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
                 variant="subtitle2"
                 classes={{ root: classes.title }}
               >{texts['CHOICES']}</Typography>
-              <DragDropContext onDragEnd={() => {}}>
+              <DragDropContext onDragEnd={handleDragEnd}>
                 <Droppable droppableId="question-choices">
                   {
                     (provided) => {
