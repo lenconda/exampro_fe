@@ -1,3 +1,4 @@
+import { createCategories, createQuestion, getAllCategoriesWithoutPagination } from './service';
 import { Dispatch, QuestionCategory, QuestionChoice, QuestionType } from '../../interfaces';
 import { AppState } from '../../models/app';
 import Editor from '../Editor';
@@ -6,7 +7,6 @@ import { ConnectState } from '../../models';
 import { useTexts } from '../../utils/texts';
 import { useDebouncedValue, useUpdateEffect } from '../../utils/hooks';
 import { useRequest } from '../../utils/request';
-import { getAllCategoriesWithoutPagination } from '../../service';
 import AutoComplete from '@material-ui/lab/Autocomplete';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
@@ -55,7 +55,6 @@ export interface AppQuestionMetaData {
 export interface AppQuestionEditorProps extends DialogProps {
   mode?: 'create' | 'edit';
   question?: AppQuestionMetaData;
-  submitting?: boolean;
   onSubmitQuestion?(questionMetaData: AppQuestionMetaData): void;
 }
 export interface AppQuestionEditorConnectedProps extends Dispatch, AppState, AppQuestionEditorProps {}
@@ -67,6 +66,7 @@ export const CACHE_KEYS = {
   QUESTION_SHORT_ANSWER_CONTENT: 'questionShortAnswerContent',
   QUESTION_CHOICES: 'questionChoices',
   QUESTION_BLANK_ANSWERS: 'questionBlankAnswers',
+  QUESTION_CATEGORIES: 'questionCategories',
 };
 
 const useStyles = makeStyles((theme) => {
@@ -173,7 +173,6 @@ const useStyles = makeStyles((theme) => {
 const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
   mode = 'create',
   question,
-  submitting = false,
   dispatch,
   onClose,
   onSubmitQuestion,
@@ -184,6 +183,7 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
   const systemTexts = useTexts(dispatch, 'system');
   const classes = useStyles();
   const [showSetAnswer, setShowSetAnswer] = useState<boolean>(false);
+  const [submitting, setSubmitting] = useState<boolean>(false);
 
   const [
     questionContentState,
@@ -206,8 +206,11 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
   const [
     questionCategories = [],
     questionCategoriesLoading,
-    questionCategoriesError,
   ] = useRequest<QuestionCategory[]>(getAllCategoriesWithoutPagination);
+  const [
+    selectedQuestionCategories,
+    setSelectedQuestionCategories,
+  ] = useState<(QuestionCategory | string)[]>([]);
 
   const debouncedQuestionContentState = useDebouncedValue<ContentState>(questionContentState);
   const debouncedQuestionShortAnswerContentState = useDebouncedValue<ContentState>(questionShortAnswerContentState);
@@ -435,6 +438,7 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
       localStorage.setItem(CACHE_KEYS.QUESTION_CONTENT, questionContentStateString);
       localStorage.setItem(CACHE_KEYS.QUESTION_TYPE, questionType);
       localStorage.setItem(CACHE_KEYS.QUESTION_SHORT_ANSWER_CONTENT, questionShortAnswerContentStateString);
+      localStorage.setItem(CACHE_KEYS.QUESTION_CATEGORIES, JSON.stringify(questionCategories));
       if (questionChoices.length !== 0) {
         localStorage.setItem(CACHE_KEYS.QUESTION_CHOICES, JSON.stringify(questionChoices));
       }
@@ -450,6 +454,7 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
     questionType,
     questionChoices,
     questionBlankAnswers,
+    questionCategories,
     saveDraft,
   ]);
 
@@ -460,6 +465,7 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
         const cachedShortAnswerContentState = localStorage.getItem(CACHE_KEYS.QUESTION_SHORT_ANSWER_CONTENT);
         const cachedQuestionChoices = localStorage.getItem(CACHE_KEYS.QUESTION_CHOICES) || '[]';
         const cachedQuestionBlankAnswers = localStorage.getItem(CACHE_KEYS.QUESTION_BLANK_ANSWERS) || '[]';
+        const cachedQuestionCategories = localStorage.getItem(CACHE_KEYS.QUESTION_CATEGORIES) || '[]';
 
         setQuestionContentState(cachedQuestionContentState
           ? DraftEditor.convertFromRaw(JSON.parse(cachedQuestionContentState))
@@ -471,6 +477,7 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
 
         setQuestionChoices(JSON.parse(cachedQuestionChoices));
         setQuestionBlankAnswers(JSON.parse(cachedQuestionBlankAnswers));
+        setSelectedQuestionCategories(JSON.parse(cachedQuestionCategories));
       }
     } else if (mode === 'edit') {
       const {
@@ -766,10 +773,12 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
           multiple={true}
           freeSolo={true}
           filterSelectedOptions={true}
+          limitTags={5}
+          value={selectedQuestionCategories}
           loading={questionCategoriesLoading}
           options={questionCategories}
           loadingText={systemTexts['LOADING']}
-          getOptionLabel={(category) => category.name}
+          getOptionLabel={(category) => (typeof category === 'string' ? category : category.name)}
           renderInput={(autoCompleteProps) => {
             return (
               <TextField
@@ -778,6 +787,9 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
                 label={texts['QUESTION_CATEGORY']}
               />
             );
+          }}
+          onChange={(event, data) => {
+            setSelectedQuestionCategories(data);
           }}
         />
       </DialogContent>
@@ -815,14 +827,22 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
           }
           onClick={() => {
             handleRemoveCache(CACHE_KEYS);
-            if (_.isFunction(onSubmitQuestion)) {
-              onSubmitQuestion({
-                type: questionType,
-                content: questionContentState,
-                choices: questionChoices,
-                answer: getQuestionAnswer(),
-              } as AppQuestionMetaData);
-            }
+            setSubmitting(true);
+            const answer = getQuestionAnswer();
+            createQuestion(questionContentState, questionType, selectedQuestionCategories, {
+              answer,
+              choices: questionChoices.map((choice) => _.omit(choice, 'isAnswer')) as QuestionChoice[],
+            }).finally(() => {
+              setSubmitting(false);
+              if (_.isFunction(onSubmitQuestion)) {
+                onSubmitQuestion({
+                  type: questionType,
+                  content: questionContentState,
+                  choices: questionChoices,
+                  answer: getQuestionAnswer(),
+                } as AppQuestionMetaData);
+              }
+            });
           }}
         >{submitting ? systemTexts['SUBMITTING'] : systemTexts['SUBMIT']}</Button>
       </DialogActions>

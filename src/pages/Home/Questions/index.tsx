@@ -21,7 +21,9 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
         <AppQuestionEditor
           open={open}
           onClose={() => setOpen(false)}
-          onSubmitQuestion={(data) => console.log(data)}
+          onSubmitQuestion={(data) => {
+            setOpen(false);
+          }}
         />
       </div>
     </div>
