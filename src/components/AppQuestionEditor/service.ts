@@ -37,7 +37,7 @@ export const getAllCategoriesWithoutPagination = async () => {
   return _.get(data, 'items') || [];
 };
 
-export const createQuestionCategories = async (questionIds: number[], categoryIds: QuestionCategory[]) => {
+export const createQuestionCategories = async (questionIds: number[], categoryIds: number[]) => {
   const data = await AppRequestManager.send({
     url: '/question/question_categories',
     method: 'POST',
@@ -146,5 +146,66 @@ export const createQuestion = async (
     default:
       break;
     }
+  }
+};
+
+export const updateQuestion = async (
+  questionId: number,
+  content: ContentState,
+  type: QuestionType,
+  categories: (QuestionCategory | string)[],
+  options: Partial<QuestionOptions> = {},
+) => {
+  const categoryStrings = categories
+    .filter((category) => typeof category === 'string') as string[];
+  const existedCategoryIds = (categories.filter((category) => typeof category !== 'string') as QuestionCategory[])
+    .map((category) => category.id);
+  const newCategories = await createCategories(categoryStrings);
+  const categoryIds = existedCategoryIds.concat(newCategories.map((category) => category.id));
+
+  await AppRequestManager.send({
+    url: `/question/${questionId}`,
+    method: 'PATCH',
+    data: {
+      content: JSON.stringify(DraftUtils.convertToRaw(content)),
+      type,
+    },
+  });
+
+  await createQuestionCategories([questionId], categoryIds);
+
+  const { answer } = options;
+
+  switch (type) {
+  case 'single_choice': {
+    const { choices = [] } = options;
+    await createQuestionChoices(questionId, choices.map((choice) => choice.content));
+    if (Array.isArray(answer)) {
+      await createQuestionAnswer(questionId, answer);
+    }
+    break;
+  }
+  case 'multiple_choices': {
+    const { choices = [] } = options;
+    await createQuestionChoices(questionId, choices.map((choice) => choice.content));
+    if (Array.isArray(answer)) {
+      await createQuestionAnswer(questionId, answer);
+    }
+    break;
+  }
+  case 'short_answer': {
+    if (answer instanceof ContentState) {
+      await createQuestionAnswer(questionId, [JSON.stringify(DraftUtils.convertToRaw(answer))]);
+    }
+    break;
+  }
+  case 'fill_in_blank': {
+    if (Array.isArray(answer)) {
+      await createQuestionAnswer(questionId, answer);
+    }
+    break;
+  }
+  default:
+    break;
   }
 };

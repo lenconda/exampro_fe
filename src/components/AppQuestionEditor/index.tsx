@@ -1,4 +1,4 @@
-import { createCategories, createQuestion, getAllCategoriesWithoutPagination } from './service';
+import { createCategories, createQuestion, getAllCategoriesWithoutPagination, updateQuestion } from './service';
 import { Dispatch, QuestionCategory, QuestionChoice, QuestionType } from '../../interfaces';
 import { AppState } from '../../models/app';
 import Editor from '../Editor';
@@ -47,6 +47,7 @@ export type QuestionChoiceWithAnswer = QuestionChoice & {
 
 export interface AppQuestionMetaData {
   type: QuestionType;
+  id?: number;
   content?: ContentState;
   choices?: QuestionChoice[];
   answer?: string[] | ContentState;
@@ -854,10 +855,17 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
             handleRemoveCache(CACHE_KEYS);
             setSubmitting(true);
             const answer = getQuestionAnswer();
-            createQuestion(questionContentState, questionType, selectedQuestionCategories, {
-              answer,
-              choices: questionChoices.map((choice) => _.omit(choice, 'isAnswer')) as QuestionChoice[],
-            }).finally(() => {
+            const choices = questionChoices.map((choice) => _.omit(choice, 'isAnswer')) as QuestionChoice[];
+            const request = mode === 'create'
+              ? createQuestion(questionContentState, questionType, selectedQuestionCategories, {
+                answer,
+                choices,
+              })
+              : updateQuestion(question.id, questionContentState, questionType, selectedQuestionCategories, {
+                answer,
+                choices,
+              });
+            request.finally(() => {
               setSubmitting(false);
               if (_.isFunction(onSubmitQuestion)) {
                 onSubmitQuestion({
