@@ -305,9 +305,8 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
   const getQuestionAnswer = (): string[] | ContentState => {
     switch (questionType) {
     case 'single_choice': {
-      return questionChoices
-        .filter((choice) => choice.isAnswer)
-        .map((choice, index) => (index + 1).toString());
+      const answerIndex = questionChoices.findIndex((choice) => choice.isAnswer);
+      return [(answerIndex + 1).toString()];
     }
     case 'multiple_choices': {
       return questionChoices
@@ -446,6 +445,15 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
     );
   };
 
+  useEffect(() => {
+    setQuestionChoices(questionChoices.map((choice) => {
+      return {
+        ...choice,
+        isAnswer: false,
+      };
+    }));
+  }, [questionType]);
+
   useUpdateEffect(() => {
     if (saveDraft) {
       let questionContentStateString
@@ -514,7 +522,6 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
         choices = [],
         categories = [],
       } = question || {};
-      console.log(DraftEditor.convertToRaw(content));
       setQuestionType(type);
       setQuestionContentState(content);
       setSelectedQuestionCategories(categories);
