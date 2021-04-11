@@ -83,3 +83,9 @@ export interface QuestionCategory {
   updatedAt?: string;
   deletedAt?: string;
 }
+
+export interface QuestionResponseData extends Question {
+  answers?: Record<string, string>[];
+  choices?: Record<string, string>[];
+  categories?: QuestionCategory[];
+}

@@ -134,6 +134,7 @@ const AppModel: AppModelType = {
           'EMPTY': '没有数据',
           'LOAD_MORE': '加载更多',
           'SUBMIT': '提交',
+          'SUBMITTING': '提交中...',
           'LOADING': '加载中',
         },
         editor: {

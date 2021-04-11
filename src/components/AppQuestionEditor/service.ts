@@ -1,7 +1,8 @@
+import { AppQuestionMetaData, QuestionChoiceWithAnswer } from '.';
 import AppRequestManager from '../AppRequest/Manager';
-import { Question, QuestionCategory, QuestionChoice, QuestionType } from '../../interfaces';
+import { Question, QuestionCategory, QuestionChoice, QuestionResponseData, QuestionType } from '../../interfaces';
 import _ from 'lodash';
-import DraftUtils, { ContentState } from 'draft-js';
+import DraftUtils, { ContentState, EditorState } from 'draft-js';
 
 export const createCategory = async (name: string) => {
   if (!name) {
@@ -208,4 +209,47 @@ export const updateQuestion = async (
   default:
     break;
   }
+};
+
+export const getQuestionWithAnswers = async (questionId: number): Promise<AppQuestionMetaData> => {
+  const data = await AppRequestManager.send({
+    url: `/question/${questionId}`,
+  });
+  const questionData = _.get(data, 'data.data') as QuestionResponseData;
+  const {
+    type,
+    id,
+    content,
+    answers = [],
+    choices = [] as QuestionChoice[],
+    categories = [] as QuestionCategory[],
+  } = questionData;
+
+  let questionAnswer;
+
+  if (type === 'short_answer') {
+    if (answers.length === 0) {
+      questionAnswer = EditorState.createEmpty();
+    } else {
+      const { id, content: currentContent } = answers[0];
+      if (currentContent) {
+        questionAnswer = DraftUtils.convertFromRaw(JSON.parse(currentContent));
+      } else {
+        questionAnswer = EditorState.createEmpty();
+      }
+    }
+  } else {
+    questionAnswer = answers.map((answer) => answer.content);
+  }
+
+  const result = {
+    id,
+    type,
+    choices,
+    answer: questionAnswer,
+    categories,
+    content: DraftUtils.convertFromRaw(JSON.parse(content)),
+  } as AppQuestionMetaData;
+
+  return result;
 };

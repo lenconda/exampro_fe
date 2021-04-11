@@ -51,6 +51,7 @@ export interface AppQuestionMetaData {
   content?: ContentState;
   choices?: QuestionChoice[];
   answer?: string[] | ContentState;
+  categories?: QuestionCategory[];
 }
 
 export interface AppQuestionEditorProps extends DialogProps {
@@ -507,13 +508,16 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
       }
     } else if (mode === 'edit') {
       const {
-        type,
-        answer,
+        type = 'single_choice',
+        answer = [],
         content = EditorState.createEmpty().getCurrentContent(),
         choices = [],
-      } = question;
+        categories = [],
+      } = question || {};
+      console.log(DraftEditor.convertToRaw(content));
       setQuestionType(type);
       setQuestionContentState(content);
+      setSelectedQuestionCategories(categories);
       switch (type) {
       case 'single_choice': {
         const currentAnswer = _.first((answer || []) as string[]);
@@ -549,7 +553,7 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
         break;
       }
     }
-  }, [mode, saveDraft]);
+  }, [mode, saveDraft, question]);
 
   return (
     <Dialog
@@ -827,20 +831,28 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
         />
       </DialogContent>
       <DialogActions>
-        <FormControlLabel
-          control={
-            <Checkbox
-              color="primary"
-              checked={saveDraft}
-              onChange={() => setSaveDraft(!saveDraft)}
+        {
+          mode === 'create' && (
+            <FormControlLabel
+              disabled={submitting}
+              control={
+                <Checkbox
+                  color="primary"
+                  checked={saveDraft}
+                  onChange={() => setSaveDraft(!saveDraft)}
+                />
+              }
+              label={systemTexts['SAVE_DRAFT']}
             />
-          }
-          label={systemTexts['SAVE_DRAFT']}
-        />
+          )
+        }
         <Button
           color="primary"
+          disabled={submitting}
           onClick={() => {
-            handleRemoveCache(CACHE_KEYS);
+            if (mode === 'create') {
+              handleRemoveCache(CACHE_KEYS);
+            }
             if (_.isFunction(onClose)) {
               onClose();
             }
@@ -859,7 +871,9 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
             )
           }
           onClick={() => {
-            handleRemoveCache(CACHE_KEYS);
+            if (mode === 'create') {
+              handleRemoveCache(CACHE_KEYS);
+            }
             setSubmitting(true);
             const answer = getQuestionAnswer();
             const choices = questionChoices.map((choice) => _.omit(choice, 'isAnswer')) as QuestionChoice[];
