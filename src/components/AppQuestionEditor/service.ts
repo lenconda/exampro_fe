@@ -10,6 +10,8 @@ export const createCategory = async (name: string) => {
   }
   const data = await AppRequestManager.send({
     url: '/question/category',
+    method: 'POST',
+    data: { name },
   });
   return _.get(data, 'data.data');
 };
