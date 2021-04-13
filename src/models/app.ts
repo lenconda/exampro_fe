@@ -192,6 +192,10 @@ const AppModel: AppModelType = {
           'CHOICES': '选项',
           'EXPAND': '展开',
           'COLLAPSE': '收起',
+          'SINGLE_CHOICE': '单项选择',
+          'MULTIPLE_CHOICES': '多项选择',
+          'SHORT_ANSWER': '简答',
+          'FILL_IN_BLANK': '填空',
         },
         ui: {
           '/user/auth': {

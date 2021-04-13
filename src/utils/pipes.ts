@@ -10,6 +10,7 @@ export const pipeQuestionResponseToMetadata = (questionData: QuestionResponseDat
     answers = [],
     choices = [] as QuestionChoice[],
     categories = [] as QuestionCategory[],
+    blankCount,
   } = questionData;
 
   let questionAnswer;
@@ -36,6 +37,7 @@ export const pipeQuestionResponseToMetadata = (questionData: QuestionResponseDat
     answer: questionAnswer,
     categories,
     content: DraftUtils.convertFromRaw(JSON.parse(content)),
+    blankCount,
   } as AppQuestionMetaData;
 
   return result;

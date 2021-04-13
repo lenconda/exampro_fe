@@ -52,6 +52,7 @@ export interface AppQuestionMetaData {
   choices?: QuestionChoice[];
   answer?: string[] | ContentState;
   categories?: QuestionCategory[];
+  blankCount?: number;
 }
 
 export interface AppQuestionEditorProps extends DialogProps {

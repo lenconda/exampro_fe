@@ -61,6 +61,7 @@ export interface Question {
   id: number;
   content: string;
   type: QuestionType;
+  blankCount?: number;
   createdAt?: string;
   updatedAt?: string;
   deletedAt?: string;

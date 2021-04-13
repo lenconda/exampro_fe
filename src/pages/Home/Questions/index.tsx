@@ -18,11 +18,15 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
   const [editQuestionOpen, setEditQuestionOpen] = useState<boolean>(false);
   const [questionMetaData, setQuestionMetaData] = useState<AppQuestionMetaData>(null);
   const [test, setTest] = useState<AppQuestionMetaData>(null);
+  const [test21, setTest21] = useState<AppQuestionMetaData>(null);
+  const [test22, setTest22] = useState<AppQuestionMetaData>(null);
 
   useEffect(() => {
     getQuestionWithAnswers(15).then((data) => {
       setTest(data);
     });
+    getQuestionWithAnswers(21).then((data) => setTest21(data));
+    getQuestionWithAnswers(22).then((data) => setTest22(data));
   }, []);
 
   return (
@@ -56,6 +60,18 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
         <AppQuestionItem
           answerable={true}
           question={test}
+          questionNumber={1}
+          // canCollapse={true}
+        />
+        <AppQuestionItem
+          answerable={true}
+          question={test21}
+          questionNumber={1}
+        />
+        <AppQuestionItem
+          answerable={true}
+          question={test22}
+          questionNumber={1}
         />
       </div>
     </div>

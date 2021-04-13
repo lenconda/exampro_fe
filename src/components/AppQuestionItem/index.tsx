@@ -6,26 +6,29 @@ import { Dispatch, QuestionChoice } from '../../interfaces';
 import Editor from '../Editor';
 import { useTexts } from '../../utils/texts';
 import Button from '@material-ui/core/Button';
+import Box from '@material-ui/core/Box';
 import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import Checkbox from '@material-ui/core/Checkbox';
 import Chip from '@material-ui/core/Chip';
-import Divider from '@material-ui/core/Divider';
+import InputBase from '@material-ui/core/InputBase';
 import Radio from '@material-ui/core/Radio';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import CheckIcon from '@material-ui/icons/Check';
 import ArrowDropdownIcon from '@material-ui/icons/ArrowDropDown';
+import ArrowDropUpIcon from '@material-ui/icons/ArrowDropUp';
 import React, { useEffect, useRef, useState } from 'react';
 import { EditorState } from 'draft-js';
 import { lighten, makeStyles } from '@material-ui/core';
+import clsx from 'clsx';
 
 export interface AppQuestionItemProps {
-  index?: number;
+  questionNumber?: number;
   question?: AppQuestionMetaData;
   collapseHeight?: number;
-  defaultCollapsed?: boolean;
+  canCollapse?: boolean;
   answerable?: boolean;
 }
 
@@ -36,6 +39,25 @@ const useStyles = makeStyles((theme) => {
     cardContent: {
       userSelect: 'none',
     },
+    contentWrapper: {
+      display: 'flex',
+      flexDirection: 'row',
+    },
+    questionNumberTypeWrapper: {
+      width: 42,
+      flexGrow: 0,
+      flexShrink: 0,
+      display: 'flex',
+      flexDirection: 'column',
+    },
+    questionTypeWrapper: {
+      paddingRight: theme.spacing(2),
+      paddingLeft: theme.spacing(2),
+    },
+    cardContentCollapsed: (props: AppQuestionItemProps) => ({
+      height: props.collapseHeight,
+      overflow: 'hidden',
+    }),
     choiceWrapper: (props: AppQuestionItemProps) => ({
       paddingTop: theme.spacing(1),
       paddingRight: theme.spacing(2),
@@ -56,16 +78,32 @@ const useStyles = makeStyles((theme) => {
     choiceContent: {
       wordBreak: 'break-all',
     },
-    divider: {
+    shortAnswerEditorWrapper: {
+      border: `1px solid ${theme.palette.grey[300]}`,
+    },
+    blankWrapper: {
+      paddingTop: theme.spacing(1),
+      paddingRight: theme.spacing(2),
+      paddingBottom: theme.spacing(1),
+      paddingLeft: theme.spacing(2),
       marginBottom: theme.spacing(2),
+      display: 'flex',
+      flexDirection: 'row',
+      alignItems: 'center',
+      '&:last-child': {
+        marginBottom: 0,
+      },
+    },
+    blankNumberWrapper: {
+      marginRight: theme.spacing(1),
     },
   };
 });
 
 const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
-  index: questionIndex = -1,
+  questionNumber = 0,
   collapseHeight = 150,
-  defaultCollapsed = false,
+  canCollapse = true,
   answerable = true,
   question,
   dispatch,
@@ -77,16 +115,28 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
     choices = [],
     answer,
     type,
+    blankCount,
   } = question;
 
-  const classes = useStyles({ answerable });
+  const classes = useStyles({
+    answerable,
+    collapseHeight,
+  });
   const texts = useTexts(dispatch, 'questionItem');
   const cardContentRef = useRef<HTMLDivElement>(null);
+  const [collapseNecessity, setCollapseNecessity] = useState<boolean>(false);
+  const [collapsed, setCollapsed] = useState<boolean>(false);
 
   useEffect(() => {
     if (cardContentRef.current) {
       const { clientHeight } = cardContentRef.current;
-      console.log(clientHeight);
+      if (canCollapse && clientHeight > collapseHeight) {
+        setCollapsed(true);
+        setCollapseNecessity(true);
+      } else {
+        setCollapsed(false);
+        setCollapseNecessity(false);
+      }
     }
   }, [cardContentRef]);
 
@@ -95,7 +145,7 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
     index: number,
   ) => {
     return (
-      <Paper elevation={1} classes={{ root: classes.choiceWrapper }}>
+      <Paper key={index} classes={{ root: classes.choiceWrapper }}>
         {
           answerable && (
             type === 'single_choice'
@@ -128,12 +178,36 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
 
   return (
     <Card>
-      <CardContent classes={{ root: classes.cardContent }} ref={cardContentRef}>
-        <Editor
-          readonly={true}
-          editorState={EditorState.createWithContent(content)}
-        />
-        <Divider classes={{ root: classes.divider }} />
+      <CardContent
+        ref={cardContentRef}
+        classes={{
+          root: clsx(classes.cardContent, {
+            [classes.cardContentCollapsed]: collapsed,
+          }),
+        }}
+      >
+        <Box className={classes.contentWrapper}>
+          {
+            questionNumber > 0 && (
+              <Box className={classes.questionNumberTypeWrapper}>
+                <Typography variant="h6">{questionNumber}</Typography>
+              </Box>
+            )
+          }
+          <Box>
+            <Box className={classes.questionTypeWrapper}>
+              <Chip
+                variant="outlined"
+                size="small"
+                label={texts[type.toUpperCase()]}
+              />
+            </Box>
+            <Editor
+              readonly={true}
+              editorState={EditorState.createWithContent(content)}
+            />
+          </Box>
+        </Box>
         {
           (type === 'single_choice' || type === 'multiple_choices') && (
             <Paper elevation={0}>
@@ -145,13 +219,41 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
             </Paper>
           )
         }
+        {
+          (answerable && type === 'short_answer') && (
+            <Box className={classes.shortAnswerEditorWrapper}>
+              <Editor />
+            </Box>
+          )
+        }
+        {
+          (answerable && type === 'fill_in_blank' && blankCount > 0) && (
+            <Box>
+              {
+                new Array(blankCount).fill(null).map((value, index) => {
+                  return (
+                    <Paper key={index} classes={{ root: classes.blankWrapper }}>
+                      <Typography classes={{ root: classes.blankNumberWrapper }}>{index + 1}.</Typography>
+                      <InputBase />
+                    </Paper>
+                  );
+                })
+              }
+            </Box>
+          )
+        }
       </CardContent>
-      <CardActions>
-        <Button
-          color="primary"
-          endIcon={<ArrowDropdownIcon />}
-        >{texts['EXPAND']}</Button>
-      </CardActions>
+      {
+        (canCollapse && collapseNecessity) && (
+          <CardActions>
+            <Button
+              color="primary"
+              endIcon={collapsed ? <ArrowDropdownIcon /> : <ArrowDropUpIcon />}
+              onClick={() => setCollapsed(!collapsed)}
+            >{collapsed ? texts['EXPAND'] : texts['COLLAPSE']}</Button>
+          </CardActions>
+        )
+      }
     </Card>
   );
 };
