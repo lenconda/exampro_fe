@@ -19,6 +19,7 @@ export interface I18N {
     examCard?: Record<string, string>;
     editor?: Record<string, string>;
     questionEditor?: Record<string, string>;
+    questionItem?: Record<string, string>;
   };
 }
 
@@ -185,6 +186,12 @@ const AppModel: AppModelType = {
           'SUBMITTING': '提交中',
           'QUESTION_CONTENT': '题干内容',
           'QUESTION_CATEGORY': '题目分类',
+        },
+        questionItem: {
+          'IS_ANSWER': '答案',
+          'CHOICES': '选项',
+          'EXPAND': '展开',
+          'COLLAPSE': '收起',
         },
         ui: {
           '/user/auth': {

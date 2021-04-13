@@ -5,7 +5,8 @@ import { useTexts } from '../../../utils/texts';
 import { Dispatch } from '../../../interfaces';
 import AppQuestionEditor, { AppQuestionMetaData } from '../../../components/AppQuestionEditor';
 import { getQuestionWithAnswers } from '../../../components/AppQuestionEditor/service';
-import React, { useState } from 'react';
+import AppQuestionItem from '../../../components/AppQuestionItem';
+import React, { useEffect, useState } from 'react';
 
 export interface QuestionPageProps extends AppState, ConnectState, Dispatch {}
 
@@ -16,6 +17,13 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
   const [createQuestionOpen, setCreateQuestionOpen] = useState<boolean>(false);
   const [editQuestionOpen, setEditQuestionOpen] = useState<boolean>(false);
   const [questionMetaData, setQuestionMetaData] = useState<AppQuestionMetaData>(null);
+  const [test, setTest] = useState<AppQuestionMetaData>(null);
+
+  useEffect(() => {
+    getQuestionWithAnswers(15).then((data) => {
+      setTest(data);
+    });
+  }, []);
 
   return (
     <div className="app-page app-page-home__questions">
@@ -44,6 +52,10 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
           onSubmitQuestion={(data) => {
             setEditQuestionOpen(false);
           }}
+        />
+        <AppQuestionItem
+          answerable={true}
+          question={test}
         />
       </div>
     </div>

@@ -655,6 +655,7 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
                                               (!showSetAnswer && questionChoice.isAnswer) && (
                                                 <Box className={classes.isAnswerTagWrapper}>
                                                   <Chip
+                                                    variant="outlined"
                                                     color="primary"
                                                     label={texts['IS_ANSWER']}
                                                     size="small"
