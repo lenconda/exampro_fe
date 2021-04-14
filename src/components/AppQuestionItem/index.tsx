@@ -101,6 +101,9 @@ const useStyles = makeStyles((theme) => {
     choice: {
       cursor: 'pointer',
     },
+    choiceSelected: {
+      backgroundColor: lighten(theme.palette.primary.main, 0.85),
+    },
     shortAnswerEditorWrapper: {
       border: `1px solid ${theme.palette.grey[300]}`,
     },
@@ -173,7 +176,11 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
     return (
       <Paper
         key={index}
-        classes={{ root: classes.choiceWrapper }}
+        classes={{
+          root: clsx(classes.choiceWrapper, {
+            [classes.choiceSelected]: selectedChoiceIndexes.indexOf(index) !== -1,
+          }),
+        }}
         onClick={() => {
           if (type === 'single_choice') {
             setSelectedChoiceIndexes([index]);
