@@ -23,6 +23,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ContentState, EditorState } from 'draft-js';
 import { lighten, makeStyles } from '@material-ui/core';
 import clsx from 'clsx';
+import _ from 'lodash';
 
 type ChoiceSelectorProps = (CheckboxProps | RadioProps) & {
   questionType: QuestionType;
@@ -50,6 +51,7 @@ export interface AppQuestionItemProps {
   collapseHeight?: number;
   canCollapse?: boolean;
   answerable?: boolean;
+  onChange?(question: AppQuestionMetaData, answer: string[] | ContentState): void;
 }
 
 export interface AppQuestionItemComponentProps extends AppState, Dispatch, AppQuestionItemProps {}
@@ -133,6 +135,7 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
   answerable = true,
   question,
   dispatch,
+  onChange,
 }) => {
   if (!question) { return null }
 
@@ -141,7 +144,7 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
     choices = [],
     answer,
     type,
-    blankCount,
+    blankCount = 0,
   } = question;
 
   const classes = useStyles({
@@ -153,8 +156,11 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
   const [collapseNecessity, setCollapseNecessity] = useState<boolean>(false);
   const [collapsed, setCollapsed] = useState<boolean>(false);
   const [selectedChoiceIndexes, setSelectedChoiceIndexes] = useState<number[]>([]);
-  const [filledBlanks, setFilledBlanks] = useState<string[]>([]);
-  const [shortAnswerContent, setShortAnswerContent] = useState<ContentState>(EditorState.createEmpty().getCurrentContent());
+  const [filledBlanks, setFilledBlanks] = useState<string[]>(new Array(blankCount).fill(''));
+  const [
+    shortAnswerContent,
+    setShortAnswerContent,
+  ] = useState<ContentState>(EditorState.createEmpty().getCurrentContent());
 
   useEffect(() => {
     if (cardContentRef.current) {
@@ -168,6 +174,18 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
       }
     }
   }, [cardContentRef]);
+
+  useEffect(() => {
+    if (_.isFunction(onChange)) {
+      if (type === 'single_choice' || type === 'multiple_choices') {
+        onChange(question, selectedChoiceIndexes.map((value) => (value + 1).toString()));
+      } else if (type === 'fill_in_blank') {
+        onChange(question, filledBlanks);
+      } else if (type === 'short_answer') {
+        onChange(question, shortAnswerContent);
+      }
+    }
+  }, [type, selectedChoiceIndexes, filledBlanks, shortAnswerContent]);
 
   const generateChoice = (
     choice: QuestionChoice,
@@ -269,7 +287,7 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
         {
           (answerable && type === 'short_answer') && (
             <Box className={classes.shortAnswerEditorWrapper}>
-              <Editor />
+              <Editor onChange={(data) => setShortAnswerContent(data.getCurrentContent())} />
             </Box>
           )
         }
@@ -281,7 +299,17 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
                   return (
                     <Paper key={index} classes={{ root: classes.blankWrapper }}>
                       <Typography classes={{ root: classes.blankNumberWrapper }}>{index + 1}.</Typography>
-                      <InputBase />
+                      <InputBase
+                        onChange={(event) => {
+                          setFilledBlanks(filledBlanks.map((value, answerIndex) => {
+                            if (index === answerIndex) {
+                              return event.target.value;
+                            } else {
+                              return value;
+                            }
+                          }));
+                        }}
+                      />
                     </Paper>
                   );
                 })
