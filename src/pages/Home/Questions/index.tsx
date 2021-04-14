@@ -1,12 +1,17 @@
 import { ConnectState } from '../../../models';
 import { AppState } from '../../../models/app';
 import { connect } from '../../../patches/dva';
-import { useTexts } from '../../../utils/texts';
+import { usePageTexts, useTexts } from '../../../utils/texts';
 import { Dispatch } from '../../../interfaces';
 import AppQuestionEditor, { AppQuestionMetaData } from '../../../components/AppQuestionEditor';
 import { getQuestionWithAnswers } from '../../../components/AppQuestionEditor/service';
 import AppQuestionItem from '../../../components/AppQuestionItem';
+import { useDebouncedValue } from '../../../utils/hooks';
+import { pushSearch, useLocationQuery } from '../../../utils/history';
+import InputBase from '@material-ui/core/InputBase';
+import Paper from '@material-ui/core/Paper';
 import React, { useEffect, useState } from 'react';
+import { useHistory } from 'react-router';
 
 export interface QuestionPageProps extends AppState, ConnectState, Dispatch {}
 
@@ -14,65 +19,37 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
   dispatch,
 }) => {
   const editorTexts = useTexts(dispatch, 'editor');
-  const [createQuestionOpen, setCreateQuestionOpen] = useState<boolean>(false);
-  const [editQuestionOpen, setEditQuestionOpen] = useState<boolean>(false);
-  const [questionMetaData, setQuestionMetaData] = useState<AppQuestionMetaData>(null);
-  const [test, setTest] = useState<AppQuestionMetaData>(null);
-  const [test21, setTest21] = useState<AppQuestionMetaData>(null);
-  const [test22, setTest22] = useState<AppQuestionMetaData>(null);
+  const history = useHistory();
+  const pageTexts = usePageTexts(dispatch, '/home/questions');
+  const [inputSearch, setInputSearch] = useState<string>(undefined);
+  const debouncedSearch = useDebouncedValue(inputSearch);
+  const search = useLocationQuery('search');
 
   useEffect(() => {
-    getQuestionWithAnswers(15).then((data) => {
-      setTest(data);
-    });
-    getQuestionWithAnswers(21).then((data) => setTest21(data));
-    getQuestionWithAnswers(22).then((data) => setTest22(data));
-  }, []);
+    if (debouncedSearch !== undefined) {
+      history.push(pushSearch(history, {
+        search: debouncedSearch,
+      }));
+    }
+  }, [debouncedSearch]);
 
   return (
     <div className="app-page app-page-home__questions">
       <div className="app-grid-container">
-        <button onClick={() => setCreateQuestionOpen(true)}>Create Question</button>
-        <button
-          onClick={() => {
-            getQuestionWithAnswers(15).then((data) => {
-              setQuestionMetaData(data);
-              setEditQuestionOpen(true);
-            });
-          }}
-        >Edit Question 13</button>
-        <AppQuestionEditor
-          open={createQuestionOpen}
-          onClose={() => setCreateQuestionOpen(false)}
-          onSubmitQuestion={(data) => {
-            setCreateQuestionOpen(false);
-          }}
-        />
-        <AppQuestionEditor
-          mode="edit"
-          open={editQuestionOpen}
-          question={questionMetaData}
-          onClose={() => setEditQuestionOpen(false)}
-          onSubmitQuestion={(data) => {
-            setEditQuestionOpen(false);
-          }}
-        />
-        <AppQuestionItem
-          answerable={true}
-          question={test}
-          questionNumber={1}
-          // canCollapse={true}
-        />
-        <AppQuestionItem
-          answerable={true}
-          question={test21}
-          questionNumber={1}
-        />
-        <AppQuestionItem
-          answerable={true}
-          question={test22}
-          questionNumber={1}
-        />
+        <div className="app-page-interact-wrapper">
+          <Paper
+            classes={{ root: 'app-search-wrapper' }}
+          >
+            <InputBase
+              classes={{
+                root: 'app-search-wrapper__input__root',
+                input: 'app-search-wrapper__input__input',
+              }}
+              placeholder={pageTexts['001']}
+              onChange={(event) => setInputSearch(event.target.value)}
+            />
+          </Paper>
+        </div>
       </div>
     </div>
   );

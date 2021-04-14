@@ -250,6 +250,9 @@ const AppModel: AppModelType = {
             '013': '状态',
             '014': '是否确定删除考试：',
           },
+          '/home/questions': {
+            '001': '查询试题',
+          },
         },
       },
     },
