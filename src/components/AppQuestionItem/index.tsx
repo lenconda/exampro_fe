@@ -2,7 +2,7 @@ import { AppQuestionMetaData } from '../AppQuestionEditor';
 import { connect } from '../../patches/dva';
 import { ConnectState } from '../../models';
 import { AppState } from '../../models/app';
-import { Dispatch, QuestionChoice } from '../../interfaces';
+import { Dispatch, QuestionChoice, QuestionType } from '../../interfaces';
 import Editor from '../Editor';
 import { useTexts } from '../../utils/texts';
 import Button from '@material-ui/core/Button';
@@ -10,19 +10,39 @@ import Box from '@material-ui/core/Box';
 import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
-import Checkbox from '@material-ui/core/Checkbox';
+import Checkbox, { CheckboxProps } from '@material-ui/core/Checkbox';
 import Chip from '@material-ui/core/Chip';
 import InputBase from '@material-ui/core/InputBase';
-import Radio from '@material-ui/core/Radio';
+import Radio, { RadioProps } from '@material-ui/core/Radio';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import CheckIcon from '@material-ui/icons/Check';
 import ArrowDropdownIcon from '@material-ui/icons/ArrowDropDown';
 import ArrowDropUpIcon from '@material-ui/icons/ArrowDropUp';
 import React, { useEffect, useRef, useState } from 'react';
-import { EditorState } from 'draft-js';
+import { ContentState, EditorState } from 'draft-js';
 import { lighten, makeStyles } from '@material-ui/core';
 import clsx from 'clsx';
+
+type ChoiceSelectorProps = (CheckboxProps | RadioProps) & {
+  questionType: QuestionType;
+};
+
+const ChoiceSelector: React.FC<ChoiceSelectorProps> = ({
+  questionType,
+  ...props
+}) => {
+  switch (questionType) {
+  case 'single_choice': {
+    return <Radio {...props} />;
+  }
+  case 'multiple_choices': {
+    return <Checkbox {...props} />;
+  }
+  default:
+    return null;
+  }
+};
 
 export interface AppQuestionItemProps {
   questionNumber?: number;
@@ -78,6 +98,9 @@ const useStyles = makeStyles((theme) => {
     choiceContent: {
       wordBreak: 'break-all',
     },
+    choice: {
+      cursor: 'pointer',
+    },
     shortAnswerEditorWrapper: {
       border: `1px solid ${theme.palette.grey[300]}`,
     },
@@ -126,6 +149,9 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
   const cardContentRef = useRef<HTMLDivElement>(null);
   const [collapseNecessity, setCollapseNecessity] = useState<boolean>(false);
   const [collapsed, setCollapsed] = useState<boolean>(false);
+  const [selectedChoiceIndexes, setSelectedChoiceIndexes] = useState<number[]>([]);
+  const [filledBlanks, setFilledBlanks] = useState<string[]>([]);
+  const [shortAnswerContent, setShortAnswerContent] = useState<ContentState>(EditorState.createEmpty().getCurrentContent());
 
   useEffect(() => {
     if (cardContentRef.current) {
@@ -145,16 +171,30 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
     index: number,
   ) => {
     return (
-      <Paper key={index} classes={{ root: classes.choiceWrapper }}>
+      <Paper
+        key={index}
+        classes={{ root: classes.choiceWrapper }}
+        onClick={() => {
+          if (type === 'single_choice') {
+            setSelectedChoiceIndexes([index]);
+          } else if (type === 'multiple_choices') {
+            if (selectedChoiceIndexes.indexOf(index) === -1) {
+              setSelectedChoiceIndexes(selectedChoiceIndexes.concat(index));
+            } else {
+              setSelectedChoiceIndexes(selectedChoiceIndexes.filter((value) => value !== index));
+            }
+          }
+        }}
+      >
         {
           answerable && (
-            type === 'single_choice'
-              ? (
-                <Radio color="primary" />
-              )
-              : (
-                <Checkbox color="primary" />
-              )
+            <ChoiceSelector
+              color="primary"
+              classes={{ root: classes.choice }}
+              checked={selectedChoiceIndexes.indexOf(index) !== -1}
+              questionType={type}
+              onChange={(event) => event.preventDefault()}
+            />
           )
         }
         <Typography classes={{ root: classes.cardContent }}>
