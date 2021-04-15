@@ -3,19 +3,22 @@ import { ConnectState } from '../../../models';
 import { AppState } from '../../../models/app';
 import { connect } from '../../../patches/dva';
 import { usePageTexts, useTexts } from '../../../utils/texts';
-import { Dispatch, QuestionResponseData } from '../../../interfaces';
+import { Dispatch, QuestionCategory, QuestionResponseData } from '../../../interfaces';
 import AppQuestionEditor, { AppQuestionMetaData } from '../../../components/AppQuestionEditor';
-import { getQuestionWithAnswers } from '../../../components/AppQuestionEditor/service';
+import { getAllCategoriesWithoutPagination, getQuestionWithAnswers } from '../../../components/AppQuestionEditor/service';
 import AppQuestionItem from '../../../components/AppQuestionItem';
 import { useDebouncedValue } from '../../../utils/hooks';
 import { pushSearch, useLocationQuery } from '../../../utils/history';
-import { usePaginationRequest } from '../../../utils/request';
+import { usePaginationRequest, useRequest } from '../../../utils/request';
 import { pipeQuestionResponseToMetadata } from '../../../utils/pipes';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
+import Checkbox from '@material-ui/core/Checkbox';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
 import Typography from '@material-ui/core/Typography';
+import FileQuestionIcon from 'mdi-material-ui/FileQuestion';
 import FilterMenuOutlineIcon from 'mdi-material-ui/FilterMenuOutline';
 import IconButton from '@material-ui/core/IconButton';
 import InputBase from '@material-ui/core/InputBase';
@@ -23,7 +26,7 @@ import Paper from '@material-ui/core/Paper';
 import NotePlusIcon from 'mdi-material-ui/NotePlus';
 import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
-import { makeStyles } from '@material-ui/core';
+import { lighten, makeStyles } from '@material-ui/core';
 import clsx from 'clsx';
 
 export interface QuestionPageProps extends AppState, ConnectState, Dispatch {}
@@ -45,15 +48,30 @@ const useStyles = makeStyles((theme) => {
     filterMenuTitle: {
       paddingRight: theme.spacing(2),
       paddingLeft: theme.spacing(2),
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
     },
     categoriesWrapper: {
-      maxHeight: 420,
+      maxHeight: 360,
       overflowY: 'scroll',
-      padding: theme.spacing(2),
+      paddingTop: theme.spacing(1),
     },
     controlsWrapper: {
       padding: theme.spacing(2),
       paddingBottom: 0,
+    },
+    categoriesMenuEmptyWrapper: {
+      height: 240,
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    selectedCategoryItem: {
+      backgroundColor: lighten(theme.palette.primary.main, 0.85),
+      '&:hover': {
+        backgroundColor: lighten(theme.palette.primary.main, 0.70),
+      },
     },
   };
 });
@@ -69,13 +87,15 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
   const [inputSearch, setInputSearch] = useState<string>(undefined);
   const debouncedSearch = useDebouncedValue(inputSearch);
   const search = useLocationQuery('search');
+  const selectedCategoriesString = (useLocationQuery('categories') || '') as string;
   const [
-    questionItems,
+    questionItems = [],
     totalQuestions = 0,
     queryQuestionsLoading,
     page,
     size,
-  ] = usePaginationRequest<QuestionResponseData>(queryQuestions);
+  ] = usePaginationRequest<QuestionResponseData>(queryQuestions, { categories: selectedCategoriesString });
+  const [categories = [], getCategoriesLoading] = useRequest<QuestionCategory[]>(getAllCategoriesWithoutPagination, []);
   const [queryInputFocused, setQueryInputFocused] = useState<boolean>(false);
   const [filterMenuOpen, setFilterMenuOpen] = useState<boolean>(false);
   const [filterMenuAnchor, setFilterMenuAnchor] = useState<HTMLElement>(null);
@@ -101,6 +121,7 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
                 input: 'app-search-wrapper__input__input',
               }}
               placeholder={pageTexts['001']}
+              defaultValue={search}
               onFocus={() => setQueryInputFocused(true)}
               onBlur={() => setQueryInputFocused(false)}
               onChange={(event) => setInputSearch(event.target.value)}
@@ -130,15 +151,64 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
             open={filterMenuOpen}
             anchorEl={filterMenuAnchor}
             classes={{ paper: classes.filterMenu }}
+            onClose={() => setFilterMenuOpen(false)}
           >
             <Typography
-              variant="subtitle1"
+              variant="subtitle2"
               classes={{ root: classes.filterMenuTitle }}
-            >{pageTexts['003']}</Typography>
-            <Box className={classes.categoriesWrapper}></Box>
-            <Box className={classes.controlsWrapper}>
-              <Button color="primary">{systemTexts['OK']}</Button>
-              <Button color="primary">{systemTexts['CANCEL']}</Button>
+            >
+              {pageTexts['003']}
+              {
+                getCategoriesLoading && (
+                  <CircularProgress size={15} />
+                )
+              }
+            </Typography>
+            <Box className={classes.categoriesWrapper}>
+              {
+                categories.length === 0
+                  ? (
+                    <Box className={classes.categoriesMenuEmptyWrapper}>
+                      <Typography color="textSecondary">{systemTexts['EMPTY']}</Typography>
+                    </Box>
+                  )
+                  : categories.map((category, index) => {
+                    return (
+                      <Box
+                        key={index}
+                        onClick={() => {
+                          const selectedCategories = selectedCategoriesString
+                            ? selectedCategoriesString.split(',').map((value) => parseInt(value, 10))
+                            : [];
+                          let newSelectedCategories = [];
+                          if (selectedCategories.indexOf(category.id) !== -1) {
+                            newSelectedCategories = selectedCategories.filter((value) => value !== category.id);
+                          } else {
+                            newSelectedCategories = selectedCategories.concat(category.id);
+                          }
+                          history.push(pushSearch(history, {
+                            categories: newSelectedCategories.join(','),
+                          }));
+                        }}
+                      >
+                        <MenuItem
+                          classes={{
+                            root: clsx({
+                              [classes.selectedCategoryItem]: selectedCategoriesString.split(',').indexOf(category.id.toString()) !== -1,
+                            }),
+                          }}
+                        >
+                          <Checkbox
+                            color="primary"
+                            checked={selectedCategoriesString.split(',').indexOf(category.id.toString()) !== -1}
+                            onChange={(event) => event.preventDefault()}
+                          />
+                          {category.name}
+                        </MenuItem>
+                      </Box>
+                    );
+                  })
+              }
             </Box>
           </Menu>
           {
@@ -148,16 +218,27 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
                   <CircularProgress classes={{ root: 'app-loading__icon' }} />
                 </div>
               )
-              : questionItems.map((questionItem, index) => {
-                return (
-                  <AppQuestionItem
-                    key={index}
-                    answerable={false}
-                    classes={{ root: classes.item }}
-                    question={pipeQuestionResponseToMetadata(questionItem)}
-                  />
-                );
-              })
+              : (
+                questionItems.length === 0
+                  ? (
+                    <div className="app-empty">
+                      <FileQuestionIcon classes={{ root: 'app-empty__icon' }} />
+                      <Typography classes={{ root: 'app-empty__text' }}>{systemTexts['EMPTY']}</Typography>
+                    </div>
+                  )
+                  : (
+                    questionItems.map((questionItem, index) => {
+                      return (
+                        <AppQuestionItem
+                          key={index}
+                          answerable={false}
+                          classes={{ root: classes.item }}
+                          question={pipeQuestionResponseToMetadata(questionItem)}
+                        />
+                      );
+                    })
+                  )
+              )
           }
         </Box>
       </div>

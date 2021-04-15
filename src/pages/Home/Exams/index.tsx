@@ -72,7 +72,7 @@ const ExamsPage: React.FC<ExamPageProps> = ({
   const [queryExamsInputFocused, setQueryExamsInputFocused] = useState<boolean>(false);
   const [roles = [], rolesLoading] = useRequest<ExamRole[]>(getExamRoleTypes, [examRoleTexts]);
   const [
-    examItems,
+    examItems = [],
     totalExams = 0,
     queryExamsLoading,
     page,
@@ -312,144 +312,134 @@ const ExamsPage: React.FC<ExamPageProps> = ({
               })}
             >
               {
-                roleId === 'resource/exam/participant'
+                queryExamsLoading
                   ? (
-                    <>
-                      {
-                        (
-                          queryExamsLoading
-                          && (!loadMoreMode || examItems.length === 0)
-                        ) && (
-                          <div className="app-loading">
-                            <CircularProgress classes={{ root: 'app-loading__icon' }} />
-                          </div>
-                        )
-                      }
-                      {
-                        examItems.length === 0
-                          ? (
-                            <div className="app-empty">
-                              <FileQuestion classes={{ root: 'app-empty__icon' }} />
-                              <Typography classes={{ root: 'app-empty__text' }}>{systemTexts['EMPTY']}</Typography>
-                            </div>
-                          )
-                          : (
-                            <Grid
-                              container={true}
-                              spacing={2}
-                              classes={{ root: classes.participantGridContainer }}
-                            >
-                              {
-                                examItems.map((exam, index) => {
-                                  return (
-                                    <Grid
-                                      key={index}
-                                      item={true}
-                                      xs={12}
-                                      sm={12}
-                                      md={6}
-                                      lg={4}
-                                      xl={3}
-                                    >
-                                      <ExamCard exam={exam}></ExamCard>
-                                    </Grid>
-                                  );
-                                })
-                              }
-                              <Grid item={true} style={{ width: '100%' }}>
-                                <AppLoadMore
-                                  total={totalExams}
-                                  currentCount={examItems.length}
-                                  pageSize={size}
-                                  loading={queryExamsLoading}
-                                  onLoadMore={() => {
-                                    setLoadMoreMode(true);
-                                    const lastCursor = _.get(_.last(examItems), 'id');
-                                    if (lastCursor) {
-                                      history.push(pushSearch(history, {
-                                        last_cursor: lastCursor,
-                                      }));
-                                    }
-                                  }}
-                                />
-                              </Grid>
-                            </Grid>
-                          )
-                      }
-                    </>
+                    <div className="app-loading">
+                      <CircularProgress classes={{ root: 'app-loading__icon' }} />
+                    </div>
                   )
-                  : (
-                    <AppTable
-                      schema={schema}
-                      data={examItems}
-                      loading={queryExamsLoading}
-                      toolbarButtons={[
-                        {
-                          Icon: FileDocumentEdit,
-                          title: texts['011'],
-                          show: selectedExams.length === 1
-                            && ['resource/exam/initiator', 'resource/exam/maintainer'].includes(roleId)
-                            && (selectedExams[0].startTime ? Date.parse(selectedExams[0].startTime) > Date.now() : true)
-                            && Date.now() < Date.parse(selectedExams[0].endTime),
-                          IconButtonProps: {
-                            // TODO: push to edit exam page
-                            onClick: () => {},
-                          },
-                        },
-                        {
-                          Icon: FileEye,
-                          title: texts['012'],
-                          show: selectedExams.length === 1
-                            && selectedExams[0].startTime
-                            && Date.now() >= Date.parse(selectedExams[0].startTime)
-                            && Date.now() <= Date.parse(selectedExams[0].endTime)
-                            && roleId === 'resource/exam/invigilator',
-                          IconButtonProps: {
-                            // TODO: push to invigilator page
-                            onClick: () => {},
-                          },
-                        },
-                        {
-                          Icon: Delete,
-                          title: texts['010'],
-                          show: roleId === 'resource/exam/initiator',
-                          IconButtonProps: {
-                            onClick: () => {
-                              AppDialogManager.confirm(`${texts['014']} ${selectedExams.map((exam) => exam.title).join(', ')}`, {
-                                disableBackdropClick: true,
-                                onConfirm: () => {
-                                  deleteExams(selectedExams).finally(() => {
-                                    history.push({});
+                  : examItems.length === 0
+                    ? (
+                      <div className="app-empty">
+                        <FileQuestion classes={{ root: 'app-empty__icon' }} />
+                        <Typography classes={{ root: 'app-empty__text' }}>{systemTexts['EMPTY']}</Typography>
+                      </div>
+                    )
+                    : roleId === 'resource/exam/participant'
+                      ? (
+                        <Grid
+                          container={true}
+                          spacing={2}
+                          classes={{ root: classes.participantGridContainer }}
+                        >
+                          {
+                            examItems.map((exam, index) => {
+                              return (
+                                <Grid
+                                  key={index}
+                                  item={true}
+                                  xs={12}
+                                  sm={12}
+                                  md={6}
+                                  lg={4}
+                                  xl={3}
+                                >
+                                  <ExamCard exam={exam}></ExamCard>
+                                </Grid>
+                              );
+                            })
+                          }
+                          <Grid item={true} style={{ width: '100%' }}>
+                            <AppLoadMore
+                              total={totalExams}
+                              currentCount={examItems.length}
+                              pageSize={size}
+                              loading={queryExamsLoading}
+                              onLoadMore={() => {
+                                setLoadMoreMode(true);
+                                const lastCursor = _.get(_.last(examItems), 'id');
+                                if (lastCursor) {
+                                  history.push(pushSearch(history, {
+                                    last_cursor: lastCursor,
+                                  }));
+                                }
+                              }}
+                            />
+                          </Grid>
+                        </Grid>
+                      )
+                      : (
+                        <AppTable
+                          schema={schema}
+                          data={examItems}
+                          loading={queryExamsLoading}
+                          toolbarButtons={[
+                            {
+                              Icon: FileDocumentEdit,
+                              title: texts['011'],
+                              show: selectedExams.length === 1
+                                && ['resource/exam/initiator', 'resource/exam/maintainer'].includes(roleId)
+                                && (selectedExams[0].startTime ? Date.parse(selectedExams[0].startTime) > Date.now() : true)
+                                && Date.now() < Date.parse(selectedExams[0].endTime),
+                              IconButtonProps: {
+                              // TODO: push to edit exam page
+                                onClick: () => {},
+                              },
+                            },
+                            {
+                              Icon: FileEye,
+                              title: texts['012'],
+                              show: selectedExams.length === 1
+                                && selectedExams[0].startTime
+                                && Date.now() >= Date.parse(selectedExams[0].startTime)
+                                && Date.now() <= Date.parse(selectedExams[0].endTime)
+                                && roleId === 'resource/exam/invigilator',
+                              IconButtonProps: {
+                              // TODO: push to invigilator page
+                                onClick: () => {},
+                              },
+                            },
+                            {
+                              Icon: Delete,
+                              title: texts['010'],
+                              show: roleId === 'resource/exam/initiator',
+                              IconButtonProps: {
+                                onClick: () => {
+                                  AppDialogManager.confirm(`${texts['014']} ${selectedExams.map((exam) => exam.title).join(', ')}`, {
+                                    disableBackdropClick: true,
+                                    onConfirm: () => {
+                                      deleteExams(selectedExams).finally(() => {
+                                        history.push({});
+                                      });
+                                    },
                                   });
                                 },
+                              },
+                            },
+                          ]}
+                          TablePaginationProps={{
+                            count: totalExams,
+                            page: page - 1,
+                            rowsPerPage: size,
+                            onChangePage: (event, newPageNumber) => {
+                              history.push({
+                                search: pushSearch(history, {
+                                  page: newPageNumber + 1,
+                                }),
                               });
                             },
-                          },
-                        },
-                      ]}
-                      TablePaginationProps={{
-                        count: totalExams,
-                        page: page - 1,
-                        rowsPerPage: size,
-                        onChangePage: (event, newPageNumber) => {
-                          history.push({
-                            search: pushSearch(history, {
-                              page: newPageNumber + 1,
-                            }),
-                          });
-                        },
-                        onChangeRowsPerPage: (event) => {
-                          history.push({
-                            search: pushSearch(history, {
-                              size: event.target.value,
-                              page: 1,
-                            }),
-                          });
-                        },
-                      }}
-                      onSelectionChange={(items: Exam[]) => setSelectedExams(items)}
-                    />
-                  )
+                            onChangeRowsPerPage: (event) => {
+                              history.push({
+                                search: pushSearch(history, {
+                                  size: event.target.value,
+                                  page: 1,
+                                }),
+                              });
+                            },
+                          }}
+                          onSelectionChange={(items: Exam[]) => setSelectedExams(items)}
+                        />
+                      )
               }
             </div>
           </Paper>

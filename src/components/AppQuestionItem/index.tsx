@@ -229,6 +229,7 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
           {
             (!answerable && Array.isArray(answer) && answer.indexOf((index + 1).toString()) !== -1) && (
               <Chip
+                component="span"
                 variant="outlined"
                 color="primary"
                 icon={<CheckIcon />}
