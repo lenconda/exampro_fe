@@ -202,6 +202,7 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
           }),
         }}
         onClick={() => {
+          if (!answerable) { return }
           if (type === 'single_choice') {
             setSelectedChoiceIndexes([index]);
           } else if (type === 'multiple_choices') {

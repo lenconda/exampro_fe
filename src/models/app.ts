@@ -252,6 +252,8 @@ const AppModel: AppModelType = {
           },
           '/home/questions': {
             '001': '查询试题',
+            '002': '新建',
+            '003': '所有类别',
           },
         },
       },
