@@ -93,7 +93,7 @@ export const usePaginationRequest = <T>(
   }, [result]);
 
   useEffect(() => {
-    if (previousSearchString !== searchString && _.isFunction(handler)) {
+    if (_.isFunction(handler)) {
       setLoading(true);
       handler(searchString).then((data) => {
         if (data) {

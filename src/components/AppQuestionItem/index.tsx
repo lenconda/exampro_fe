@@ -7,7 +7,7 @@ import Editor from '../Editor';
 import { useTexts } from '../../utils/texts';
 import Button from '@material-ui/core/Button';
 import Box from '@material-ui/core/Box';
-import Card from '@material-ui/core/Card';
+import Card, { CardProps } from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import Checkbox, { CheckboxProps } from '@material-ui/core/Checkbox';
@@ -45,13 +45,13 @@ const ChoiceSelector: React.FC<ChoiceSelectorProps> = ({
   }
 };
 
-export interface AppQuestionItemProps {
+export interface AppQuestionItemProps extends CardProps {
   questionNumber?: number;
   question?: AppQuestionMetaData;
   collapseHeight?: number;
   canCollapse?: boolean;
   answerable?: boolean;
-  onChange?(question: AppQuestionMetaData, answer: string[] | ContentState): void;
+  onAnswerChange?(question: AppQuestionMetaData, answer: string[] | ContentState): void;
 }
 
 export interface AppQuestionItemComponentProps extends AppState, Dispatch, AppQuestionItemProps {}
@@ -135,7 +135,8 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
   answerable = true,
   question,
   dispatch,
-  onChange,
+  onAnswerChange: onChange,
+  ...props
 }) => {
   if (!question) { return null }
 
@@ -152,6 +153,7 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
     collapseHeight,
   });
   const texts = useTexts(dispatch, 'questionItem');
+  const editorTexts = useTexts(dispatch, 'editor');
   const cardContentRef = useRef<HTMLDivElement>(null);
   const [collapseNecessity, setCollapseNecessity] = useState<boolean>(false);
   const [collapsed, setCollapsed] = useState<boolean>(false);
@@ -242,7 +244,7 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
   };
 
   return (
-    <Card>
+    <Card {...props}>
       <CardContent
         ref={cardContentRef}
         classes={{
@@ -268,6 +270,7 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
               />
             </Box>
             <Editor
+              texts={editorTexts}
               readonly={true}
               editorState={EditorState.createWithContent(content)}
             />
@@ -287,7 +290,10 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
         {
           (answerable && type === 'short_answer') && (
             <Box className={classes.shortAnswerEditorWrapper}>
-              <Editor onChange={(data) => setShortAnswerContent(data.getCurrentContent())} />
+              <Editor
+                texts={editorTexts}
+                onChange={(data) => setShortAnswerContent(data.getCurrentContent())}
+              />
             </Box>
           )
         }
