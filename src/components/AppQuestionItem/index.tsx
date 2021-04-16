@@ -75,6 +75,10 @@ const useStyles = makeStyles((theme) => {
     questionTypeWrapper: {
       paddingRight: theme.spacing(2),
       paddingLeft: theme.spacing(2),
+      marginBottom: theme.spacing(1),
+    },
+    categoryChip: {
+      marginRight: theme.spacing(1),
     },
     cardContentCollapsed: (props: AppQuestionItemProps) => ({
       height: props.collapseHeight,
@@ -146,6 +150,7 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
     answer,
     type,
     blankCount = 0,
+    categories = [],
   } = question;
 
   const classes = useStyles({
@@ -266,11 +271,29 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
           <Box>
             <Box className={classes.questionTypeWrapper}>
               <Chip
-                variant="outlined"
                 size="small"
                 label={texts[type.toUpperCase()]}
               />
             </Box>
+            {
+              (!answerable && categories.length > 0) && (
+                <Box className={classes.questionTypeWrapper}>
+                  {
+                    categories.map((category, index) => {
+                      return (
+                        <Chip
+                          key={index}
+                          size="small"
+                          label={category.name}
+                          variant="outlined"
+                          classes={{ root: classes.categoryChip }}
+                        />
+                      );
+                    })
+                  }
+                </Box>
+              )
+            }
             <Editor
               texts={editorTexts}
               readonly={true}

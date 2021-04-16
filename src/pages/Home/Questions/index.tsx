@@ -11,6 +11,7 @@ import { useDebouncedValue } from '../../../utils/hooks';
 import { pushSearch, useLocationQuery } from '../../../utils/history';
 import { usePaginationRequest, useRequest } from '../../../utils/request';
 import { pipeQuestionResponseToMetadata } from '../../../utils/pipes';
+import Badge from '@material-ui/core/Badge';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Checkbox from '@material-ui/core/Checkbox';
@@ -145,7 +146,15 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
             classes={{ root: classes.filterButton }}
             onClick={() => setFilterMenuOpen(true)}
           >
-            <FilterMenuOutlineIcon />
+            {
+              (selectedCategoriesString && selectedCategoriesString.split(',').length > 0)
+                ? (
+                  <Badge badgeContent={selectedCategoriesString.split(',').length} color="primary">
+                    <FilterMenuOutlineIcon />
+                  </Badge>
+                )
+                : <FilterMenuOutlineIcon />
+            }
           </IconButton>
           <Menu
             open={filterMenuOpen}

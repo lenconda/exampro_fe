@@ -57,6 +57,9 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     paddingRight: theme.spacing(2),
     paddingLeft: theme.spacing(2),
   },
+  disappear: {
+    display: 'none',
+  },
 }));
 
 const ExamsPage: React.FC<ExamPageProps> = ({
@@ -325,12 +328,16 @@ const ExamsPage: React.FC<ExamPageProps> = ({
                         <Typography classes={{ root: 'app-empty__text' }}>{systemTexts['EMPTY']}</Typography>
                       </div>
                     )
-                    : roleId === 'resource/exam/participant'
-                      ? (
+                    : (
+                      <>
                         <Grid
                           container={true}
                           spacing={2}
-                          classes={{ root: classes.participantGridContainer }}
+                          classes={{
+                            root: clsx(classes.participantGridContainer, {
+                              [classes.disappear]: roleId !== 'resource/exam/participant',
+                            }),
+                          }}
                         >
                           {
                             examItems.map((exam, index) => {
@@ -344,7 +351,7 @@ const ExamsPage: React.FC<ExamPageProps> = ({
                                   lg={4}
                                   xl={3}
                                 >
-                                  <ExamCard exam={exam}></ExamCard>
+                                  <ExamCard exam={exam} />
                                 </Grid>
                               );
                             })
@@ -367,12 +374,13 @@ const ExamsPage: React.FC<ExamPageProps> = ({
                             />
                           </Grid>
                         </Grid>
-                      )
-                      : (
                         <AppTable
                           schema={schema}
                           data={examItems}
                           loading={queryExamsLoading}
+                          wrapperClassName={clsx({
+                            [classes.disappear]: roleId === 'resource/exam/participant',
+                          })}
                           toolbarButtons={[
                             {
                               Icon: FileDocumentEdit,
@@ -439,7 +447,8 @@ const ExamsPage: React.FC<ExamPageProps> = ({
                           }}
                           onSelectionChange={(items: Exam[]) => setSelectedExams(items)}
                         />
-                      )
+                      </>
+                    )
               }
             </div>
           </Paper>

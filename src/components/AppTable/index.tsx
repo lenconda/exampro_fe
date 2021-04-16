@@ -32,17 +32,18 @@ export interface TableSchema {
   render?: (row: any, value: any) => React.ReactNode;
 }
 
-export interface AppTableProps {
+export interface AppTableProps extends TableProps {
   schema?: TableSchema[];
   data?: Record<string, any>[];
   TablePaginationProps?: TablePaginationProps;
   loading?: boolean;
   containerMinHeight?: number;
   toolbarButtons?: ToolbarButton[];
+  wrapperClassName?: string;
   onSelectionChange?: (items: any[]) => void;
 }
 
-export interface AppTableComponentProps extends AppTableProps, TableProps, AppState, Dispatch {}
+export interface AppTableComponentProps extends AppTableProps, AppState, Dispatch {}
 
 const useStyles = makeStyles((theme) => {
   return {
@@ -93,6 +94,7 @@ const AppTable: React.FC<AppTableComponentProps> = ({
   loading = false,
   containerMinHeight = 150,
   toolbarButtons = [],
+  wrapperClassName = '',
   dispatch,
   onSelectionChange,
   TablePaginationProps = {
@@ -199,7 +201,7 @@ const AppTable: React.FC<AppTableComponentProps> = ({
   ]);
 
   return (
-    <>
+    <div className={wrapperClassName}>
       {
         loading && (
           <div className="app-loading">
@@ -323,7 +325,7 @@ const AppTable: React.FC<AppTableComponentProps> = ({
             </div>
           )
       }
-    </>
+    </div>
   );
 };
 
