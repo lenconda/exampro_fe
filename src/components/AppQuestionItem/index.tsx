@@ -79,6 +79,7 @@ const useStyles = makeStyles((theme) => {
     },
     categoryChip: {
       marginRight: theme.spacing(1),
+      marginBottom: theme.spacing(1),
     },
     cardContentCollapsed: (props: AppQuestionItemProps) => ({
       height: props.collapseHeight,

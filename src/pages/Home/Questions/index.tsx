@@ -18,6 +18,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
+import TablePagination from '@material-ui/core/TablePagination';
 import Typography from '@material-ui/core/Typography';
 import FileQuestionIcon from 'mdi-material-ui/FileQuestion';
 import FilterMenuOutlineIcon from 'mdi-material-ui/FilterMenuOutline';
@@ -83,6 +84,7 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
   const classes = useStyles();
   const history = useHistory();
   const editorTexts = useTexts(dispatch, 'editor');
+  const tableTexts = useTexts(dispatch, 'table');
   const systemTexts = useTexts(dispatch, 'system');
   const pageTexts = usePageTexts(dispatch, '/home/questions');
   const [inputSearch, setInputSearch] = useState<string>(undefined);
@@ -236,16 +238,46 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
                     </div>
                   )
                   : (
-                    questionItems.map((questionItem, index) => {
-                      return (
-                        <AppQuestionItem
-                          key={index}
-                          answerable={false}
-                          classes={{ root: classes.item }}
-                          question={pipeQuestionResponseToMetadata(questionItem)}
-                        />
-                      );
-                    })
+                    <>
+                      {
+                        questionItems.map((questionItem, index) => {
+                          return (
+                            <AppQuestionItem
+                              key={index}
+                              answerable={false}
+                              classes={{ root: classes.item }}
+                              question={pipeQuestionResponseToMetadata(questionItem)}
+                            />
+                          );
+                        })
+                      }
+                      <TablePagination
+                        component={Box}
+                        page={page - 1}
+                        rowsPerPage={size}
+                        count={totalQuestions}
+                        rowsPerPageOptions={[5, 10, 20, 50]}
+                        labelRowsPerPage={tableTexts['001']}
+                        backIconButtonText={tableTexts['002']}
+                        nextIconButtonText={tableTexts['003']}
+                        labelDisplayedRows={({ from, to, count }) => `${count} ${tableTexts['004']} ${from}-${to}`}
+                        onChangePage={(event, newPageNumber) => {
+                          history.push({
+                            search: pushSearch(history, {
+                              page: newPageNumber + 1,
+                            }),
+                          });
+                        }}
+                        onChangeRowsPerPage={(event) => {
+                          history.push({
+                            search: pushSearch(history, {
+                              size: event.target.value,
+                              page: 1,
+                            }),
+                          });
+                        }}
+                      />
+                    </>
                   )
               )
           }
