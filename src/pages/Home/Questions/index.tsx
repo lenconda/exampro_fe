@@ -4,8 +4,8 @@ import { AppState } from '../../../models/app';
 import { connect } from '../../../patches/dva';
 import { usePageTexts, useTexts } from '../../../utils/texts';
 import { Dispatch, QuestionCategory, QuestionResponseData } from '../../../interfaces';
-import AppQuestionEditor, { AppQuestionMetaData } from '../../../components/AppQuestionEditor';
-import { getAllCategoriesWithoutPagination, getQuestionWithAnswers } from '../../../components/AppQuestionEditor/service';
+import AppQuestionEditor from '../../../components/AppQuestionEditor';
+import { getAllCategoriesWithoutPagination } from '../../../components/AppQuestionEditor/service';
 import AppQuestionItem from '../../../components/AppQuestionItem';
 import { useDebouncedValue } from '../../../utils/hooks';
 import { pushSearch, useLocationQuery } from '../../../utils/history';
@@ -97,11 +97,15 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
     queryQuestionsLoading,
     page,
     size,
+    lastCursor,
+    error,
+    refreshQueryQuestions,
   ] = usePaginationRequest<QuestionResponseData>(queryQuestions, { categories: selectedCategoriesString });
   const [categories = [], getCategoriesLoading] = useRequest<QuestionCategory[]>(getAllCategoriesWithoutPagination, []);
   const [queryInputFocused, setQueryInputFocused] = useState<boolean>(false);
   const [filterMenuOpen, setFilterMenuOpen] = useState<boolean>(false);
   const [filterMenuAnchor, setFilterMenuAnchor] = useState<HTMLElement>(null);
+  const [createQuestionOpen, setCreateQuestionOpen] = useState<boolean>(false);
 
   useEffect(() => {
     if (debouncedSearch !== undefined) {
@@ -140,7 +144,17 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
             color="primary"
             startIcon={!queryInputFocused ? <NotePlusIcon /> : null}
             variant="contained"
+            onClick={() => setCreateQuestionOpen(true)}
           >{!queryInputFocused ? pageTexts['002'] : null}</Button>
+          <AppQuestionEditor
+            mode="create"
+            open={createQuestionOpen}
+            onSubmitQuestion={() => {
+              setCreateQuestionOpen(false);
+              refreshQueryQuestions();
+            }}
+            onClose={() => setCreateQuestionOpen(false)}
+          />
         </div>
         <Box className={classes.itemsWrapper}>
           <IconButton

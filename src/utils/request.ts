@@ -4,8 +4,8 @@ import _ from 'lodash';
 import qs from 'qs';
 import { useEffect, useState } from 'react';
 
-export type UseRequestReturnType<T> = [T, boolean, Error?];
-export type UsePaginationRequestReturnType<T> = [T[], number, boolean, number, number, string?, Error?];
+export type UseRequestReturnType<T> = [T, boolean, Error?, Function?];
+export type UsePaginationRequestReturnType<T> = [T[], number, boolean, number, number, string?, Error?, Function?];
 
 export const useRequest = <T>(
   handler: (...args: any) => Promise<T>,
@@ -15,6 +15,7 @@ export const useRequest = <T>(
   const [error, setError] = useState<Error>(undefined);
   const [loading, setLoading] = useState<boolean>(false);
   const [flag, setFlag] = useState<boolean>(false);
+  const [refreshCount, setRefreshCount] = useState<number>(0);
 
   const check = (flag: boolean, handler?: Function, args?: any[]) => {
     if (!_.isFunction(handler) || flag) {
@@ -42,9 +43,13 @@ export const useRequest = <T>(
         }
       }).catch((error) => setError(error)).finally(() => setLoading(false));
     }
-  }, [handler, args, flag]);
+  }, [handler, args, flag, refreshCount]);
 
-  return [result, loading, error];
+  const refresh = () => {
+    setRefreshCount(refreshCount + 1);
+  };
+
+  return [result, loading, error, refresh];
 };
 
 export const usePaginationRequest = <T>(
@@ -62,6 +67,8 @@ export const usePaginationRequest = <T>(
   const [result, setResult] = useState<PaginationResponse<T>>(undefined);
   const [items, setItems] = useState<T[]>([]);
   const [total, setTotal] = useState<number>(0);
+  const [refreshCount, setRefreshCount] = useState<number>(0);
+  const [previousRefreshCount, setPreviousRefreshCount] = useState<number>(0);
 
   useEffect(() => {
     if (lastCursor) {
@@ -93,7 +100,7 @@ export const usePaginationRequest = <T>(
   }, [result]);
 
   useEffect(() => {
-    if (previousSearchString !== searchString && _.isFunction(handler)) {
+    if ((previousSearchString !== searchString || previousRefreshCount !== refreshCount) && _.isFunction(handler)) {
       setLoading(true);
       handler(searchString).then((data) => {
         if (data) {
@@ -104,9 +111,14 @@ export const usePaginationRequest = <T>(
       }).finally(() => {
         setLoading(false);
         setPreviousSearchString(searchString);
+        setPreviousRefreshCount(refreshCount);
       });
     }
-  }, [searchString, previousSearchString]);
+  }, [searchString, previousSearchString, refreshCount]);
+
+  const refresh = () => {
+    setRefreshCount(refreshCount + 1);
+  };
 
   return [
     items,
@@ -116,5 +128,6 @@ export const usePaginationRequest = <T>(
     parseInt((size as string) || '10', 10),
     (lastCursor as string),
     error,
+    refresh,
   ];
 };
