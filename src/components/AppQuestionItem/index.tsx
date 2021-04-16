@@ -13,12 +13,16 @@ import CardContent from '@material-ui/core/CardContent';
 import Checkbox, { CheckboxProps } from '@material-ui/core/Checkbox';
 import Chip from '@material-ui/core/Chip';
 import InputBase from '@material-ui/core/InputBase';
+import IconButton from '@material-ui/core/IconButton';
 import Radio, { RadioProps } from '@material-ui/core/Radio';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
+import Tooltip from '@material-ui/core/Tooltip';
 import CheckIcon from '@material-ui/icons/Check';
 import ArrowDropdownIcon from '@material-ui/icons/ArrowDropDown';
 import ArrowDropUpIcon from '@material-ui/icons/ArrowDropUp';
+import EditIcon from '@material-ui/icons/Edit';
+import DeleteIcon from '@material-ui/icons/Delete';
 import React, { useEffect, useRef, useState } from 'react';
 import { ContentState, EditorState } from 'draft-js';
 import { lighten, makeStyles } from '@material-ui/core';
@@ -130,6 +134,11 @@ const useStyles = makeStyles((theme) => {
     blankNumberWrapper: {
       marginRight: theme.spacing(1),
     },
+    cardActionsWrapper: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
   };
 });
 
@@ -160,6 +169,7 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
   });
   const texts = useTexts(dispatch, 'questionItem');
   const editorTexts = useTexts(dispatch, 'editor');
+  const systemTexts = useTexts(dispatch, 'system');
   const cardContentRef = useRef<HTMLDivElement>(null);
   const [collapseNecessity, setCollapseNecessity] = useState<boolean>(false);
   const [collapsed, setCollapsed] = useState<boolean>(false);
@@ -350,17 +360,32 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
           )
         }
       </CardContent>
-      {
-        (canCollapse && collapseNecessity) && (
-          <CardActions>
-            <Button
-              color="primary"
-              endIcon={collapsed ? <ArrowDropdownIcon /> : <ArrowDropUpIcon />}
-              onClick={() => setCollapsed(!collapsed)}
-            >{collapsed ? texts['EXPAND'] : texts['COLLAPSE']}</Button>
-          </CardActions>
-        )
-      }
+      <CardActions classes={{ root: classes.cardActionsWrapper }}>
+        {
+          (canCollapse && collapseNecessity)
+            ? (
+              <Button
+                color="primary"
+                endIcon={collapsed ? <ArrowDropdownIcon /> : <ArrowDropUpIcon />}
+                onClick={() => setCollapsed(!collapsed)}
+              >{collapsed ? texts['EXPAND'] : texts['COLLAPSE']}</Button>
+            )
+            : <div></div>
+        }
+        <Box>
+          {/* TODO: */}
+          <Tooltip title={systemTexts['EDIT']}>
+            <IconButton>
+              <EditIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title={systemTexts['DELETE']}>
+            <IconButton>
+              <DeleteIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      </CardActions>
     </Card>
   );
 };

@@ -137,6 +137,7 @@ const AppModel: AppModelType = {
           'SUBMIT': '提交',
           'SUBMITTING': '提交中...',
           'LOADING': '加载中',
+          'EDIT': '编辑',
         },
         editor: {
           'header-one': '标题 1',
