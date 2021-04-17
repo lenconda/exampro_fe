@@ -24,11 +24,11 @@ import { connect } from 'react-redux';
 import { Divider, MenuItem } from '@material-ui/core';
 import { Route, Redirect, Switch } from 'react-router-dom';
 import { useHistory } from 'react-router';
-import _ from 'lodash';
 import './index.less';
 
 const HomeExamsPage = React.lazy(() => import('./Exams'));
 const HomeQuestionsPage = React.lazy(() => import('./Questions'));
+const HomePapersPage = React.lazy(() => import('./Papers'));
 
 const drawerWidth = 240;
 
@@ -176,6 +176,7 @@ const HomePage: React.FC<HomePageProps> = (props) => {
           <Switch>
             <Route path="/home/exams" component={HomeExamsPage} />
             <Route path="/home/questions" component={HomeQuestionsPage} />
+            <Route path="/home/papers" component={HomePapersPage} />
             <Redirect from="/home" to="/home/exams" exact={true} />
           </Switch>
         </Suspense>

@@ -21,6 +21,7 @@ export interface I18N {
     questionEditor?: Record<string, string>;
     questionItem?: Record<string, string>;
     searchBar?: Record<string, string>;
+    paperEditor?: Record<string, string>;
   };
 }
 
@@ -188,6 +189,13 @@ const AppModel: AppModelType = {
           'SUBMITTING': '提交中',
           'QUESTION_CONTENT': '题干内容',
           'QUESTION_CATEGORY': '题目分类',
+        },
+        paperEditor: {
+          'TITLE': '编辑试卷',
+          'BASE_SETTINGS': '基础设置',
+          'MAINTAINER': '协作人员',
+          'QUESTIONS': '试题',
+          'ENTER_TITLE': '试卷标题',
         },
         questionItem: {
           'IS_ANSWER': '答案',
