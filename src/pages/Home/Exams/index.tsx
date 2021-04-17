@@ -10,7 +10,6 @@ import { usePaginationRequest, useRequest } from '../../../utils/request';
 import AppTable, { TableSchema } from '../../../components/AppTable';
 import { useDebouncedValue, useUpdateEffect } from '../../../utils/hooks';
 import AppDialogManager from '../../../components/AppDialog/Manager';
-import AppLoadMore from '../../../components/AppLoadMore';
 import AppSearchBar from '../../../components/AppSearchBar';
 import clsx from 'clsx';
 import _ from 'lodash';
@@ -25,6 +24,8 @@ import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
 import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
+import TablePagination from '@material-ui/core/TablePagination';
+import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import FileDocumentEdit from 'mdi-material-ui/FileDocumentEdit';
@@ -67,6 +68,7 @@ const ExamsPage: React.FC<ExamPageProps> = ({
   const classes = useStyles();
   const examRoleTexts = useTexts(dispatch, 'examRoles');
   const systemTexts = useTexts(dispatch, 'system');
+  const tableTexts = useTexts(dispatch, 'table');
   const history = useHistory();
   const roleId = useLocationQuery('role') as string;
   const texts = usePageTexts(dispatch, '/home/exams');
@@ -329,23 +331,32 @@ const ExamsPage: React.FC<ExamPageProps> = ({
                               );
                             })
                           }
-                          <Grid item={true} style={{ width: '100%' }}>
-                            <AppLoadMore
-                              total={totalExams}
-                              currentCount={examItems.length}
-                              pageSize={size}
-                              loading={queryExamsLoading}
-                              onLoadMore={() => {
-                                setLoadMoreMode(true);
-                                const lastCursor = _.get(_.last(examItems), 'id');
-                                if (lastCursor) {
-                                  history.push(pushSearch(history, {
-                                    last_cursor: lastCursor,
-                                  }));
-                                }
-                              }}
-                            />
-                          </Grid>
+                          <TablePagination
+                            component={Box}
+                            page={page - 1}
+                            rowsPerPage={size}
+                            count={totalExams}
+                            rowsPerPageOptions={[5, 10, 20, 50]}
+                            labelRowsPerPage={tableTexts['001']}
+                            backIconButtonText={tableTexts['002']}
+                            nextIconButtonText={tableTexts['003']}
+                            labelDisplayedRows={({ from, to, count }) => `${count} ${tableTexts['004']} ${from}-${to}`}
+                            onChangePage={(event, newPageNumber) => {
+                              history.push({
+                                search: pushSearch(history, {
+                                  page: newPageNumber + 1,
+                                }),
+                              });
+                            }}
+                            onChangeRowsPerPage={(event) => {
+                              history.push({
+                                search: pushSearch(history, {
+                                  size: event.target.value,
+                                  page: 1,
+                                }),
+                              });
+                            }}
+                          />
                         </Grid>
                         <AppTable
                           schema={schema}
