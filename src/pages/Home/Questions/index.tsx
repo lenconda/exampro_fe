@@ -11,21 +11,19 @@ import { useDebouncedValue } from '../../../utils/hooks';
 import { pushSearch, useLocationQuery } from '../../../utils/history';
 import { usePaginationRequest, useRequest } from '../../../utils/request';
 import { pipeQuestionResponseToMetadata } from '../../../utils/pipes';
+import AppSearchBar from '../../../components/AppSearchBar';
 import Badge from '@material-ui/core/Badge';
 import Box from '@material-ui/core/Box';
-import Button from '@material-ui/core/Button';
 import Checkbox from '@material-ui/core/Checkbox';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import TablePagination from '@material-ui/core/TablePagination';
 import Typography from '@material-ui/core/Typography';
+import AddCommentIcon from '@material-ui/icons/AddComment';
 import FileQuestionIcon from 'mdi-material-ui/FileQuestion';
 import FilterMenuOutlineIcon from 'mdi-material-ui/FilterMenuOutline';
 import IconButton from '@material-ui/core/IconButton';
-import InputBase from '@material-ui/core/InputBase';
-import Paper from '@material-ui/core/Paper';
-import NotePlusIcon from 'mdi-material-ui/NotePlus';
 import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 import { lighten, makeStyles } from '@material-ui/core';
@@ -89,7 +87,7 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
   const pageTexts = usePageTexts(dispatch, '/home/questions');
   const [inputSearch, setInputSearch] = useState<string>(undefined);
   const debouncedSearch = useDebouncedValue(inputSearch);
-  const search = useLocationQuery('search');
+  const search = useLocationQuery('search') as string;
   const selectedCategoriesString = (useLocationQuery('categories') || '') as string;
   const [
     questionItems = [],
@@ -102,7 +100,6 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
     refreshQueryQuestions,
   ] = usePaginationRequest<QuestionResponseData>(queryQuestions, { categories: selectedCategoriesString });
   const [categories = [], getCategoriesLoading] = useRequest<QuestionCategory[]>(getAllCategoriesWithoutPagination, []);
-  const [queryInputFocused, setQueryInputFocused] = useState<boolean>(false);
   const [filterMenuOpen, setFilterMenuOpen] = useState<boolean>(false);
   const [filterMenuAnchor, setFilterMenuAnchor] = useState<HTMLElement>(null);
   const [createQuestionOpen, setCreateQuestionOpen] = useState<boolean>(false);
@@ -118,44 +115,21 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
   return (
     <div className="app-page app-page-home__questions">
       <div className="app-grid-container">
-        <div className="app-page-interact-wrapper">
-          <Paper
-            classes={{ root: 'app-search-wrapper' }}
-          >
-            <InputBase
-              classes={{
-                root: 'app-search-wrapper__input__root',
-                input: 'app-search-wrapper__input__input',
-              }}
-              placeholder={pageTexts['001']}
-              defaultValue={search}
-              onFocus={() => setQueryInputFocused(true)}
-              onBlur={() => setQueryInputFocused(false)}
-              onChange={(event) => setInputSearch(event.target.value)}
-            />
-          </Paper>
-          <Button
-            classes={{
-              root: clsx(
-                'app-page-interact-wrapper__button',
-                queryInputFocused ? 'collapsed' : '',
-              ),
-            }}
-            color="primary"
-            startIcon={!queryInputFocused ? <NotePlusIcon /> : null}
-            variant="contained"
-            onClick={() => setCreateQuestionOpen(true)}
-          >{!queryInputFocused ? pageTexts['002'] : null}</Button>
-          <AppQuestionEditor
-            mode="create"
-            open={createQuestionOpen}
-            onSubmitQuestion={() => {
-              setCreateQuestionOpen(false);
-              refreshQueryQuestions();
-            }}
-            onClose={() => setCreateQuestionOpen(false)}
-          />
-        </div>
+        <AppSearchBar
+          search={search}
+          CreateIcon={AddCommentIcon}
+          onSearchChange={(search) => setInputSearch(search)}
+          onCreateClick={() => setCreateQuestionOpen(true)}
+        />
+        <AppQuestionEditor
+          mode="create"
+          open={createQuestionOpen}
+          onSubmitQuestion={() => {
+            setCreateQuestionOpen(false);
+            refreshQueryQuestions();
+          }}
+          onClose={() => setCreateQuestionOpen(false)}
+        />
         <Box className={classes.itemsWrapper}>
           <IconButton
             ref={(ref) => setFilterMenuAnchor(ref)}

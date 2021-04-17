@@ -11,6 +11,7 @@ import AppTable, { TableSchema } from '../../../components/AppTable';
 import { useDebouncedValue, useUpdateEffect } from '../../../utils/hooks';
 import AppDialogManager from '../../../components/AppDialog/Manager';
 import AppLoadMore from '../../../components/AppLoadMore';
+import AppSearchBar from '../../../components/AppSearchBar';
 import clsx from 'clsx';
 import _ from 'lodash';
 import React, { useEffect, useRef, useState } from 'react';
@@ -25,8 +26,6 @@ import Grid from '@material-ui/core/Grid';
 import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
 import Typography from '@material-ui/core/Typography';
-import InputBase from '@material-ui/core/InputBase';
-import Button from '@material-ui/core/Button';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import FileDocumentEdit from 'mdi-material-ui/FileDocumentEdit';
 import FileQuestion from 'mdi-material-ui/FileQuestion';
@@ -72,7 +71,6 @@ const ExamsPage: React.FC<ExamPageProps> = ({
   const roleId = useLocationQuery('role') as string;
   const texts = usePageTexts(dispatch, '/home/exams');
   const [selectedRoleIndex, setSelectedRoleIndex] = useState<number>(0);
-  const [queryExamsInputFocused, setQueryExamsInputFocused] = useState<boolean>(false);
   const [roles = [], rolesLoading] = useRequest<ExamRole[]>(getExamRoleTypes, [examRoleTexts]);
   const [
     examItems = [],
@@ -88,7 +86,7 @@ const ExamsPage: React.FC<ExamPageProps> = ({
   const [tabsFlexBasis, setTabsFlexBasis] = useState<number>(0);
   const [searchValue, setSearchValue] = useState<string>(undefined);
   const debouncedSearchValue = useDebouncedValue(searchValue);
-  const defaultSearch = useLocationQuery('search');
+  const defaultSearch = useLocationQuery('search') as string;
   const [selectedExams, setSelectedExams] = useState<Exam[]>([]);
   const [loadMoreMode, setLoadMoreMode] = useState<boolean>(false);
 
@@ -278,37 +276,12 @@ const ExamsPage: React.FC<ExamPageProps> = ({
             elevation={0}
             classes={{ root: classes.wrapperPaper }}
           >
-            <div className="app-page-interact-wrapper">
-              <Paper
-                classes={{ root: 'app-search-wrapper' }}
-              >
-                <InputBase
-                  classes={{
-                    root: 'app-search-wrapper__input__root',
-                    input: 'app-search-wrapper__input__input',
-                  }}
-                  defaultValue={defaultSearch}
-                  placeholder={texts['001']}
-                  onFocus={() => setQueryExamsInputFocused(true)}
-                  onBlur={() => setQueryExamsInputFocused(false)}
-                  onChange={(event) => {
-                    const value = event.target.value || '';
-                    setSearchValue(value);
-                  }}
-                />
-              </Paper>
-              <Button
-                classes={{
-                  root: clsx(
-                    'app-page-interact-wrapper__button',
-                    queryExamsInputFocused ? 'collapsed' : '',
-                  ),
-                }}
-                color="primary"
-                startIcon={!queryExamsInputFocused ? <NotePlus /> : null}
-                variant="contained"
-              >{!queryExamsInputFocused ? texts['002'] : null}</Button>
-            </div>
+            <AppSearchBar
+              search={defaultSearch}
+              CreateIcon={NotePlus}
+              onSearchChange={(search) => setSearchValue(search)}
+              // onCreateClick={() => {}}
+            />
             <div
               className={clsx('app-page-table-wrapper', {
                 scrollable: roleId === 'resource/exam/participant',

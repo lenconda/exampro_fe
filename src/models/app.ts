@@ -20,6 +20,7 @@ export interface I18N {
     editor?: Record<string, string>;
     questionEditor?: Record<string, string>;
     questionItem?: Record<string, string>;
+    searchBar?: Record<string, string>;
   };
 }
 
@@ -198,6 +199,10 @@ const AppModel: AppModelType = {
           'SHORT_ANSWER': '简答',
           'FILL_IN_BLANK': '填空',
           'SURE_TO_DELETE': '将要删除这个试题',
+        },
+        searchBar: {
+          'CREATE': '新建',
+          'INPUT_TO_QUERY': '在此键入内容以查询...',
         },
         ui: {
           '/user/auth': {
