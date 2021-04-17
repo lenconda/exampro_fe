@@ -197,6 +197,7 @@ const AppModel: AppModelType = {
           'MULTIPLE_CHOICES': '多项选择',
           'SHORT_ANSWER': '简答',
           'FILL_IN_BLANK': '填空',
+          'SURE_TO_DELETE': '将要删除这个试题',
         },
         ui: {
           '/user/auth': {

@@ -1,4 +1,6 @@
-import { AppQuestionMetaData } from '../AppQuestionEditor';
+import { deleteQuestion } from './service';
+import AppQuestionEditor, { AppQuestionMetaData } from '../AppQuestionEditor';
+import AppDialogManager from '../AppDialog/Manager';
 import { connect } from '../../patches/dva';
 import { ConnectState } from '../../models';
 import { AppState } from '../../models/app';
@@ -56,6 +58,8 @@ export interface AppQuestionItemProps extends CardProps {
   canCollapse?: boolean;
   answerable?: boolean;
   onAnswerChange?(question: AppQuestionMetaData, answer: string[] | ContentState): void;
+  onUpdateQuestion?(): void;
+  onDeleteQuestion?(): void;
 }
 
 export interface AppQuestionItemComponentProps extends AppState, Dispatch, AppQuestionItemProps {}
@@ -150,6 +154,8 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
   question,
   dispatch,
   onAnswerChange: onChange,
+  onUpdateQuestion,
+  onDeleteQuestion,
   ...props
 }) => {
   if (!question) { return null }
@@ -179,6 +185,7 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
     shortAnswerContent,
     setShortAnswerContent,
   ] = useState<ContentState>(EditorState.createEmpty().getCurrentContent());
+  const [questionEditorOpen, setQuestionEditorOpen] = useState<boolean>(false);
 
   useEffect(() => {
     if (cardContentRef.current) {
@@ -373,17 +380,40 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
             : <div></div>
         }
         <Box>
-          {/* TODO: */}
           <Tooltip title={systemTexts['EDIT']}>
-            <IconButton>
+            <IconButton onClick={() => setQuestionEditorOpen(true)}>
               <EditIcon />
             </IconButton>
           </Tooltip>
           <Tooltip title={systemTexts['DELETE']}>
-            <IconButton>
+            <IconButton
+              onClick={() => {
+                AppDialogManager.confirm(texts['SURE_TO_DELETE'], {
+                  onConfirm: () => {
+                    deleteQuestion(question.id).finally(() => {
+                      if (_.isFunction(onDeleteQuestion)) {
+                        onDeleteQuestion();
+                      }
+                    });
+                  },
+                });
+              }}
+            >
               <DeleteIcon />
             </IconButton>
           </Tooltip>
+          <AppQuestionEditor
+            mode="edit"
+            question={question}
+            open={questionEditorOpen}
+            onClose={() => setQuestionEditorOpen(false)}
+            onSubmitQuestion={() => {
+              setQuestionEditorOpen(false);
+              if (_.isFunction(onUpdateQuestion)) {
+                onUpdateQuestion();
+              }
+            }}
+          />
         </Box>
       </CardActions>
     </Card>

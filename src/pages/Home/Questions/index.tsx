@@ -261,6 +261,12 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
                               answerable={false}
                               classes={{ root: classes.item }}
                               question={pipeQuestionResponseToMetadata(questionItem)}
+                              onUpdateQuestion={() => {
+                                refreshQueryQuestions();
+                              }}
+                              onDeleteQuestion={() => {
+                                refreshQueryQuestions();
+                              }}
                             />
                           );
                         })
