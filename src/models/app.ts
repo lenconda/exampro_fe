@@ -22,6 +22,7 @@ export interface I18N {
     questionItem?: Record<string, string>;
     searchBar?: Record<string, string>;
     paperEditor?: Record<string, string>;
+    paperQuestionItem?: Record<string, string>;
   };
 }
 
@@ -196,6 +197,9 @@ const AppModel: AppModelType = {
           'MAINTAINER': '协作人员',
           'QUESTIONS': '试题',
           'ENTER_TITLE': '试卷标题',
+          'ADD_QUESTION': '添加试题',
+        },
+        paperQuestionItem: {
         },
         questionItem: {
           'IS_ANSWER': '答案',
