@@ -45,6 +45,7 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
   const texts = useTexts(dispatch, 'paperEditor');
   const [selectedTabIndex, setSelectedTabIndex] = useState<number>(0);
   const [questions, setQuestions] = useState<AppQuestionMetaData[]>([]);
+  const [selectedQuestions, setSelectedQuestions] = useState<AppQuestionMetaData[]>([]);
 
   return (
     <>
@@ -103,11 +104,17 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                                       index={index}
                                       questionNumber={index + 1}
                                       question={question}
+                                      selected={selectedQuestions.findIndex((currentQuestion) => question.id === currentQuestion.id) !== -1}
+                                      onSelect={() => setSelectedQuestions(selectedQuestions.concat(question))}
+                                      onCancelSelect={() => {
+                                        setSelectedQuestions(selectedQuestions.filter((currentQuestion) => {
+                                          return currentQuestion.id !== question.id;
+                                        }));
+                                      }}
                                     />
                                   );
                                 })
                               }
-                              <PaperQuestionItem draggableId="1" index={1} />
                               {provided.placeholder}
                             </Paper>
                           );
