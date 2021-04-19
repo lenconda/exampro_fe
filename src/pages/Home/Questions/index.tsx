@@ -39,9 +39,6 @@ const useStyles = makeStyles((theme) => {
     item: {
       marginBottom: theme.spacing(2),
     },
-    filterButton: {
-      marginBottom: theme.spacing(2),
-    },
     filterMenu: {
       width: 240,
     },
@@ -118,6 +115,22 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
         <AppSearchBar
           search={search}
           CreateIcon={AddCommentIcon}
+          leftComponent={
+            <IconButton
+              ref={(ref) => setFilterMenuAnchor(ref)}
+              onClick={() => setFilterMenuOpen(true)}
+            >
+              {
+                (selectedCategoriesString && selectedCategoriesString.split(',').length > 0)
+                  ? (
+                    <Badge badgeContent={selectedCategoriesString.split(',').length} color="primary">
+                      <FilterMenuOutlineIcon />
+                    </Badge>
+                  )
+                  : <FilterMenuOutlineIcon />
+              }
+            </IconButton>
+          }
           onSearchChange={(search) => setInputSearch(search)}
           onCreateClick={() => setCreateQuestionOpen(true)}
         />
@@ -131,21 +144,6 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
           onClose={() => setCreateQuestionOpen(false)}
         />
         <Box className={classes.itemsWrapper}>
-          <IconButton
-            ref={(ref) => setFilterMenuAnchor(ref)}
-            classes={{ root: classes.filterButton }}
-            onClick={() => setFilterMenuOpen(true)}
-          >
-            {
-              (selectedCategoriesString && selectedCategoriesString.split(',').length > 0)
-                ? (
-                  <Badge badgeContent={selectedCategoriesString.split(',').length} color="primary">
-                    <FilterMenuOutlineIcon />
-                  </Badge>
-                )
-                : <FilterMenuOutlineIcon />
-            }
-          </IconButton>
           <Menu
             open={filterMenuOpen}
             anchorEl={filterMenuAnchor}

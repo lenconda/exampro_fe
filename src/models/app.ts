@@ -198,6 +198,7 @@ const AppModel: AppModelType = {
           'QUESTIONS': '试题',
           'ENTER_TITLE': '试卷标题',
           'ADD_QUESTION': '添加试题',
+          'SELECT_QUESTIONS': '选择试题',
         },
         paperQuestionItem: {
         },

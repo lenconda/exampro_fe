@@ -5,13 +5,16 @@ import { connect } from '../../patches/dva';
 import { ConnectState } from '../../models';
 import { useTexts } from '../../utils/texts';
 import { AppQuestionMetaData } from '../AppQuestionEditor';
-import React, { useState } from 'react';
+import Input from '../AppSearchBar/Input';
+import { useDebouncedValue } from '../../utils/hooks';
+import React, { useEffect, useState } from 'react';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Dialog, { DialogProps } from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import InputBase from '@material-ui/core/InputBase';
 import Paper from '@material-ui/core/Paper';
 import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
@@ -34,6 +37,9 @@ const useStyles = makeStyles((theme) => {
       paddingTop: theme.spacing(2),
       paddingBottom: theme.spacing(2),
     },
+    questionSelectorSearchWrapper: {
+      marginTop: theme.spacing(1),
+    },
   };
 });
 
@@ -43,9 +49,17 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
 }) => {
   const classes = useStyles();
   const texts = useTexts(dispatch, 'paperEditor');
+  const searchBarTexts = useTexts(dispatch, 'searchBar');
   const [selectedTabIndex, setSelectedTabIndex] = useState<number>(0);
   const [questions, setQuestions] = useState<AppQuestionMetaData[]>([]);
   const [selectedQuestions, setSelectedQuestions] = useState<AppQuestionMetaData[]>([]);
+  const [questionSelectorOpen, setQuestionSelectorOpen] = useState<boolean>(false);
+  const [questionSearchValue, setQuestionSearchValue] = useState<string>('');
+  const debouncedQuestionSearchValue = useDebouncedValue(questionSearchValue);
+
+  useEffect(() => {
+
+  }, [debouncedQuestionSearchValue]);
 
   return (
     <>
@@ -86,6 +100,7 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                   <Button
                     variant="outlined"
                     startIcon={<PostAddIcon />}
+                    onClick={() => setQuestionSelectorOpen(true)}
                   >{texts['ADD_QUESTION']}</Button>
                 </Box>
                 <Box className={classes.questionsWrapper}>
@@ -128,6 +143,20 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
           }
         </DialogContent>
         <DialogActions></DialogActions>
+      </Dialog>
+      <Dialog
+        open={questionSelectorOpen}
+        fullWidth={true}
+      >
+        <DialogTitle>
+          {texts['SELECT_QUESTIONS']}
+          <Box className={classes.questionSelectorSearchWrapper}>
+            <Input
+              placeholder={searchBarTexts['INPUT_TO_QUERY']}
+              onValueChange={(value) => setQuestionSearchValue(value)}
+            />
+          </Box>
+        </DialogTitle>
       </Dialog>
     </>
   );

@@ -282,7 +282,7 @@ const ExamsPage: React.FC<ExamPageProps> = ({
               search={defaultSearch}
               CreateIcon={NotePlus}
               onSearchChange={(search) => setSearchValue(search)}
-              // onCreateClick={() => {}}
+              // TODO: onCreateClick={() => {}}
             />
             <div
               className={clsx('app-page-table-wrapper', {

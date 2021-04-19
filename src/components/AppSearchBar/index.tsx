@@ -1,12 +1,10 @@
+import Input from './Input';
 import { connect } from '../../patches/dva';
 import { ConnectState } from '../../models';
 import { AppState } from '../../models/app';
 import { Dispatch } from '../../interfaces';
-import { useDebouncedValue } from '../../utils/hooks';
 import { useTexts } from '../../utils/texts';
 import Button from '@material-ui/core/Button';
-import InputBase from '@material-ui/core/InputBase';
-import Paper from '@material-ui/core/Paper';
 import AddIcon from '@material-ui/icons/Add';
 import React, { useEffect, useState } from 'react';
 import clsx from 'clsx';
@@ -16,6 +14,8 @@ import _ from 'lodash';
 
 export interface AppSearchBarProps {
   search?: string;
+  leftComponent?: React.ReactNode;
+  rightComponent?: React.ReactNode;
   CreateIcon?: OverridableComponent<SvgIconTypeMap<{}, 'svg'>>;
   onSearchChange?(search: string): void;
   onCreateClick?(event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void;
@@ -24,6 +24,8 @@ export interface AppSearchBarComponentProps extends AppSearchBarProps, AppState,
 
 const AppSearchBar: React.FC<AppSearchBarComponentProps> = ({
   search = '',
+  leftComponent = null,
+  rightComponent = null,
   CreateIcon = AddIcon,
   onSearchChange,
   onCreateClick,
@@ -31,36 +33,34 @@ const AppSearchBar: React.FC<AppSearchBarComponentProps> = ({
 }) => {
   const texts = useTexts(dispatch, 'searchBar');
   const [focused, setFocused] = useState<boolean>(false);
-  // const [inputSearch, setInputSearch] = useState<string>('');
-  // const debouncedInputSearch = useDebouncedValue(inputSearch);
+  const [value, setValue] = useState<string>('');
 
-  // useEffect(() => {
-  //   if (_.isFunction(onSearchChange)) {
-  //     onSearchChange(debouncedInputSearch);
-  //   }
-  // }, [debouncedInputSearch]);
+  useEffect(() => {
+    setValue(search);
+  }, []);
 
   return (
     <div className="app-page-interact-wrapper">
-      <Paper
-        classes={{ root: 'app-search-wrapper' }}
-      >
-        <InputBase
-          classes={{
-            root: 'app-search-wrapper__input__root',
-            input: 'app-search-wrapper__input__input',
-          }}
-          placeholder={texts['INPUT_TO_QUERY']}
-          defaultValue={search}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-          onChange={(event) => {
-            if (_.isFunction(onSearchChange)) {
-              onSearchChange(event.target.value);
-            }
-          }}
-        />
-      </Paper>
+      <Input
+        classes={{
+          root: 'app-search-wrapper__input__root',
+          input: 'app-search-wrapper__input__input',
+        }}
+        placeholder={texts['INPUT_TO_QUERY']}
+        value={value}
+        leftNode={leftComponent}
+        rightNode={rightComponent}
+        onFocus={() => setFocused(true)}
+        onWrapperBlur={() => {
+          setFocused(false);
+        }}
+        onValueChange={(value) => {
+          setValue(value);
+          if (_.isFunction(onSearchChange)) {
+            onSearchChange(value);
+          }
+        }}
+      />
       <Button
         classes={{
           root: clsx(
