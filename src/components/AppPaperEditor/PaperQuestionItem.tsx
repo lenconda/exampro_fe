@@ -31,6 +31,10 @@ const useStyles = makeStyles((theme) => {
     dragIndicator: {
       color: theme.palette.grey.A200,
     },
+    questionItem: {
+      flexGrow: 1,
+      flexShrink: 1,
+    },
   };
 });
 
@@ -76,6 +80,9 @@ const PaperQuestionItem: React.FC<PaperQuestionItemComponentProps> = ({
               {
                 question && (
                   <AppQuestionItem
+                    elevation={snapshot.isDragging ? 0 : 1}
+                    classes={{ root: classes.questionItem }}
+                    answerable={false}
                     question={question}
                     questionNumber={questionNumber}
                   />

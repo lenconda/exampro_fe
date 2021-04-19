@@ -39,7 +39,7 @@ const PapersPage: React.FC<PapersPageProps> = ({
           onCreateClick={() => setCreatePaperOpen(true)}
         />
       </div>
-      <AppPaperEditor open={createPaperOpen} />
+      <AppPaperEditor open={createPaperOpen} paperId={18} />
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import PaperQuestionItem from './PaperQuestionItem';
+import { getPaperQuestions } from './service';
 import { AppState } from '../../models/app';
 import { Dispatch } from '../../interfaces';
 import { connect } from '../../patches/dva';
@@ -7,6 +8,7 @@ import { useTexts } from '../../utils/texts';
 import { AppQuestionMetaData } from '../AppQuestionEditor';
 import Input from '../AppSearchBar/Input';
 import { useDebouncedValue } from '../../utils/hooks';
+import { useRequest } from '../../utils/request';
 import React, { useEffect, useState } from 'react';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
@@ -26,7 +28,9 @@ import { makeStyles } from '@material-ui/core';
 
 // const Form = FormikForm as any;
 
-export interface AppPaperEditorProps extends DialogProps {}
+export interface AppPaperEditorProps extends DialogProps {
+  paperId?: number;
+}
 export interface AppPaperEditorComponentProps extends AppState, Dispatch, AppPaperEditorProps {}
 
 const tabs = ['BASE_SETTINGS', 'QUESTIONS', 'MAINTAINER'];
@@ -44,6 +48,7 @@ const useStyles = makeStyles((theme) => {
 });
 
 const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
+  paperId,
   dispatch,
   ...props
 }) => {
@@ -56,10 +61,20 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
   const [questionSelectorOpen, setQuestionSelectorOpen] = useState<boolean>(false);
   const [questionSearchValue, setQuestionSearchValue] = useState<string>('');
   const debouncedQuestionSearchValue = useDebouncedValue(questionSearchValue);
+  const [
+    paperQuestions = [],
+    paperQuestionsLoading,
+  ] = useRequest(getPaperQuestions, [paperId]);
 
   useEffect(() => {
 
   }, [debouncedQuestionSearchValue]);
+
+  useEffect(() => {
+    if (!paperQuestionsLoading) {
+      setQuestions(paperQuestions);
+    }
+  }, [paperQuestions, paperQuestionsLoading]);
 
   return (
     <>
