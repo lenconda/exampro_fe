@@ -1,5 +1,5 @@
 import PaperQuestionItem from './PaperQuestionItem';
-import { getPaperQuestions, queryAllQuestions } from './service';
+import { getPaperQuestionsWithAnswers, queryAllQuestions } from './service';
 import { AppState } from '../../models/app';
 import { Dispatch } from '../../interfaces';
 import { connect } from '../../patches/dva';
@@ -9,7 +9,6 @@ import { AppQuestionMetaData } from '../AppQuestionEditor';
 import Input from '../AppSearchBar/Input';
 import { useDebouncedValue } from '../../utils/hooks';
 import { useRequest } from '../../utils/request';
-import { getUserProfile } from '../../pages/Home/service';
 import AppQuestionItem from '../AppQuestionItem';
 import React, { useEffect, useState } from 'react';
 import Box from '@material-ui/core/Box';
@@ -27,7 +26,7 @@ import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import FileQuestionIcon from 'mdi-material-ui/FileQuestion';
 import PostAddIcon from '@material-ui/icons/PostAdd';
-import { DragDropContext, Droppable } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
 import { makeStyles } from '@material-ui/core';
 // import { Field, Form as FormikForm, Formik } from 'formik';
 
@@ -60,8 +59,8 @@ const useStyles = makeStyles((theme) => {
       flexShrink: 1,
       marginLeft: theme.spacing(1),
     },
-    tabsWrapper: {
-      marginBottom: theme.spacing(2),
+    buttonsWrapper: {
+      marginTop: theme.spacing(2),
     },
   };
 });
@@ -84,11 +83,30 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
   const [
     paperQuestions = [],
     paperQuestionsLoading,
-  ] = useRequest(getPaperQuestions, [paperId]);
-  const [profile] = useRequest(getUserProfile);
+  ] = useRequest(getPaperQuestionsWithAnswers, [paperId]);
 
   const [allQuestions, setAllQuestions] = useState<AppQuestionMetaData[]>([]);
   const [allQuestionsLoading, setAllQuestionsLoading] = useState<boolean>(false);
+
+  const reorderPaperQuestions = (
+    list: AppQuestionMetaData[],
+    startIndex: number,
+    endIndex: number,
+  ): AppQuestionMetaData[] => {
+    const result = Array.from(list);
+    const [removed] = result.splice(startIndex, 1);
+    result.splice(endIndex, 0, removed);
+    return result;
+  };
+
+  const handleDragEnd = (result: DropResult) => {
+    const { source, destination } = result;
+    if (!destination || !source) {
+      return;
+    }
+    const currentQuestions = reorderPaperQuestions(Array.from(questions), source.index, destination.index);
+    setQuestions(currentQuestions);
+  };
 
   const getAllQuestions = (search: string) => {
     setAllQuestionsLoading(true);
@@ -112,7 +130,7 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
       <Dialog {...props} scroll="paper" maxWidth="md" fullWidth={true}>
         <DialogTitle>
           {texts['TITLE']}
-          <Box className={classes.tabsWrapper}>
+          <Box>
             <Tabs
               value={selectedTabIndex}
               variant="scrollable"
@@ -132,13 +150,17 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
               }
             </Tabs>
           </Box>
-          <Box>
-            <Button
-              variant="outlined"
-              startIcon={<PostAddIcon />}
-              onClick={() => setQuestionSelectorOpen(true)}
-            >{texts['SELECT_QUESTIONS']}</Button>
-          </Box>
+          {
+            tabs[selectedTabIndex] === 'QUESTIONS' && (
+              <Box className={classes.buttonsWrapper}>
+                <Button
+                  variant="outlined"
+                  startIcon={<PostAddIcon />}
+                  onClick={() => setQuestionSelectorOpen(true)}
+                >{texts['SELECT_QUESTIONS']}</Button>
+              </Box>
+            )
+          }
         </DialogTitle>
         <DialogContent>
           {
@@ -159,7 +181,7 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                       )
                       : paperQuestions.length > 0
                         ? (
-                          <DragDropContext onDragEnd={() => {}}>
+                          <DragDropContext onDragEnd={handleDragEnd}>
                             <Droppable droppableId="paper-questions">
                               {
                                 (provided) => {
@@ -169,12 +191,11 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                                         questions.map((question, index) => {
                                           return (
                                             <PaperQuestionItem
-                                              key={index}
+                                              key={Math.random()}
                                               draggableId={index.toString()}
                                               index={index}
                                               questionNumber={index + 1}
                                               question={question}
-                                              profile={profile}
                                               selected={selectedQuestions.findIndex((currentQuestion) => question.id === currentQuestion.id) !== -1}
                                               onSelect={() => setSelectedQuestions(selectedQuestions.concat(question))}
                                               onCancelSelect={() => {

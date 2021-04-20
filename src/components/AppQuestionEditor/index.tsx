@@ -192,6 +192,7 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
   onSubmitQuestion,
   ...props
 }) => {
+  if (!question) { return null }
   const texts = useTexts(dispatch, 'questionEditor');
   const editorTexts = useTexts(dispatch, 'editor');
   const systemTexts = useTexts(dispatch, 'system');

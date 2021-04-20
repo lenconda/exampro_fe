@@ -412,18 +412,22 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
               </Tooltip>
             )
           }
-          <AppQuestionEditor
-            mode="edit"
-            question={question}
-            open={questionEditorOpen}
-            onClose={() => setQuestionEditorOpen(false)}
-            onSubmitQuestion={() => {
-              setQuestionEditorOpen(false);
-              if (_.isFunction(onUpdateQuestion)) {
-                onUpdateQuestion();
-              }
-            }}
-          />
+          {
+            question && (
+              <AppQuestionEditor
+                mode="edit"
+                question={question}
+                open={questionEditorOpen}
+                onClose={() => setQuestionEditorOpen(false)}
+                onSubmitQuestion={() => {
+                  setQuestionEditorOpen(false);
+                  if (_.isFunction(onUpdateQuestion)) {
+                    onUpdateQuestion();
+                  }
+                }}
+              />
+            )
+          }
         </Box>
       </CardActions>
     </Card>

@@ -15,7 +15,6 @@ export type PaperQuestionItemProps = Omit<DraggableProps, 'children'> & {
   selected?: boolean;
   questionNumber?: number;
   question?: AppQuestionMetaData;
-  profile?: User;
   onSelect?(): void;
   onCancelSelect?(): void;
 };
@@ -44,7 +43,6 @@ const PaperQuestionItem: React.FC<PaperQuestionItemComponentProps> = ({
   selected = false,
   questionNumber,
   question,
-  profile,
   dispatch,
   onSelect,
   onCancelSelect,
@@ -88,7 +86,7 @@ const PaperQuestionItem: React.FC<PaperQuestionItemComponentProps> = ({
                     answerable={false}
                     question={question}
                     questionNumber={questionNumber}
-                    showButtons={_.get(profile, 'email') === _.get(question, 'creator.email') ? ['edit'] : []}
+                    showButtons={[]}
                   />
                 )
               }

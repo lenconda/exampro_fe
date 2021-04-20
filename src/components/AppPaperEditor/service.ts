@@ -13,9 +13,9 @@ export const queryAllQuestions = async (search: string): Promise<AppQuestionMeta
   return items.map((item) => pipeQuestionResponseToMetadata(item));
 };
 
-export const getPaperQuestions = async (paperId: number): Promise<AppQuestionMetaData[]> => {
+export const getPaperQuestionsWithAnswers = async (paperId: number): Promise<AppQuestionMetaData[]> => {
   const data = await AppRequestManager.send({
-    url: `/paper/${paperId}/questions`,
+    url: `/paper/${paperId}/questions_answers`,
   });
 
   const items = (_.get(data, 'data.data.items') || []) as QuestionResponseData[];
