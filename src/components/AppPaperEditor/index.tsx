@@ -24,6 +24,8 @@ import Paper from '@material-ui/core/Paper';
 import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
 import TextField from '@material-ui/core/TextField';
+import Typography from '@material-ui/core/Typography';
+import FileQuestionIcon from 'mdi-material-ui/FileQuestion';
 import PostAddIcon from '@material-ui/icons/PostAdd';
 import { DragDropContext, Droppable } from 'react-beautiful-dnd';
 import { makeStyles } from '@material-ui/core';
@@ -152,42 +154,49 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                           <CircularProgress classes={{ root: 'app-loading__icon' }} />
                         </div>
                       )
-                      : (
-                        <DragDropContext onDragEnd={() => {}}>
-                          <Droppable droppableId="paper-questions">
-                            {
-                              (provided) => {
-                                return (
-                                  <Paper elevation={0} ref={provided.innerRef}>
-                                    {
-                                      questions.map((question, index) => {
-                                        return (
-                                          <PaperQuestionItem
-                                            key={index}
-                                            draggableId={index.toString()}
-                                            index={index}
-                                            questionNumber={index + 1}
-                                            question={question}
-                                            profile={profile}
-                                            selected={selectedQuestions.findIndex((currentQuestion) => question.id === currentQuestion.id) !== -1}
-                                            onSelect={() => setSelectedQuestions(selectedQuestions.concat(question))}
-                                            onCancelSelect={() => {
-                                              setSelectedQuestions(selectedQuestions.filter((currentQuestion) => {
-                                                return currentQuestion.id !== question.id;
-                                              }));
-                                            }}
-                                          />
-                                        );
-                                      })
-                                    }
-                                    {provided.placeholder}
-                                  </Paper>
-                                );
+                      : paperQuestions.length > 0
+                        ? (
+                          <DragDropContext onDragEnd={() => {}}>
+                            <Droppable droppableId="paper-questions">
+                              {
+                                (provided) => {
+                                  return (
+                                    <Paper elevation={0} ref={provided.innerRef}>
+                                      {
+                                        questions.map((question, index) => {
+                                          return (
+                                            <PaperQuestionItem
+                                              key={index}
+                                              draggableId={index.toString()}
+                                              index={index}
+                                              questionNumber={index + 1}
+                                              question={question}
+                                              profile={profile}
+                                              selected={selectedQuestions.findIndex((currentQuestion) => question.id === currentQuestion.id) !== -1}
+                                              onSelect={() => setSelectedQuestions(selectedQuestions.concat(question))}
+                                              onCancelSelect={() => {
+                                                setSelectedQuestions(selectedQuestions.filter((currentQuestion) => {
+                                                  return currentQuestion.id !== question.id;
+                                                }));
+                                              }}
+                                            />
+                                          );
+                                        })
+                                      }
+                                      {provided.placeholder}
+                                    </Paper>
+                                  );
+                                }
                               }
-                            }
-                          </Droppable>
-                        </DragDropContext>
-                      )
+                            </Droppable>
+                          </DragDropContext>
+                        )
+                        : (
+                          <div className="app-empty">
+                            <FileQuestionIcon classes={{ root: 'app-empty__icon' }} />
+                            <Typography classes={{ root: 'app-empty__text' }}>{systemTexts['EMPTY']}</Typography>
+                          </div>
+                        )
                   }
                 </Box>
               </>
@@ -247,7 +256,12 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                     </Paper>
                   );
                 })
-                : (<></>)
+                : (
+                  <div className="app-empty">
+                    <FileQuestionIcon classes={{ root: 'app-empty__icon' }} />
+                    <Typography classes={{ root: 'app-empty__text' }}>{systemTexts['EMPTY']}</Typography>
+                  </div>
+                )
           }
         </DialogContent>
         <DialogActions>
