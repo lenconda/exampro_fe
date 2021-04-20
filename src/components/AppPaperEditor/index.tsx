@@ -60,6 +60,9 @@ const useStyles = makeStyles((theme) => {
       flexShrink: 1,
       marginLeft: theme.spacing(1),
     },
+    tabsWrapper: {
+      marginBottom: theme.spacing(2),
+    },
   };
 });
 
@@ -109,7 +112,7 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
       <Dialog {...props} scroll="paper" maxWidth="md" fullWidth={true}>
         <DialogTitle>
           {texts['TITLE']}
-          <Box>
+          <Box className={classes.tabsWrapper}>
             <Tabs
               value={selectedTabIndex}
               variant="scrollable"
@@ -129,6 +132,13 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
               }
             </Tabs>
           </Box>
+          <Box>
+            <Button
+              variant="outlined"
+              startIcon={<PostAddIcon />}
+              onClick={() => setQuestionSelectorOpen(true)}
+            >{texts['SELECT_QUESTIONS']}</Button>
+          </Box>
         </DialogTitle>
         <DialogContent>
           {
@@ -139,13 +149,6 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
           {
             tabs[selectedTabIndex] === 'QUESTIONS' && (
               <>
-                <Box>
-                  <Button
-                    variant="outlined"
-                    startIcon={<PostAddIcon />}
-                    onClick={() => setQuestionSelectorOpen(true)}
-                  >{texts['SELECT_QUESTIONS']}</Button>
-                </Box>
                 <Box className={classes.questionsWrapper}>
                   {
                     paperQuestionsLoading
