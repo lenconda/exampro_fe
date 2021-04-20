@@ -1,6 +1,6 @@
 import { connect } from '../../patches/dva';
 import { ConnectState } from '../../models';
-import { Dispatch } from '../../interfaces';
+import { Dispatch, User } from '../../interfaces';
 import { AppState } from '../../models/app';
 import { AppQuestionMetaData } from '../AppQuestionEditor';
 import AppQuestionItem from '../AppQuestionItem';
@@ -15,6 +15,7 @@ export type PaperQuestionItemProps = Omit<DraggableProps, 'children'> & {
   selected?: boolean;
   questionNumber?: number;
   question?: AppQuestionMetaData;
+  profile?: User;
   onSelect?(): void;
   onCancelSelect?(): void;
 };
@@ -34,6 +35,7 @@ const useStyles = makeStyles((theme) => {
     questionItem: {
       flexGrow: 1,
       flexShrink: 1,
+      marginLeft: theme.spacing(1),
     },
   };
 });
@@ -42,6 +44,7 @@ const PaperQuestionItem: React.FC<PaperQuestionItemComponentProps> = ({
   selected = false,
   questionNumber,
   question,
+  profile,
   dispatch,
   onSelect,
   onCancelSelect,
@@ -85,6 +88,7 @@ const PaperQuestionItem: React.FC<PaperQuestionItemComponentProps> = ({
                     answerable={false}
                     question={question}
                     questionNumber={questionNumber}
+                    showButtons={_.get(profile, 'email') === _.get(question, 'creator.email') ? ['edit'] : []}
                   />
                 )
               }

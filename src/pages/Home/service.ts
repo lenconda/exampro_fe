@@ -1,12 +1,12 @@
 import AppRequestManager from '../../components/AppRequest/Manager';
-import { SidebarMenuItem } from '../../interfaces';
+import { SidebarMenuItem, User } from '../../interfaces';
 import _ from 'lodash';
 
 export const getUserProfile = async () => {
   const data = await AppRequestManager.send({
     url: '/user/profile',
   });
-  return _.get(data, 'data.data');
+  return _.get(data, 'data.data') as User;
 };
 
 export const getSidebarMenu = async (

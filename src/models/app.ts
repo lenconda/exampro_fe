@@ -1,7 +1,10 @@
 import { ConnectState } from '.';
 import { ExamStatus } from '../pages/Home/Exams/service';
+import { User } from '../interfaces';
+import { getUserProfile } from '../pages/Home/service';
 import { Effect, Subscription } from 'dva';
 import _ from 'lodash';
+import { Reducer } from 'redux';
 
 export interface I18N {
   [key: string]: {
@@ -30,6 +33,7 @@ export interface AppState {
   count: number;
   locale: string;
   i18n: I18N;
+  user?: User;
 }
 
 export interface AppModelType {
@@ -37,8 +41,11 @@ export interface AppModelType {
   state: AppState;
   effects: {
     getTexts: Effect;
+    getUserProfile: Effect;
   };
-  reducers: {};
+  reducers: {
+    setUserProfile: Reducer<AppState>;
+  };
   subscriptions: {
     setup: Subscription;
   };
@@ -141,6 +148,7 @@ const AppModel: AppModelType = {
           'SUBMITTING': '提交中...',
           'LOADING': '加载中',
           'EDIT': '编辑',
+          'CLOSE': '关闭',
         },
         editor: {
           'header-one': '标题 1',
@@ -287,8 +295,21 @@ const AppModel: AppModelType = {
       const localeTexts = _.get(currentI18n, currentLocale) || {};
       return _.merge(enUSTexts, localeTexts);
     },
+    * getUserProfile({ payload }, { call, put }) {
+      yield put({
+        type: 'setUserProfile',
+        payload: yield call(getUserProfile) as User,
+      });
+    },
   },
-  reducers: {},
+  reducers: {
+    setUserProfile(state, { payload }) {
+      return {
+        ...state,
+        user: _.cloneDeep(payload),
+      };
+    },
+  },
   subscriptions: {
     setup({ history }) {},
   },

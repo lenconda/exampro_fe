@@ -10,7 +10,7 @@ import AppUserCard from '../../components/AppUserCard';
 import { encodeRedirectPathname } from '../../utils/redirect';
 import Fallback from '../../components/Fallback';
 import { useRequest } from '../../utils/request';
-import React, { useState, Suspense } from 'react';
+import React, { useState, Suspense, useEffect } from 'react';
 import AppBar from '@material-ui/core/AppBar';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Drawer from '@material-ui/core/Drawer';
@@ -66,13 +66,16 @@ export interface HomePageProps extends AppState, Dispatch {
   window?: () => Window;
 }
 
-const HomePage: React.FC<HomePageProps> = (props) => {
+const HomePage: React.FC<HomePageProps> = ({
+  dispatch,
+  ...props
+}) => {
   const { window } = props;
   const classes = useStyles();
   const theme = useTheme();
   const history = useHistory();
-  const dropdownTexts = useTexts(props.dispatch, 'avatarDropdown');
-  const sidebarMenuTexts = useTexts(props.dispatch, 'sidebarMenu');
+  const dropdownTexts = useTexts(dispatch, 'avatarDropdown');
+  const sidebarMenuTexts = useTexts(dispatch, 'sidebarMenu');
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userProfile, userProfileLoading] = useRequest<User>(getUserProfile);
   const [sidebarMenu, sidebarMenuLoading] = useRequest<SidebarMenuItem[]>(getSidebarMenu, [sidebarMenuTexts]);

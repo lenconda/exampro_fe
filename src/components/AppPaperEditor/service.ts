@@ -6,7 +6,7 @@ import _ from 'lodash';
 
 export const queryAllQuestions = async (search: string): Promise<AppQuestionMetaData[]> => {
   const data = await AppRequestManager.send({
-    url: `/question?${search ? `${search}&size=-1` : 'size=-1'}`,
+    url: `/question?${search ? `search=${search}&size=-1` : 'size=-1'}`,
   });
 
   const items = (_.get(data, 'data.data.items') || []) as QuestionResponseData[];

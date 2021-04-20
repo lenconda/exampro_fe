@@ -65,6 +65,7 @@ export interface Question {
   createdAt?: string;
   updatedAt?: string;
   deletedAt?: string;
+  creator?: User;
 }
 
 export interface QuestionChoice {

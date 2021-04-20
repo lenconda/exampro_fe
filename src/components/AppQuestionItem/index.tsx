@@ -57,6 +57,7 @@ export interface AppQuestionItemProps extends CardProps {
   collapseHeight?: number;
   canCollapse?: boolean;
   answerable?: boolean;
+  showButtons?: string[];
   onAnswerChange?(question: AppQuestionMetaData, answer: string[] | ContentState): void;
   onUpdateQuestion?(): void;
   onDeleteQuestion?(): void;
@@ -152,6 +153,7 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
   canCollapse = true,
   answerable = true,
   question,
+  showButtons = ['edit', 'delete'],
   dispatch,
   onAnswerChange: onChange,
   onUpdateQuestion,
@@ -380,28 +382,36 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
             : <div></div>
         }
         <Box>
-          <Tooltip title={systemTexts['EDIT']}>
-            <IconButton onClick={() => setQuestionEditorOpen(true)}>
-              <EditIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title={systemTexts['DELETE']}>
-            <IconButton
-              onClick={() => {
-                AppDialogManager.confirm(texts['SURE_TO_DELETE'], {
-                  onConfirm: () => {
-                    deleteQuestion(question.id).finally(() => {
-                      if (_.isFunction(onDeleteQuestion)) {
-                        onDeleteQuestion();
-                      }
+          {
+            (showButtons.indexOf('edit') !== -1 && systemTexts) && (
+              <Tooltip title={systemTexts['EDIT'] || ''}>
+                <IconButton onClick={() => setQuestionEditorOpen(true)}>
+                  <EditIcon />
+                </IconButton>
+              </Tooltip>
+            )
+          }
+          {
+            (showButtons.indexOf('delete') !== -1 && systemTexts) && (
+              <Tooltip title={systemTexts['DELETE'] || ''}>
+                <IconButton
+                  onClick={() => {
+                    AppDialogManager.confirm(texts['SURE_TO_DELETE'], {
+                      onConfirm: () => {
+                        deleteQuestion(question.id).finally(() => {
+                          if (_.isFunction(onDeleteQuestion)) {
+                            onDeleteQuestion();
+                          }
+                        });
+                      },
                     });
-                  },
-                });
-              }}
-            >
-              <DeleteIcon />
-            </IconButton>
-          </Tooltip>
+                  }}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </Tooltip>
+            )
+          }
           <AppQuestionEditor
             mode="edit"
             question={question}
