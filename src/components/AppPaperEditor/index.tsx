@@ -1,7 +1,7 @@
 import PaperQuestionItem from './PaperQuestionItem';
-import { getPaperQuestionsWithAnswers, queryAllQuestions } from './service';
+import { createPaperQuestion, getPaperQuestionsWithAnswers, queryAllQuestions } from './service';
 import { AppState } from '../../models/app';
-import { Dispatch } from '../../interfaces';
+import { Dispatch, PaperQuestionResponseData, QuestionResponseData } from '../../interfaces';
 import { connect } from '../../patches/dva';
 import { ConnectState } from '../../models';
 import { useTexts } from '../../utils/texts';
@@ -10,6 +10,7 @@ import Input from '../AppSearchBar/Input';
 import { useDebouncedValue } from '../../utils/hooks';
 import { useRequest } from '../../utils/request';
 import AppQuestionItem from '../AppQuestionItem';
+import { pipeQuestionResponseToMetadata } from '../../utils/pipes';
 import React, { useEffect, useState } from 'react';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
@@ -62,6 +63,9 @@ const useStyles = makeStyles((theme) => {
     buttonsWrapper: {
       marginTop: theme.spacing(2),
     },
+    textfield: {
+      marginBottom: theme.spacing(4),
+    },
   };
 });
 
@@ -75,7 +79,7 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
   const systemTexts = useTexts(dispatch, 'system');
   const searchBarTexts = useTexts(dispatch, 'searchBar');
   const [selectedTabIndex, setSelectedTabIndex] = useState<number>(0);
-  const [questions, setQuestions] = useState<AppQuestionMetaData[]>([]);
+  const [currentPaperQuestions, setCurrentPaperQuestions] = useState<PaperQuestionResponseData[]>([]);
   const [selectedQuestions, setSelectedQuestions] = useState<AppQuestionMetaData[]>([]);
   const [questionSelectorOpen, setQuestionSelectorOpen] = useState<boolean>(false);
   const [questionSearchValue, setQuestionSearchValue] = useState<string>('');
@@ -85,14 +89,14 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
     paperQuestionsLoading,
   ] = useRequest(getPaperQuestionsWithAnswers, [paperId]);
 
-  const [allQuestions, setAllQuestions] = useState<AppQuestionMetaData[]>([]);
+  const [allQuestions, setAllQuestions] = useState<QuestionResponseData[]>([]);
   const [allQuestionsLoading, setAllQuestionsLoading] = useState<boolean>(false);
 
   const reorderPaperQuestions = (
-    list: AppQuestionMetaData[],
+    list: PaperQuestionResponseData[],
     startIndex: number,
     endIndex: number,
-  ): AppQuestionMetaData[] => {
+  ): PaperQuestionResponseData[] => {
     const result = Array.from(list);
     const [removed] = result.splice(startIndex, 1);
     result.splice(endIndex, 0, removed);
@@ -104,8 +108,13 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
     if (!destination || !source) {
       return;
     }
-    const currentQuestions = reorderPaperQuestions(Array.from(questions), source.index, destination.index);
-    setQuestions(currentQuestions);
+    const newPaperQuestions = reorderPaperQuestions(Array.from(currentPaperQuestions), source.index, destination.index);
+    setCurrentPaperQuestions(newPaperQuestions.map((paperQuestion, index) => {
+      return {
+        ...paperQuestion,
+        order: index + 1,
+      };
+    }));
   };
 
   const getAllQuestions = (search: string) => {
@@ -121,7 +130,7 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
 
   useEffect(() => {
     if (!paperQuestionsLoading) {
-      setQuestions(paperQuestions);
+      setCurrentPaperQuestions(paperQuestions);
     }
   }, [paperQuestions, paperQuestionsLoading]);
 
@@ -165,7 +174,25 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
         <DialogContent>
           {
             tabs[selectedTabIndex] === 'BASE_SETTINGS' && (
-              <TextField label={texts['ENTER_TITLE']} fullWidth={true} />
+              <>
+                <TextField
+                  variant="outlined"
+                  label={texts['ENTER_TITLE']}
+                  fullWidth={true}
+                  classes={{
+                    root: classes.textfield,
+                  }}
+                />
+                <TextField
+                  variant="outlined"
+                  label={texts['MISS_CHOICE_POINTS']}
+                  fullWidth={true}
+                  type="number"
+                  classes={{
+                    root: classes.textfield,
+                  }}
+                />
+              </>
             )
           }
           {
@@ -188,11 +215,12 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                                   return (
                                     <Paper elevation={0} ref={provided.innerRef}>
                                       {
-                                        questions.map((question, index) => {
+                                        currentPaperQuestions.map((paperQuestion, index) => {
+                                          const question = pipeQuestionResponseToMetadata(paperQuestion.question);
                                           return (
                                             <PaperQuestionItem
-                                              key={Math.random()}
-                                              draggableId={index.toString()}
+                                              key={question.id}
+                                              draggableId={question.id.toString()}
                                               index={index}
                                               questionNumber={index + 1}
                                               question={question}
@@ -261,20 +289,20 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                     >
                       <Checkbox
                         color="primary"
-                        checked={questions.findIndex((currentQuestion) => question.id === currentQuestion.id) !== -1}
+                        checked={currentPaperQuestions.findIndex((currentQuestion) => question.id === currentQuestion.question.id) !== -1}
                         onChange={(event) => {
                           const checked = event.target.checked;
                           if (checked) {
-                            setQuestions(questions.concat(question));
+                            setCurrentPaperQuestions(currentPaperQuestions.concat(createPaperQuestion(question, 0)));
                           } else {
-                            setQuestions(questions.filter((currentQuestions) => currentQuestions.id !== question.id));
+                            setCurrentPaperQuestions(currentPaperQuestions.filter((currentQuestions) => currentQuestions.id !== question.id));
                           }
                         }}
                       />
                       <AppQuestionItem
                         classes={{ root: classes.questionSelectorItem }}
                         answerable={false}
-                        question={question}
+                        question={pipeQuestionResponseToMetadata(question)}
                         showButtons={[]}
                       />
                     </Paper>

@@ -207,6 +207,8 @@ const AppModel: AppModelType = {
           'ENTER_TITLE': '试卷标题',
           'ADD_QUESTION': '添加试题',
           'SELECT_QUESTIONS': '选择试题',
+          'MISS_CHOICE_POINTS': '多选题漏选得分',
+          'POINTS': '分数',
         },
         paperQuestionItem: {
         },

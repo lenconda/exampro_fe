@@ -4,17 +4,24 @@ import { Dispatch, User } from '../../interfaces';
 import { AppState } from '../../models/app';
 import { AppQuestionMetaData } from '../AppQuestionEditor';
 import AppQuestionItem from '../AppQuestionItem';
+import { useTexts } from '../../utils/texts';
 import React, { useState } from 'react';
+import Box from '@material-ui/core/Box';
 import Paper from '@material-ui/core/Paper';
+import TextField from '@material-ui/core/TextField';
+import Typography from '@material-ui/core/Typography';
 import { Draggable, DraggableProps } from 'react-beautiful-dnd';
 import { Checkbox, makeStyles } from '@material-ui/core';
 import DragIndicatorIcon from '@material-ui/icons/DragIndicator';
 import _ from 'lodash';
+import clsx from 'clsx';
 
 export type PaperQuestionItemProps = Omit<DraggableProps, 'children'> & {
   selected?: boolean;
+  points?: number;
   questionNumber?: number;
   question?: AppQuestionMetaData;
+  onPointsChange?(points: number): void;
   onSelect?(): void;
   onCancelSelect?(): void;
 };
@@ -32,8 +39,23 @@ const useStyles = makeStyles((theme) => {
       color: theme.palette.grey.A200,
     },
     questionItem: {
+      marginLeft: theme.spacing(1),
+      width: '100%',
+    },
+    questionEditorWrapper: {
       flexGrow: 1,
       flexShrink: 1,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'flex-start',
+    },
+    pointsWrapper: {
+      display: 'flex',
+      alignItems: 'center',
+      marginTop: theme.spacing(1),
+      marginLeft: theme.spacing(1),
+    },
+    pointsInput: {
       marginLeft: theme.spacing(1),
     },
   };
@@ -43,12 +65,15 @@ const PaperQuestionItem: React.FC<PaperQuestionItemComponentProps> = ({
   selected = false,
   questionNumber,
   question,
+  points,
   dispatch,
+  onPointsChange,
   onSelect,
   onCancelSelect,
   ...props
 }) => {
   const classes = useStyles();
+  const texts = useTexts(dispatch, 'paperEditor');
 
   return (
     <Draggable {...props}>
@@ -78,18 +103,33 @@ const PaperQuestionItem: React.FC<PaperQuestionItemComponentProps> = ({
                   }
                 }}
               />
-              {
-                question && (
-                  <AppQuestionItem
-                    elevation={snapshot.isDragging ? 0 : 1}
-                    classes={{ root: classes.questionItem }}
-                    answerable={false}
-                    question={question}
-                    questionNumber={questionNumber}
-                    showButtons={[]}
+              <Box className={classes.questionEditorWrapper}>
+                <AppQuestionItem
+                  elevation={snapshot.isDragging ? 0 : 1}
+                  classes={{
+                    root: clsx(classes.questionItem, {
+                      'app-disappear': !question,
+                    }),
+                  }}
+                  answerable={false}
+                  question={question}
+                  questionNumber={questionNumber}
+                  showButtons={[]}
+                />
+                <Box className={classes.pointsWrapper}>
+                  <Typography>{texts['POINTS']}: </Typography>
+                  <TextField
+                    className={classes.pointsInput}
+                    type="number"
+                    value={points}
+                    onChange={(event) => {
+                      if (_.isFunction(onPointsChange)) {
+                        onPointsChange(event.target.value);
+                      }
+                    }}
                   />
-                )
-              }
+                </Box>
+              </Box>
             </Paper>
           );
         }

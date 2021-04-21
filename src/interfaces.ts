@@ -92,3 +92,13 @@ export interface QuestionResponseData extends Question {
   choices?: Record<string, string>[];
   categories?: QuestionCategory[];
 }
+
+export interface PaperQuestionResponseData {
+  id?: number;
+  order?: number;
+  points: number;
+  question: QuestionResponseData;
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string;
+}

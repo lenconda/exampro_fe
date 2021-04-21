@@ -229,7 +229,7 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
                         questionItems.map((questionItem, index) => {
                           return (
                             <AppQuestionItem
-                              key={index}
+                              key={questionItem.id}
                               answerable={false}
                               classes={{ root: classes.item }}
                               question={pipeQuestionResponseToMetadata(questionItem)}

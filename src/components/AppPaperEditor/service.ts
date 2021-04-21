@@ -1,23 +1,26 @@
 import AppRequestManager from '../AppRequest/Manager';
-import { AppQuestionMetaData } from '../AppQuestionEditor';
-import { QuestionResponseData } from '../../interfaces';
-import { pipeQuestionResponseToMetadata } from '../../utils/pipes';
+import { PaperQuestionResponseData, QuestionResponseData } from '../../interfaces';
 import _ from 'lodash';
 
-export const queryAllQuestions = async (search: string): Promise<AppQuestionMetaData[]> => {
+export const queryAllQuestions = async (search: string): Promise<QuestionResponseData[]> => {
   const data = await AppRequestManager.send({
     url: `/question?${search ? `search=${search}&size=-1` : 'size=-1'}`,
   });
 
-  const items = (_.get(data, 'data.data.items') || []) as QuestionResponseData[];
-  return items.map((item) => pipeQuestionResponseToMetadata(item));
+  return (_.get(data, 'data.data.items') || []) as QuestionResponseData[];
 };
 
-export const getPaperQuestionsWithAnswers = async (paperId: number): Promise<AppQuestionMetaData[]> => {
+export const getPaperQuestionsWithAnswers = async (paperId: number): Promise<PaperQuestionResponseData[]> => {
   const data = await AppRequestManager.send({
     url: `/paper/${paperId}/questions_answers`,
   });
 
-  const items = (_.get(data, 'data.data.items') || []) as QuestionResponseData[];
-  return items.map((item) => pipeQuestionResponseToMetadata(item));
+  return (_.get(data, 'data.data.items') || []) as PaperQuestionResponseData[];
+};
+
+export const createPaperQuestion = (question: QuestionResponseData, points: number) => {
+  return {
+    question,
+    points,
+  } as PaperQuestionResponseData;
 };
