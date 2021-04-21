@@ -270,10 +270,10 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                             <CircularProgress classes={{ root: 'app-loading__icon' }} />
                           </div>
                         )
-                        : searchedQuestions.length > 0
-                          ? !searchContent
-                            ? (<></>)
-                            : searchedQuestions.map((question, index) => {
+                        : !searchContent
+                          ? (<></>)
+                          : searchedQuestions.length > 0
+                            ? searchedQuestions.map((question, index) => {
                               return (
                                 <Paper
                                   key={index}
@@ -301,12 +301,12 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                                 </Paper>
                               );
                             })
-                          : (
-                            <div className="app-empty">
-                              <FileQuestionIcon classes={{ root: 'app-empty__icon' }} />
-                              <Typography classes={{ root: 'app-empty__text' }}>{systemTexts['EMPTY']}</Typography>
-                            </div>
-                          )
+                            : (
+                              <div className="app-empty">
+                                <FileQuestionIcon classes={{ root: 'app-empty__icon' }} />
+                                <Typography classes={{ root: 'app-empty__text' }}>{systemTexts['EMPTY']}</Typography>
+                              </div>
+                            )
                       : paperQuestionsLoading
                         ? (
                           <div className="app-loading">

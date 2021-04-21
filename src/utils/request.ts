@@ -76,7 +76,6 @@ export const usePaginationRequest = <T>(
       const queryKeys = Object.keys(queries);
       for (const key of queryKeys) {
         if (!queries[key]) {
-          console.log(111);
           return;
         }
       }
@@ -110,7 +109,6 @@ export const usePaginationRequest = <T>(
   }, [result]);
 
   useEffect(() => {
-    console.log(222);
     if ((previousSearchString !== searchString || previousRefreshCount !== refreshCount) && _.isFunction(handler)) {
       setLoading(true);
       handler(searchString).then((data) => {
