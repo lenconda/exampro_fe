@@ -1,5 +1,5 @@
 import AppRequestManager from '../AppRequest/Manager';
-import { PaperQuestionResponseData, QuestionResponseData } from '../../interfaces';
+import { PaperQuestionResponseData, QuestionResponseData, User } from '../../interfaces';
 import _ from 'lodash';
 
 export const queryAllQuestions = async (search: string): Promise<QuestionResponseData[]> => {
@@ -31,4 +31,12 @@ export const createPaperQuestion = (question: QuestionResponseData, points: numb
     question,
     points,
   } as PaperQuestionResponseData;
+};
+
+export const queryAllUsers = async (search: string): Promise<User[]> => {
+  const data = await AppRequestManager.send({
+    url: `/user/list?${search ? `search=${search}&size=-1` : 'size=-1'}`,
+  });
+
+  return (_.get(data, 'data.data.items') || []) as User[];
 };

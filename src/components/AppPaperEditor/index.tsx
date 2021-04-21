@@ -1,7 +1,7 @@
 import PaperQuestionItem from './PaperQuestionItem';
-import { createPaperQuestion, getPaperQuestionsWithAnswers, queryAllQuestions } from './service';
+import { createPaperQuestion, getPaperQuestionsWithAnswers, queryAllQuestions, queryAllUsers } from './service';
 import { AppState } from '../../models/app';
-import { Dispatch, PaperQuestionResponseData, QuestionResponseData } from '../../interfaces';
+import { Dispatch, PaperQuestionResponseData, QuestionResponseData, User } from '../../interfaces';
 import { connect } from '../../patches/dva';
 import { ConnectState } from '../../models';
 import { useTexts } from '../../utils/texts';
@@ -97,6 +97,8 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
 
   const [searchedQuestions, setSearchedQuestions] = useState<QuestionResponseData[]>([]);
   const [searchedQuestionsLoading, setSearchedQuestionsLoading] = useState<boolean>(false);
+  const [searchedUsers, setSearchedUsers] = useState<User[]>([]);
+  const [searchedUsersLoading, setSearchedUsersLoading] = useState<boolean>(false);
 
   const searchQuestions = (search: string) => {
     if (search) {
@@ -107,9 +109,22 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
     }
   };
 
+  const searchUsers = (search: string) => {
+    if (search) {
+      setSearchedQuestionsLoading(true);
+      queryAllUsers(search).then((users) => {
+        setSearchedUsers(users);
+      }).finally(() => setSearchedUsersLoading(false));
+    }
+  };
+
   useEffect(() => {
-    searchQuestions(debouncedSearchContent);
-  }, [debouncedSearchContent]);
+    if (tabs[selectedTabIndex] === 'QUESTIONS') {
+      searchQuestions(debouncedSearchContent);
+    } else if (tabs[selectedTabIndex] === 'MAINTAINER') {
+      searchUsers(debouncedSearchContent);
+    }
+  }, [debouncedSearchContent, selectedTabIndex]);
 
   const reorderPaperQuestions = (
     list: PaperQuestionResponseData[],
