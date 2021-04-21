@@ -25,6 +25,7 @@ import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
+import DeleteIcon from '@material-ui/icons/Delete';
 import FileQuestionIcon from 'mdi-material-ui/FileQuestion';
 import PostAddIcon from '@material-ui/icons/PostAdd';
 import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
@@ -62,6 +63,12 @@ const useStyles = makeStyles((theme) => {
     },
     buttonsWrapper: {
       marginTop: theme.spacing(2),
+      '& button': {
+        marginRight: theme.spacing(1),
+      },
+    },
+    deleteButton: {
+      color: theme.palette.error.main,
     },
     textfield: {
       marginBottom: theme.spacing(4),
@@ -80,7 +87,6 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
   const searchBarTexts = useTexts(dispatch, 'searchBar');
   const [selectedTabIndex, setSelectedTabIndex] = useState<number>(0);
   const [currentPaperQuestions, setCurrentPaperQuestions] = useState<PaperQuestionResponseData[]>([]);
-  const [selectedQuestions, setSelectedQuestions] = useState<AppQuestionMetaData[]>([]);
   const [questionSelectorOpen, setQuestionSelectorOpen] = useState<boolean>(false);
   const [questionSearchValue, setQuestionSearchValue] = useState<string>('');
   const debouncedQuestionSearchValue = useDebouncedValue(questionSearchValue);
@@ -91,6 +97,8 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
 
   const [allQuestions, setAllQuestions] = useState<QuestionResponseData[]>([]);
   const [allQuestionsLoading, setAllQuestionsLoading] = useState<boolean>(false);
+
+  const [selectedPaperQuestions, setSelectedPaperQuestions] = useState<PaperQuestionResponseData[]>([]);
 
   const reorderPaperQuestions = (
     list: PaperQuestionResponseData[],
@@ -167,6 +175,25 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                   startIcon={<PostAddIcon />}
                   onClick={() => setQuestionSelectorOpen(true)}
                 >{texts['SELECT_QUESTIONS']}</Button>
+                {
+                  selectedPaperQuestions.length > 0 && (
+                    <Button
+                      variant="text"
+                      startIcon={<DeleteIcon />}
+                      classes={{
+                        root: classes.deleteButton,
+                      }}
+                      onClick={() => {
+                        setCurrentPaperQuestions(currentPaperQuestions.filter((paperQuestion) => {
+                          return selectedPaperQuestions.findIndex((selectedPaperQuestion) => {
+                            return paperQuestion.id === selectedPaperQuestion.id;
+                          }) === -1;
+                        }));
+                        setSelectedPaperQuestions([]);
+                      }}
+                    >{systemTexts['DELETE']} ({selectedPaperQuestions.length})</Button>
+                  )
+                }
               </Box>
             )
           }
@@ -224,11 +251,28 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                                               index={index}
                                               questionNumber={index + 1}
                                               question={question}
-                                              selected={selectedQuestions.findIndex((currentQuestion) => question.id === currentQuestion.id) !== -1}
-                                              onSelect={() => setSelectedQuestions(selectedQuestions.concat(question))}
+                                              points={paperQuestion.points}
+                                              selected={selectedPaperQuestions.findIndex((currentQuestion) => {
+                                                return paperQuestion.id === currentQuestion.id;
+                                              }) !== -1}
+                                              onSelect={() => {
+                                                setSelectedPaperQuestions(selectedPaperQuestions.concat(paperQuestion));
+                                              }}
                                               onCancelSelect={() => {
-                                                setSelectedQuestions(selectedQuestions.filter((currentQuestion) => {
-                                                  return currentQuestion.id !== question.id;
+                                                setSelectedPaperQuestions(selectedPaperQuestions.filter((currentPaperQuestion) => {
+                                                  return currentPaperQuestion.id !== paperQuestion.id;
+                                                }));
+                                              }}
+                                              onPointsChange={(points) => {
+                                                setCurrentPaperQuestions(currentPaperQuestions.map((currentPaperQuestion, currentIndex) => {
+                                                  if (currentIndex === index) {
+                                                    return {
+                                                      ...currentPaperQuestion,
+                                                      points,
+                                                    } as PaperQuestionResponseData;
+                                                  } else {
+                                                    return currentPaperQuestion;
+                                                  }
                                                 }));
                                               }}
                                             />
