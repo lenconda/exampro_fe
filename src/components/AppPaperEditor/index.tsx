@@ -5,12 +5,12 @@ import { Dispatch, PaperQuestionResponseData, QuestionResponseData } from '../..
 import { connect } from '../../patches/dva';
 import { ConnectState } from '../../models';
 import { useTexts } from '../../utils/texts';
-import { AppQuestionMetaData } from '../AppQuestionEditor';
 import Input from '../AppSearchBar/Input';
 import { useDebouncedValue } from '../../utils/hooks';
-import { useRequest } from '../../utils/request';
+import { usePaginationRequest, useRequest } from '../../utils/request';
 import AppQuestionItem from '../AppQuestionItem';
 import { pipeQuestionResponseToMetadata } from '../../utils/pipes';
+import { queryQuestions } from '../../pages/Home/Questions/service';
 import React, { useEffect, useState } from 'react';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
@@ -25,14 +25,12 @@ import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
+import CheckIcon from '@material-ui/icons/Check';
 import DeleteIcon from '@material-ui/icons/Delete';
 import FileQuestionIcon from 'mdi-material-ui/FileQuestion';
 import PostAddIcon from '@material-ui/icons/PostAdd';
 import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
 import { makeStyles } from '@material-ui/core';
-// import { Field, Form as FormikForm, Formik } from 'formik';
-
-// const Form = FormikForm as any;
 
 export interface AppPaperEditorProps extends DialogProps {
   paperId?: number;
@@ -61,10 +59,12 @@ const useStyles = makeStyles((theme) => {
       flexShrink: 1,
       marginLeft: theme.spacing(1),
     },
-    buttonsWrapper: {
+    searchWrapper: {
+      display: 'flex',
+      alignItems: 'stretch',
       marginTop: theme.spacing(2),
       '& button': {
-        marginRight: theme.spacing(1),
+        marginLeft: theme.spacing(2),
       },
     },
     deleteButton: {
@@ -98,7 +98,19 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
   const [allQuestions, setAllQuestions] = useState<QuestionResponseData[]>([]);
   const [allQuestionsLoading, setAllQuestionsLoading] = useState<boolean>(false);
 
+  const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [searchContent, setSearchContent] = useState<string>('');
+  const debouncedSearchContent = useDebouncedValue(searchContent);
   const [selectedPaperQuestions, setSelectedPaperQuestions] = useState<PaperQuestionResponseData[]>([]);
+
+  const [
+    searchedQuestions,
+    totalSearchedQuestions,
+    searchedQuestionsLoading,
+    questionsPage,
+    questionsSize,
+    searchedQuestionsLastCursor,
+  ] = usePaginationRequest<QuestionResponseData>(queryQuestions, { search: debouncedSearchContent }, false);
 
   const reorderPaperQuestions = (
     list: PaperQuestionResponseData[],
@@ -142,6 +154,11 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
     }
   }, [paperQuestions, paperQuestionsLoading]);
 
+  useEffect(() => {
+    setIsSearching(false);
+    setSearchContent('');
+  }, [selectedTabIndex]);
+
   return (
     <>
       <Dialog {...props} scroll="paper" maxWidth="md" fullWidth={true}>
@@ -168,33 +185,52 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
             </Tabs>
           </Box>
           {
-            tabs[selectedTabIndex] === 'QUESTIONS' && (
-              <Box className={classes.buttonsWrapper}>
-                <Button
-                  variant="outlined"
-                  startIcon={<PostAddIcon />}
-                  onClick={() => setQuestionSelectorOpen(true)}
-                >{texts['SELECT_QUESTIONS']}</Button>
+            (tabs[selectedTabIndex] === 'QUESTIONS' || tabs[selectedTabIndex] === 'MAINTAINER') && (
+              <>
+                <Box className={classes.searchWrapper}>
+                  <Input
+                    placeholder={searchBarTexts['INPUT_TO_QUERY']}
+                    value={searchContent}
+                    onFocus={() => setIsSearching(true)}
+                    onValueChange={(value) => setSearchContent(value)}
+                  />
+                  {
+                    isSearching && (
+                      <Button
+                        variant="contained"
+                        color="inherit"
+                        startIcon={<CheckIcon />}
+                        onClick={() => setIsSearching(false)}
+                      >{systemTexts['OK']}</Button>
+                    )
+                  }
+                </Box>
                 {
                   selectedPaperQuestions.length > 0 && (
-                    <Button
-                      variant="text"
-                      startIcon={<DeleteIcon />}
-                      classes={{
-                        root: classes.deleteButton,
-                      }}
-                      onClick={() => {
-                        setCurrentPaperQuestions(currentPaperQuestions.filter((paperQuestion) => {
-                          return selectedPaperQuestions.findIndex((selectedPaperQuestion) => {
-                            return paperQuestion.id === selectedPaperQuestion.id;
-                          }) === -1;
-                        }));
-                        setSelectedPaperQuestions([]);
-                      }}
-                    >{systemTexts['DELETE']} ({selectedPaperQuestions.length})</Button>
+                    <Box className={classes.searchWrapper}>
+                      {
+                        selectedPaperQuestions.length > 0 && (
+                          <Button
+                            variant="text"
+                            startIcon={<DeleteIcon />}
+                            classes={{
+                              root: classes.deleteButton,
+                            }}
+                            onClick={() => {
+                              setCurrentPaperQuestions(currentPaperQuestions.filter((paperQuestion) => {
+                                return selectedPaperQuestions.findIndex((selectedPaperQuestion) => {
+                                  return paperQuestion.id === selectedPaperQuestion.id;
+                                }) === -1;
+                              }));
+                              setSelectedPaperQuestions([]);
+                            }}
+                          >{systemTexts['DELETE']} ({selectedPaperQuestions.length})</Button>
+                        )
+                      }
+                    </Box>
                   )
                 }
-              </Box>
+              </>
             )
           }
         </DialogTitle>
@@ -227,72 +263,116 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
               <>
                 <Box className={classes.questionsWrapper}>
                   {
-                    paperQuestionsLoading
-                      ? (
-                        <div className="app-loading">
-                          <CircularProgress classes={{ root: 'app-loading__icon' }} />
-                        </div>
-                      )
-                      : paperQuestions.length > 0
+                    isSearching
+                      ? searchedQuestionsLoading
                         ? (
-                          <DragDropContext onDragEnd={handleDragEnd}>
-                            <Droppable droppableId="paper-questions">
-                              {
-                                (provided) => {
-                                  return (
-                                    <Paper elevation={0} ref={provided.innerRef}>
-                                      {
-                                        currentPaperQuestions.map((paperQuestion, index) => {
-                                          const question = pipeQuestionResponseToMetadata(paperQuestion.question);
-                                          return (
-                                            <PaperQuestionItem
-                                              key={question.id}
-                                              draggableId={question.id.toString()}
-                                              index={index}
-                                              questionNumber={index + 1}
-                                              question={question}
-                                              points={paperQuestion.points}
-                                              selected={selectedPaperQuestions.findIndex((currentQuestion) => {
-                                                return paperQuestion.id === currentQuestion.id;
-                                              }) !== -1}
-                                              onSelect={() => {
-                                                setSelectedPaperQuestions(selectedPaperQuestions.concat(paperQuestion));
-                                              }}
-                                              onCancelSelect={() => {
-                                                setSelectedPaperQuestions(selectedPaperQuestions.filter((currentPaperQuestion) => {
-                                                  return currentPaperQuestion.id !== paperQuestion.id;
-                                                }));
-                                              }}
-                                              onPointsChange={(points) => {
-                                                setCurrentPaperQuestions(currentPaperQuestions.map((currentPaperQuestion, currentIndex) => {
-                                                  if (currentIndex === index) {
-                                                    return {
-                                                      ...currentPaperQuestion,
-                                                      points,
-                                                    } as PaperQuestionResponseData;
-                                                  } else {
-                                                    return currentPaperQuestion;
-                                                  }
-                                                }));
-                                              }}
-                                            />
-                                          );
-                                        })
-                                      }
-                                      {provided.placeholder}
-                                    </Paper>
-                                  );
-                                }
-                              }
-                            </Droppable>
-                          </DragDropContext>
-                        )
-                        : (
-                          <div className="app-empty">
-                            <FileQuestionIcon classes={{ root: 'app-empty__icon' }} />
-                            <Typography classes={{ root: 'app-empty__text' }}>{systemTexts['EMPTY']}</Typography>
+                          <div className="app-loading">
+                            <CircularProgress classes={{ root: 'app-loading__icon' }} />
                           </div>
                         )
+                        : searchedQuestions.length > 0
+                          ? !searchContent
+                            ? (<></>)
+                            : searchedQuestions.map((question, index) => {
+                              return (
+                                <Paper
+                                  key={index}
+                                  elevation={0}
+                                  classes={{ root: classes.questionSelectorItemWrapper }}
+                                >
+                                  <Checkbox
+                                    color="primary"
+                                    checked={currentPaperQuestions.findIndex((currentQuestion) => question.id === currentQuestion.question.id) !== -1}
+                                    onChange={(event) => {
+                                      const checked = event.target.checked;
+                                      if (checked) {
+                                        setCurrentPaperQuestions(currentPaperQuestions.concat(createPaperQuestion(question, 0)));
+                                      } else {
+                                        setCurrentPaperQuestions(currentPaperQuestions.filter((paperQuestion) => paperQuestion.question.id !== question.id));
+                                      }
+                                    }}
+                                  />
+                                  <AppQuestionItem
+                                    classes={{ root: classes.questionSelectorItem }}
+                                    answerable={false}
+                                    question={pipeQuestionResponseToMetadata(question)}
+                                    showButtons={[]}
+                                  />
+                                </Paper>
+                              );
+                            })
+                          : (
+                            <div className="app-empty">
+                              <FileQuestionIcon classes={{ root: 'app-empty__icon' }} />
+                              <Typography classes={{ root: 'app-empty__text' }}>{systemTexts['EMPTY']}</Typography>
+                            </div>
+                          )
+                      : paperQuestionsLoading
+                        ? (
+                          <div className="app-loading">
+                            <CircularProgress classes={{ root: 'app-loading__icon' }} />
+                          </div>
+                        )
+                        : paperQuestions.length > 0
+                          ? (
+                            <DragDropContext onDragEnd={handleDragEnd}>
+                              <Droppable droppableId="paper-questions">
+                                {
+                                  (provided) => {
+                                    return (
+                                      <Paper elevation={0} ref={provided.innerRef}>
+                                        {
+                                          currentPaperQuestions.map((paperQuestion, index) => {
+                                            const question = pipeQuestionResponseToMetadata(paperQuestion.question);
+                                            return (
+                                              <PaperQuestionItem
+                                                key={question.id}
+                                                draggableId={question.id.toString()}
+                                                index={index}
+                                                questionNumber={index + 1}
+                                                question={question}
+                                                points={paperQuestion.points}
+                                                selected={selectedPaperQuestions.findIndex((currentQuestion) => {
+                                                  return paperQuestion.id === currentQuestion.id;
+                                                }) !== -1}
+                                                onSelect={() => {
+                                                  setSelectedPaperQuestions(selectedPaperQuestions.concat(paperQuestion));
+                                                }}
+                                                onCancelSelect={() => {
+                                                  setSelectedPaperQuestions(selectedPaperQuestions.filter((currentPaperQuestion) => {
+                                                    return currentPaperQuestion.id !== paperQuestion.id;
+                                                  }));
+                                                }}
+                                                onPointsChange={(points) => {
+                                                  setCurrentPaperQuestions(currentPaperQuestions.map((currentPaperQuestion, currentIndex) => {
+                                                    if (currentIndex === index) {
+                                                      return {
+                                                        ...currentPaperQuestion,
+                                                        points,
+                                                      } as PaperQuestionResponseData;
+                                                    } else {
+                                                      return currentPaperQuestion;
+                                                    }
+                                                  }));
+                                                }}
+                                              />
+                                            );
+                                          })
+                                        }
+                                        {provided.placeholder}
+                                      </Paper>
+                                    );
+                                  }
+                                }
+                              </Droppable>
+                            </DragDropContext>
+                          )
+                          : (
+                            <div className="app-empty">
+                              <FileQuestionIcon classes={{ root: 'app-empty__icon' }} />
+                              <Typography classes={{ root: 'app-empty__text' }}>{systemTexts['EMPTY']}</Typography>
+                            </div>
+                          )
                   }
                 </Box>
               </>
@@ -301,7 +381,7 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
         </DialogContent>
         <DialogActions></DialogActions>
       </Dialog>
-      <Dialog
+      {/* <Dialog
         open={questionSelectorOpen}
         fullWidth={true}
       >
@@ -366,7 +446,7 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
             onClick={() => setQuestionSelectorOpen(false)}
           >{systemTexts['CLOSE']}</Button>
         </DialogActions>
-      </Dialog>
+      </Dialog> */}
     </>
   );
 };

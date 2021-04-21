@@ -55,6 +55,7 @@ export const useRequest = <T>(
 export const usePaginationRequest = <T>(
   handler: (...args: any) => Promise<PaginationResponse<T>>,
   queries?: Record<string, string>,
+  emptyMode: boolean = true,
 ): UsePaginationRequestReturnType<T> => {
   const page = useLocationQuery('page');
   const size = useLocationQuery('size');
@@ -71,6 +72,15 @@ export const usePaginationRequest = <T>(
   const [previousRefreshCount, setPreviousRefreshCount] = useState<number>(0);
 
   useEffect(() => {
+    if (!emptyMode) {
+      const queryKeys = Object.keys(queries);
+      for (const key of queryKeys) {
+        if (!queries[key]) {
+          console.log(111);
+          return;
+        }
+      }
+    }
     if (lastCursor) {
       setSearchString(qs.stringify({
         size,
@@ -100,6 +110,7 @@ export const usePaginationRequest = <T>(
   }, [result]);
 
   useEffect(() => {
+    console.log(222);
     if ((previousSearchString !== searchString || previousRefreshCount !== refreshCount) && _.isFunction(handler)) {
       setLoading(true);
       handler(searchString).then((data) => {
