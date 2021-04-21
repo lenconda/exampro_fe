@@ -7,10 +7,9 @@ import { ConnectState } from '../../models';
 import { useTexts } from '../../utils/texts';
 import Input from '../AppSearchBar/Input';
 import { useDebouncedValue } from '../../utils/hooks';
-import { usePaginationRequest, useRequest } from '../../utils/request';
+import { useRequest } from '../../utils/request';
 import AppQuestionItem from '../AppQuestionItem';
 import { pipeQuestionResponseToMetadata } from '../../utils/pipes';
-import { queryQuestions } from '../../pages/Home/Questions/service';
 import React, { useEffect, useState } from 'react';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
@@ -28,7 +27,6 @@ import Typography from '@material-ui/core/Typography';
 import CheckIcon from '@material-ui/icons/Check';
 import DeleteIcon from '@material-ui/icons/Delete';
 import FileQuestionIcon from 'mdi-material-ui/FileQuestion';
-import PostAddIcon from '@material-ui/icons/PostAdd';
 import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
 import { makeStyles } from '@material-ui/core';
 
@@ -87,30 +85,31 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
   const searchBarTexts = useTexts(dispatch, 'searchBar');
   const [selectedTabIndex, setSelectedTabIndex] = useState<number>(0);
   const [currentPaperQuestions, setCurrentPaperQuestions] = useState<PaperQuestionResponseData[]>([]);
-  const [questionSelectorOpen, setQuestionSelectorOpen] = useState<boolean>(false);
-  const [questionSearchValue, setQuestionSearchValue] = useState<string>('');
-  const debouncedQuestionSearchValue = useDebouncedValue(questionSearchValue);
   const [
     paperQuestions = [],
     paperQuestionsLoading,
   ] = useRequest(getPaperQuestionsWithAnswers, [paperId]);
-
-  const [allQuestions, setAllQuestions] = useState<QuestionResponseData[]>([]);
-  const [allQuestionsLoading, setAllQuestionsLoading] = useState<boolean>(false);
 
   const [isSearching, setIsSearching] = useState<boolean>(false);
   const [searchContent, setSearchContent] = useState<string>('');
   const debouncedSearchContent = useDebouncedValue(searchContent);
   const [selectedPaperQuestions, setSelectedPaperQuestions] = useState<PaperQuestionResponseData[]>([]);
 
-  const [
-    searchedQuestions,
-    totalSearchedQuestions,
-    searchedQuestionsLoading,
-    questionsPage,
-    questionsSize,
-    searchedQuestionsLastCursor,
-  ] = usePaginationRequest<QuestionResponseData>(queryQuestions, { search: debouncedSearchContent }, false);
+  const [searchedQuestions, setSearchedQuestions] = useState<QuestionResponseData[]>([]);
+  const [searchedQuestionsLoading, setSearchedQuestionsLoading] = useState<boolean>(false);
+
+  const searchQuestions = (search: string) => {
+    if (search) {
+      setSearchedQuestionsLoading(true);
+      queryAllQuestions(search).then((questions) => {
+        setSearchedQuestions(questions);
+      }).finally(() => setSearchedQuestionsLoading(false));
+    }
+  };
+
+  useEffect(() => {
+    searchQuestions(debouncedSearchContent);
+  }, [debouncedSearchContent]);
 
   const reorderPaperQuestions = (
     list: PaperQuestionResponseData[],
@@ -136,17 +135,6 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
       };
     }));
   };
-
-  const getAllQuestions = (search: string) => {
-    setAllQuestionsLoading(true);
-    queryAllQuestions(search).then((res) => {
-      setAllQuestions(res);
-    }).finally(() => setAllQuestionsLoading(false));
-  };
-
-  useEffect(() => {
-    getAllQuestions(debouncedQuestionSearchValue);
-  }, [debouncedQuestionSearchValue]);
 
   useEffect(() => {
     if (!paperQuestionsLoading) {
@@ -381,72 +369,6 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
         </DialogContent>
         <DialogActions></DialogActions>
       </Dialog>
-      {/* <Dialog
-        open={questionSelectorOpen}
-        fullWidth={true}
-      >
-        <DialogTitle>
-          {texts['SELECT_QUESTIONS']}
-          <Box className={classes.questionSelectorSearchWrapper}>
-            <Input
-              placeholder={searchBarTexts['INPUT_TO_QUERY']}
-              value={questionSearchValue}
-              onValueChange={(value) => setQuestionSearchValue(value)}
-            />
-          </Box>
-        </DialogTitle>
-        <DialogContent>
-          {
-            allQuestionsLoading
-              ? (
-                <div className="app-loading">
-                  <CircularProgress classes={{ root: 'app-loading__icon' }} />
-                </div>
-              )
-              : allQuestions.length > 0
-                ? allQuestions.map((question, index) => {
-                  return (
-                    <Paper
-                      key={index}
-                      elevation={0}
-                      classes={{ root: classes.questionSelectorItemWrapper }}
-                    >
-                      <Checkbox
-                        color="primary"
-                        checked={currentPaperQuestions.findIndex((currentQuestion) => question.id === currentQuestion.question.id) !== -1}
-                        onChange={(event) => {
-                          const checked = event.target.checked;
-                          if (checked) {
-                            setCurrentPaperQuestions(currentPaperQuestions.concat(createPaperQuestion(question, 0)));
-                          } else {
-                            setCurrentPaperQuestions(currentPaperQuestions.filter((currentQuestions) => currentQuestions.id !== question.id));
-                          }
-                        }}
-                      />
-                      <AppQuestionItem
-                        classes={{ root: classes.questionSelectorItem }}
-                        answerable={false}
-                        question={pipeQuestionResponseToMetadata(question)}
-                        showButtons={[]}
-                      />
-                    </Paper>
-                  );
-                })
-                : (
-                  <div className="app-empty">
-                    <FileQuestionIcon classes={{ root: 'app-empty__icon' }} />
-                    <Typography classes={{ root: 'app-empty__text' }}>{systemTexts['EMPTY']}</Typography>
-                  </div>
-                )
-          }
-        </DialogContent>
-        <DialogActions>
-          <Button
-            color="primary"
-            onClick={() => setQuestionSelectorOpen(false)}
-          >{systemTexts['CLOSE']}</Button>
-        </DialogActions>
-      </Dialog> */}
     </>
   );
 };
