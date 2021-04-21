@@ -10,6 +10,14 @@ export const queryAllQuestions = async (search: string): Promise<QuestionRespons
   return (_.get(data, 'data.data.items') || []) as QuestionResponseData[];
 };
 
+export const queryQuestions = async (search: string): Promise<QuestionResponseData[]> => {
+  const data = await AppRequestManager.send({
+    url: `/question?${search}`,
+  });
+
+  return (_.get(data, 'data.data.items') || []) as QuestionResponseData[];
+};
+
 export const getPaperQuestionsWithAnswers = async (paperId: number): Promise<PaperQuestionResponseData[]> => {
   const data = await AppRequestManager.send({
     url: `/paper/${paperId}/questions_answers`,
