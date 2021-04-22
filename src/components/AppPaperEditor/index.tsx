@@ -1,5 +1,5 @@
 import PaperQuestionItem from './PaperQuestionItem';
-import { createPaperQuestion, getPaperQuestionsWithAnswers, queryAllQuestions, queryAllUsers } from './service';
+import { createPaperQuestion, getPaperMaintainers, getPaperQuestionsWithAnswers, queryAllQuestions, queryAllUsers } from './service';
 import { AppState } from '../../models/app';
 import { Dispatch, PaperQuestionResponseData, QuestionResponseData, User } from '../../interfaces';
 import { connect } from '../../patches/dva';
@@ -90,11 +90,15 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
   const systemTexts = useTexts(dispatch, 'system');
   const searchBarTexts = useTexts(dispatch, 'searchBar');
   const [selectedTabIndex, setSelectedTabIndex] = useState<number>(0);
+
   const [currentPaperQuestions, setCurrentPaperQuestions] = useState<PaperQuestionResponseData[]>([]);
+  const [currentMaintainers, setCurrentMaintainers] = useState<User[]>([]);
+
   const [
     paperQuestions = [],
     paperQuestionsLoading,
   ] = useRequest(getPaperQuestionsWithAnswers, [paperId]);
+  const [maintainers = [], maintainersLoading] = useRequest(getPaperMaintainers, [paperId]);
 
   const [isSearching, setIsSearching] = useState<boolean>(false);
   const [searchContent, setSearchContent] = useState<string>('');
@@ -164,6 +168,12 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
       setCurrentPaperQuestions(paperQuestions);
     }
   }, [paperQuestions, paperQuestionsLoading]);
+
+  useEffect(() => {
+    if (!maintainersLoading) {
+      setCurrentMaintainers(maintainers);
+    }
+  }, [maintainers, maintainersLoading]);
 
   useEffect(() => {
     setIsSearching(false);
@@ -412,7 +422,24 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                               <Typography classes={{ root: 'app-empty__text' }}>{systemTexts['EMPTY']}</Typography>
                             </div>
                           )
-                    : (<></>)
+                    : maintainersLoading
+                      ? (
+                        <div className="app-loading">
+                          <CircularProgress classes={{ root: 'app-loading__icon' }} />
+                        </div>
+                      )
+                      : currentMaintainers.length > 0
+                        ? currentMaintainers.map((maintainer) => {
+                          return (
+                            <AppUserItem key={maintainer.email} user={maintainer} />
+                          );
+                        })
+                        : (
+                          <div className="app-empty">
+                            <FileQuestionIcon classes={{ root: 'app-empty__icon' }} />
+                            <Typography classes={{ root: 'app-empty__text' }}>{systemTexts['EMPTY']}</Typography>
+                          </div>
+                        )
                 }
               </Box>
             )

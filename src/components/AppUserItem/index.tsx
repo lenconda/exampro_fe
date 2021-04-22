@@ -1,6 +1,7 @@
 import { User } from '../../interfaces';
 import Avatar from '@material-ui/core/Avatar';
 import Box from '@material-ui/core/Box';
+import Checkbox from '@material-ui/core/Checkbox';
 import Paper, { PaperProps } from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import React from 'react';
@@ -10,6 +11,8 @@ import { makeStyles } from '@material-ui/core';
 
 export interface AppUserItemProps extends PaperProps {
   user?: User;
+  onSelect?(): void;
+  onCancelSelect?(): void;
 }
 
 const useStyles = makeStyles((theme) => {
@@ -23,6 +26,7 @@ const useStyles = makeStyles((theme) => {
       height: '100%',
       flexGrow: 0,
       flexShrink: 0,
+      marginLeft: theme.spacing(1),
     },
     infoWrapper: {
       display: 'flex',
@@ -30,12 +34,15 @@ const useStyles = makeStyles((theme) => {
       flexGrow: 1,
       flexShrink: 1,
       marginLeft: theme.spacing(2),
+      overflow: 'hidden',
     },
   };
 });
 
 const AppUserItem: React.FC<AppUserItemProps> = ({
   user,
+  onSelect,
+  onCancelSelect,
   ...props
 }) => {
   const classes = useStyles();
@@ -47,13 +54,34 @@ const AppUserItem: React.FC<AppUserItemProps> = ({
         root: clsx(_.get(props, 'classes.root'), classes.wrapper),
       })}
     >
+      <Checkbox
+        color="primary"
+        onChange={(event) => {
+          const checked = event.target.checked;
+          if (checked) {
+            if (_.isFunction(onSelect)) {
+              onSelect();
+            }
+          } else {
+            if (_.isFunction(onCancelSelect)) {
+              onCancelSelect();
+            }
+          }
+        }}
+      />
       <Avatar
         classes={{ root: classes.avatar }}
         src={user.avatar || '/assets/images/default_avatar.jpg'}
       />
       <Box className={classes.infoWrapper}>
-        <Typography variant="subtitle1">{user.name || user.email.split('@')[0]}</Typography>
-        <Typography variant="subtitle2">{user.email}</Typography>
+        <Typography
+          variant="subtitle1"
+          noWrap={true}
+        >{user.name || user.email.split('@')[0]}</Typography>
+        <Typography
+          variant="subtitle2"
+          noWrap={true}
+        >{user.email}</Typography>
       </Box>
     </Paper>
   );

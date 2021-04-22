@@ -102,3 +102,23 @@ export interface PaperQuestionResponseData {
   updatedAt?: string;
   deletedAt?: string;
 }
+
+export interface RoleResponseData {
+  id: string;
+  description: string;
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string;
+}
+
+export interface PaperResponseData {
+  id?: number;
+  title: string;
+  public: boolean;
+  missedChoicesScore: number;
+  banned?: boolean;
+  role: RoleResponseData;
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string;
+}
