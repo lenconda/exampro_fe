@@ -65,6 +65,11 @@ const useStyles = makeStyles((theme) => {
         marginLeft: theme.spacing(2),
       },
     },
+    buttonsWrapper: {
+      marginTop: theme.spacing(2),
+      display: 'flex',
+      overflowX: 'scroll',
+    },
     deleteButton: {
       color: theme.palette.error.main,
     },
@@ -209,27 +214,23 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                   }
                 </Box>
                 {
-                  selectedPaperQuestions.length > 0 && (
-                    <Box className={classes.searchWrapper}>
-                      {
-                        selectedPaperQuestions.length > 0 && (
-                          <Button
-                            variant="text"
-                            startIcon={<DeleteIcon />}
-                            classes={{
-                              root: classes.deleteButton,
-                            }}
-                            onClick={() => {
-                              setCurrentPaperQuestions(currentPaperQuestions.filter((paperQuestion) => {
-                                return selectedPaperQuestions.findIndex((selectedPaperQuestion) => {
-                                  return paperQuestion.id === selectedPaperQuestion.id;
-                                }) === -1;
-                              }));
-                              setSelectedPaperQuestions([]);
-                            }}
-                          >{systemTexts['DELETE']} ({selectedPaperQuestions.length})</Button>
-                        )
-                      }
+                  (selectedPaperQuestions.length > 0 && !isSearching) && (
+                    <Box className={classes.buttonsWrapper}>
+                      <Button
+                        variant="text"
+                        startIcon={<DeleteIcon />}
+                        classes={{
+                          root: classes.deleteButton,
+                        }}
+                        onClick={() => {
+                          setCurrentPaperQuestions(currentPaperQuestions.filter((paperQuestion) => {
+                            return selectedPaperQuestions.findIndex((selectedPaperQuestion) => {
+                              return paperQuestion.id === selectedPaperQuestion.id;
+                            }) === -1;
+                          }));
+                          setSelectedPaperQuestions([]);
+                        }}
+                      >{systemTexts['DELETE']} ({selectedPaperQuestions.length})</Button>
                     </Box>
                   )
                 }
@@ -274,7 +275,7 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                           </div>
                         )
                         : !searchContent
-                          ? (<></>)
+                          ? null
                           : searchedQuestions.length > 0
                             ? searchedQuestions.map((question, index) => {
                               return (
@@ -291,6 +292,7 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                                       if (checked) {
                                         setCurrentPaperQuestions(currentPaperQuestions.concat(createPaperQuestion(question, 0)));
                                       } else {
+                                        setSelectedPaperQuestions(selectedPaperQuestions.filter((paperQuestion) => paperQuestion.question.id !== question.id));
                                         setCurrentPaperQuestions(currentPaperQuestions.filter((paperQuestion) => paperQuestion.question.id !== question.id));
                                       }
                                     }}
