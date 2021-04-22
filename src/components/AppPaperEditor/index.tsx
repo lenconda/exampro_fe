@@ -10,6 +10,7 @@ import { useDebouncedValue } from '../../utils/hooks';
 import { useRequest } from '../../utils/request';
 import AppQuestionItem from '../AppQuestionItem';
 import { pipeQuestionResponseToMetadata } from '../../utils/pipes';
+import AppUserItem from '../AppUserItem';
 import React, { useEffect, useState } from 'react';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
@@ -39,7 +40,7 @@ const tabs = ['BASE_SETTINGS', 'QUESTIONS', 'MAINTAINER'];
 
 const useStyles = makeStyles((theme) => {
   return {
-    questionsWrapper: {
+    itemsWrapper: {
       paddingTop: theme.spacing(2),
       paddingBottom: theme.spacing(2),
     },
@@ -116,7 +117,7 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
 
   const searchUsers = (search: string) => {
     if (search) {
-      setSearchedQuestionsLoading(true);
+      setSearchedUsersLoading(true);
       queryAllUsers(search).then((users) => {
         setSearchedUsers(users);
       }).finally(() => setSearchedUsersLoading(false));
@@ -124,6 +125,8 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
   };
 
   useEffect(() => {
+    setSearchedQuestions([]);
+    setSearchedUsers([]);
     if (tabs[selectedTabIndex] === 'QUESTIONS') {
       searchQuestions(debouncedSearchContent);
     } else if (tabs[selectedTabIndex] === 'MAINTAINER') {
@@ -165,6 +168,7 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
   useEffect(() => {
     setIsSearching(false);
     setSearchContent('');
+    setSelectedPaperQuestions([]);
   }, [selectedTabIndex]);
 
   return (
@@ -265,7 +269,7 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
           {
             tabs[selectedTabIndex] === 'QUESTIONS' && (
               <>
-                <Box className={classes.questionsWrapper}>
+                <Box className={classes.itemsWrapper}>
                   {
                     isSearching
                       ? searchedQuestionsLoading
@@ -381,6 +385,36 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                   }
                 </Box>
               </>
+            )
+          }
+          {
+            tabs[selectedTabIndex] === 'MAINTAINER' && (
+              <Box className={classes.itemsWrapper}>
+                {
+                  isSearching
+                    ? searchedUsersLoading
+                      ? (
+                        <div className="app-loading">
+                          <CircularProgress classes={{ root: 'app-loading__icon' }} />
+                        </div>
+                      )
+                      : !searchContent
+                        ? null
+                        : searchedUsers.length > 0
+                          ? searchedUsers.map((user, index) => {
+                            return (
+                              <AppUserItem key={index} user={user} />
+                            );
+                          })
+                          : (
+                            <div className="app-empty">
+                              <FileQuestionIcon classes={{ root: 'app-empty__icon' }} />
+                              <Typography classes={{ root: 'app-empty__text' }}>{systemTexts['EMPTY']}</Typography>
+                            </div>
+                          )
+                    : (<></>)
+                }
+              </Box>
             )
           }
         </DialogContent>
