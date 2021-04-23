@@ -43,7 +43,11 @@ const PapersPage: React.FC<PapersPageProps> = ({
           }}
         />
       </div>
-      <AppPaperEditor open={createPaperOpen} mode="create" />
+      <AppPaperEditor
+        open={createPaperOpen}
+        mode="create"
+        onClose={() => setCreatePaperOpen(false)}
+      />
     </div>
   );
 };

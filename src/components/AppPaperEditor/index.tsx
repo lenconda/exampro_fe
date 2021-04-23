@@ -79,6 +79,9 @@ const useStyles = makeStyles((theme) => {
     textfield: {
       marginBottom: theme.spacing(4),
     },
+    userItem: {
+      marginBottom: theme.spacing(2),
+    },
   };
 });
 
@@ -106,12 +109,14 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
   const [isSearching, setIsSearching] = useState<boolean>(false);
   const [searchContent, setSearchContent] = useState<string>('');
   const debouncedSearchContent = useDebouncedValue(searchContent);
-  const [selectedPaperQuestions, setSelectedPaperQuestions] = useState<PaperQuestionResponseData[]>([]);
 
   const [searchedQuestions, setSearchedQuestions] = useState<QuestionResponseData[]>([]);
   const [searchedQuestionsLoading, setSearchedQuestionsLoading] = useState<boolean>(false);
   const [searchedUsers, setSearchedUsers] = useState<User[]>([]);
   const [searchedUsersLoading, setSearchedUsersLoading] = useState<boolean>(false);
+
+  const [selectedPaperQuestions, setSelectedPaperQuestions] = useState<PaperQuestionResponseData[]>([]);
+  const [selectedMaintainers, setSelectedMaintainers] = useState<User[]>([]);
 
   const [paperData, setPaperData] = useState<Partial<PaperResponseData>>({});
 
@@ -275,7 +280,7 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                   }
                 </Box>
                 {
-                  (selectedPaperQuestions.length > 0 && !isSearching) && (
+                  ((selectedPaperQuestions.length > 0 || selectedMaintainers.length > 0) && !isSearching) && (
                     <Box className={classes.buttonsWrapper}>
                       <Button
                         variant="text"
@@ -291,7 +296,15 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                           }));
                           setSelectedPaperQuestions([]);
                         }}
-                      >{systemTexts['DELETE']} ({selectedPaperQuestions.length})</Button>
+                      >
+                        {systemTexts['DELETE']}&nbsp;
+                        {
+                          tabs[selectedTabIndex] === 'QUESTIONS' && `(${selectedPaperQuestions.length})`
+                        }
+                        {
+                          tabs[selectedTabIndex] === 'MAINTAINER' && `(${selectedMaintainers.length})`
+                        }
+                      </Button>
                     </Box>
                   )
                 }
@@ -489,7 +502,13 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                         : searchedUsers.length > 0
                           ? searchedUsers.map((user, index) => {
                             return (
-                              <AppUserItem key={index} user={user} />
+                              <AppUserItem
+                                key={index}
+                                user={user}
+                                classes={{
+                                  root: classes.userItem,
+                                }}
+                              />
                             );
                           })
                           : (
@@ -507,7 +526,19 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                       : currentMaintainers.length > 0
                         ? currentMaintainers.map((maintainer) => {
                           return (
-                            <AppUserItem key={maintainer.email} user={maintainer} />
+                            <AppUserItem
+                              key={maintainer.email}
+                              user={maintainer}
+                              classes={{
+                                root: classes.userItem,
+                              }}
+                              onSelect={() => {
+                                setSelectedMaintainers(selectedMaintainers.concat(maintainer));
+                              }}
+                              onCancelSelect={() => {
+                                setSelectedMaintainers(selectedMaintainers.filter((item) => item.email !== maintainer.email));
+                              }}
+                            />
                           );
                         })
                         : (
