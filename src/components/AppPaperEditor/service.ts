@@ -48,3 +48,48 @@ export const getPaperMaintainers = async (paperId: number) => {
 
   return (_.get(data, 'data.data.items') || []) as User[];
 };
+
+export const createPaper = async (paper: Partial<PaperResponseData>) => {
+  const data = await AppRequestManager.send({
+    url: '/paper',
+    method: 'POST',
+    data: paper,
+  });
+  return _.get(data, 'data.data') as PaperResponseData;
+};
+
+export const updatePaper = async (paperId: number, paper: Partial<PaperResponseData>) => {
+  const data = await AppRequestManager.send({
+    url: `/paper/${paperId}`,
+    method: 'PATCH',
+    data: paper,
+  });
+  return _.get(data, 'data.data');
+};
+
+export const createPaperQuestions = async (
+  paperId: number,
+  paperQuestions: Partial<PaperQuestionResponseData>[],
+) => {
+  const data = await AppRequestManager.send({
+    url: `/paper/${paperId}/questions`,
+    method: 'POST',
+    data: paperQuestions.map((paperQuestion) => {
+      const { id, points } = paperQuestion;
+      return {
+        id,
+        points,
+      };
+    }),
+  });
+  return _.get(data, 'data.data');
+};
+
+export const createPaperMaintainers = async (paperId: number, maintainers: User[]) => {
+  const data = await AppRequestManager.send({
+    url: `/paper/${paperId}/maintainers`,
+    method: 'POST',
+    data: maintainers.map((maintainer) => maintainer.email),
+  });
+  return _.get(data, 'data.data');
+};

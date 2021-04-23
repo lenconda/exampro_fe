@@ -1,5 +1,5 @@
 import PaperQuestionItem from './PaperQuestionItem';
-import { createPaperQuestion, getPaperMaintainers, getPaperQuestionsWithAnswers, queryAllQuestions, queryAllUsers } from './service';
+import { createPaper, createPaperMaintainers, createPaperQuestion, createPaperQuestions, getPaperMaintainers, getPaperQuestionsWithAnswers, queryAllQuestions, queryAllUsers, updatePaper } from './service';
 import { AppState } from '../../models/app';
 import { Dispatch, PaperQuestionResponseData, PaperResponseData, QuestionResponseData, User } from '../../interfaces';
 import { connect } from '../../patches/dva';
@@ -35,10 +35,10 @@ import _ from 'lodash';
 export interface AppPaperEditorProps extends DialogProps {
   mode?: 'create' | 'edit';
   paper?: PaperResponseData;
+  onSubmitPaper?(): void;
 }
-export interface AppPaperEditorComponentProps extends AppState, Dispatch, AppPaperEditorProps {}
 
-const tabs = ['BASE_SETTINGS', 'QUESTIONS', 'MAINTAINER'];
+export interface AppPaperEditorComponentProps extends AppState, Dispatch, AppPaperEditorProps {}
 
 const useStyles = makeStyles((theme) => {
   return {
@@ -90,12 +90,20 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
   mode = 'create',
   dispatch,
   onClose,
+  onSubmitPaper,
   ...props
 }) => {
+  const tabs = [
+    'BASE_SETTINGS',
+    'QUESTIONS',
+    ...(mode === 'edit' && paper && paper.role.id !== 'resource/paper/owner' ? [] : ['MAINTAINER']),
+  ];
+
   const classes = useStyles();
   const texts = useTexts(dispatch, 'paperEditor');
   const systemTexts = useTexts(dispatch, 'system');
   const searchBarTexts = useTexts(dispatch, 'searchBar');
+  const [submitting, setSubmitting] = useState<boolean>(false);
   const [selectedTabIndex, setSelectedTabIndex] = useState<number>(0);
 
   const [currentPaperQuestions, setCurrentPaperQuestions] = useState<PaperQuestionResponseData[]>([]);
@@ -119,6 +127,22 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
   const [selectedMaintainers, setSelectedMaintainers] = useState<User[]>([]);
 
   const [paperData, setPaperData] = useState<Partial<PaperResponseData>>({});
+
+  const validatePaperData = (
+    paper: Partial<PaperResponseData>,
+    questions: Partial<PaperQuestionResponseData[]>,
+  ): boolean => {
+    if (!paper.title) {
+      return false;
+    }
+    if (!_.isNumber(paper.missedChoicesScore) && !paper.missedChoicesScore) {
+      return false;
+    }
+    if (questions.length === 0) {
+      return false;
+    }
+    return true;
+  };
 
   const searchQuestions = (search: string) => {
     if (search) {
@@ -289,12 +313,21 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                           root: classes.deleteButton,
                         }}
                         onClick={() => {
-                          setCurrentPaperQuestions(currentPaperQuestions.filter((paperQuestion) => {
-                            return selectedPaperQuestions.findIndex((selectedPaperQuestion) => {
-                              return paperQuestion.id === selectedPaperQuestion.id;
-                            }) === -1;
-                          }));
-                          setSelectedPaperQuestions([]);
+                          if (tabs[selectedTabIndex] === 'QUESTIONS') {
+                            setCurrentPaperQuestions(currentPaperQuestions.filter((paperQuestion) => {
+                              return selectedPaperQuestions.findIndex((selectedPaperQuestion) => {
+                                return paperQuestion.id === selectedPaperQuestion.id;
+                              }) === -1;
+                            }));
+                            setSelectedPaperQuestions([]);
+                          } else if (tabs[selectedTabIndex] === 'MAINTAINER') {
+                            setCurrentMaintainers(currentMaintainers.filter((maintainer) => {
+                              return selectedMaintainers.findIndex((selectedMaintainer) => {
+                                return selectedMaintainer.email === maintainer.email;
+                              }) === -1;
+                            }));
+                            setSelectedMaintainers([]);
+                          }
                         }}
                       >
                         {systemTexts['DELETE']}&nbsp;
@@ -508,6 +541,12 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                                 classes={{
                                   root: classes.userItem,
                                 }}
+                                onSelect={() => {
+                                  setMaintainers(maintainers.concat(user));
+                                }}
+                                onCancelSelect={() => {
+                                  setMaintainers(maintainers.filter((maintainer) => user.email !== maintainer.email));
+                                }}
                               />
                             );
                           })
@@ -563,7 +602,35 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
           >{systemTexts['CANCEL']}</Button>
           <Button
             color="primary"
-          >{systemTexts['SUBMIT']}</Button>
+            disabled={!validatePaperData(paperData, currentPaperQuestions)}
+            onClick={() => {
+              if (mode === 'edit' && !paper) {
+                return;
+              }
+              setSubmitting(true);
+              const request = mode === 'create' ? createPaper(paperData) : updatePaper(paper.id, paperData);
+              request
+                .then((res) => {
+                  const id = mode === 'create' ? _.get(res, 'id') : paper.id;
+                  if (_.isNumber(id)) {
+                    const requests = [
+                      createPaperQuestions(id, currentPaperQuestions),
+                      ...(currentMaintainers.length ? [
+                        createPaperMaintainers(id, currentMaintainers),
+                      ] : []),
+                    ];
+                    return Promise.all(requests);
+                  }
+                  return;
+                })
+                .then(() => {
+                  if (_.isFunction(onSubmitPaper)) {
+                    onSubmitPaper();
+                  }
+                })
+                .finally(() => setSubmitting(false));
+            }}
+          >{submitting ? systemTexts['SUBMITTING'] : systemTexts['SUBMIT']}</Button>
         </DialogActions>
       </Dialog>
     </>
