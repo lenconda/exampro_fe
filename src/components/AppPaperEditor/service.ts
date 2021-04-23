@@ -74,13 +74,16 @@ export const createPaperQuestions = async (
   const data = await AppRequestManager.send({
     url: `/paper/${paperId}/questions`,
     method: 'POST',
-    data: paperQuestions.map((paperQuestion) => {
-      const { id, points } = paperQuestion;
-      return {
-        id,
-        points,
-      };
-    }),
+    data: {
+      data: paperQuestions.map((paperQuestion) => {
+        const { question, points } = paperQuestion;
+        const { id } = question;
+        return {
+          id,
+          points,
+        };
+      }),
+    },
   });
   return _.get(data, 'data.data');
 };
@@ -89,7 +92,9 @@ export const createPaperMaintainers = async (paperId: number, maintainers: User[
   const data = await AppRequestManager.send({
     url: `/paper/${paperId}/maintainers`,
     method: 'POST',
-    data: maintainers.map((maintainer) => maintainer.email),
+    data: {
+      emails: maintainers.map((maintainer) => maintainer.email),
+    },
   });
   return _.get(data, 'data.data');
 };

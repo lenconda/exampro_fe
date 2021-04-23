@@ -47,6 +47,7 @@ const PapersPage: React.FC<PapersPageProps> = ({
         open={createPaperOpen}
         mode="create"
         onClose={() => setCreatePaperOpen(false)}
+        onSubmitPaper={() => setCreatePaperOpen(false)}
       />
     </div>
   );

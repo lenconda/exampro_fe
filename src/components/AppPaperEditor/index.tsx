@@ -594,6 +594,7 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
         <DialogActions>
           <Button
             color="primary"
+            disabled={submitting}
             onClick={() => {
               if (_.isFunction(onClose)) {
                 onClose();
@@ -602,7 +603,7 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
           >{systemTexts['CANCEL']}</Button>
           <Button
             color="primary"
-            disabled={!validatePaperData(paperData, currentPaperQuestions)}
+            disabled={!validatePaperData(paperData, currentPaperQuestions) || submitting}
             onClick={() => {
               if (mode === 'edit' && !paper) {
                 return;
