@@ -1,13 +1,12 @@
 import PaperQuestionItem from './PaperQuestionItem';
 import { createPaperQuestion, getPaperMaintainers, getPaperQuestionsWithAnswers, queryAllQuestions, queryAllUsers } from './service';
 import { AppState } from '../../models/app';
-import { Dispatch, PaperQuestionResponseData, QuestionResponseData, User } from '../../interfaces';
+import { Dispatch, PaperQuestionResponseData, PaperResponseData, QuestionResponseData, User } from '../../interfaces';
 import { connect } from '../../patches/dva';
 import { ConnectState } from '../../models';
 import { useTexts } from '../../utils/texts';
 import Input from '../AppSearchBar/Input';
 import { useDebouncedValue } from '../../utils/hooks';
-import { useRequest } from '../../utils/request';
 import AppQuestionItem from '../AppQuestionItem';
 import { pipeQuestionResponseToMetadata } from '../../utils/pipes';
 import AppUserItem from '../AppUserItem';
@@ -20,6 +19,7 @@ import Dialog, { DialogProps } from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Paper from '@material-ui/core/Paper';
 import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
@@ -30,9 +30,11 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import FileQuestionIcon from 'mdi-material-ui/FileQuestion';
 import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
 import { makeStyles } from '@material-ui/core';
+import _ from 'lodash';
 
 export interface AppPaperEditorProps extends DialogProps {
-  paperId?: number;
+  mode?: 'create' | 'edit';
+  paper?: PaperResponseData;
 }
 export interface AppPaperEditorComponentProps extends AppState, Dispatch, AppPaperEditorProps {}
 
@@ -81,8 +83,10 @@ const useStyles = makeStyles((theme) => {
 });
 
 const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
-  paperId,
+  paper,
+  mode = 'create',
   dispatch,
+  onClose,
   ...props
 }) => {
   const classes = useStyles();
@@ -94,11 +98,10 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
   const [currentPaperQuestions, setCurrentPaperQuestions] = useState<PaperQuestionResponseData[]>([]);
   const [currentMaintainers, setCurrentMaintainers] = useState<User[]>([]);
 
-  const [
-    paperQuestions = [],
-    paperQuestionsLoading,
-  ] = useRequest(getPaperQuestionsWithAnswers, [paperId]);
-  const [maintainers = [], maintainersLoading] = useRequest(getPaperMaintainers, [paperId]);
+  const [paperQuestions, setPaperQuestions] = useState<PaperQuestionResponseData[]>([]);
+  const [paperQuestionsLoading, setPaperQuestionsLoading] = useState<boolean>(false);
+  const [maintainers, setMaintainers] = useState<User[]>([]);
+  const [maintainersLoading, setMaintainersLoading] = useState<boolean>(false);
 
   const [isSearching, setIsSearching] = useState<boolean>(false);
   const [searchContent, setSearchContent] = useState<string>('');
@@ -109,6 +112,8 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
   const [searchedQuestionsLoading, setSearchedQuestionsLoading] = useState<boolean>(false);
   const [searchedUsers, setSearchedUsers] = useState<User[]>([]);
   const [searchedUsersLoading, setSearchedUsersLoading] = useState<boolean>(false);
+
+  const [paperData, setPaperData] = useState<Partial<PaperResponseData>>({});
 
   const searchQuestions = (search: string) => {
     if (search) {
@@ -127,6 +132,45 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
       }).finally(() => setSearchedUsersLoading(false));
     }
   };
+
+  const fetchPaperQuestions = (paper: PaperResponseData) => {
+    setPaperQuestionsLoading(true);
+    getPaperQuestionsWithAnswers(paper.id).then((paperQuestions) => {
+      setPaperQuestions(paperQuestions);
+    }).finally(() => setPaperQuestionsLoading(false));
+  };
+
+  const fetchMaintainers = (paper: PaperResponseData) => {
+    setMaintainersLoading(true);
+    getPaperMaintainers(paper.id).then((maintainers) => {
+      setMaintainers(maintainers);
+    }).finally(() => setMaintainersLoading(false));
+  };
+
+  useEffect(() => {
+    if (mode === 'create') {
+      setPaperData({
+        title: '',
+        missedChoicesScore: 0,
+        public: false,
+      });
+    } else if (mode === 'edit') {
+      if (paper) {
+        const {
+          title = '',
+          missedChoicesScore = 0,
+          public: isPublic = false,
+        } = paper;
+        setPaperData({
+          title,
+          missedChoicesScore,
+          public: isPublic,
+        });
+        fetchPaperQuestions(paper);
+        fetchMaintainers(paper);
+      }
+    }
+  }, [mode, paper]);
 
   useEffect(() => {
     setSearchedQuestions([]);
@@ -222,7 +266,10 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                         variant="contained"
                         color="inherit"
                         startIcon={<CheckIcon />}
-                        onClick={() => setIsSearching(false)}
+                        onClick={() => {
+                          setIsSearching(false);
+                          setSearchContent('');
+                        }}
                       >{systemTexts['OK']}</Button>
                     )
                   }
@@ -258,20 +305,49 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
               <>
                 <TextField
                   variant="outlined"
+                  value={paperData.title}
                   label={texts['ENTER_TITLE']}
                   fullWidth={true}
                   classes={{
                     root: classes.textfield,
                   }}
+                  onChange={(event) => {
+                    setPaperData({
+                      ...paperData,
+                      title: event.target.value,
+                    });
+                  }}
                 />
                 <TextField
                   variant="outlined"
+                  value={paperData.missedChoicesScore}
                   label={texts['MISS_CHOICE_POINTS']}
                   fullWidth={true}
                   type="number"
                   classes={{
                     root: classes.textfield,
                   }}
+                  onChange={(event) => {
+                    setPaperData({
+                      ...paperData,
+                      missedChoicesScore: event.target.value ? parseInt(event.target.value, 10) : 0,
+                    });
+                  }}
+                />
+                <FormControlLabel
+                  checked={paperData.public}
+                  label={texts['IS_PUBLIC']}
+                  control={
+                    <Checkbox
+                      color="primary"
+                      onChange={(event) => {
+                        setPaperData({
+                          ...paperData,
+                          public: event.target.checked,
+                        });
+                      }}
+                    />
+                  }
                 />
               </>
             )
@@ -332,7 +408,7 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                             <CircularProgress classes={{ root: 'app-loading__icon' }} />
                           </div>
                         )
-                        : paperQuestions.length > 0
+                        : currentPaperQuestions.length > 0
                           ? (
                             <DragDropContext onDragEnd={handleDragEnd}>
                               <Droppable droppableId="paper-questions">
@@ -445,7 +521,19 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
             )
           }
         </DialogContent>
-        <DialogActions></DialogActions>
+        <DialogActions>
+          <Button
+            color="primary"
+            onClick={() => {
+              if (_.isFunction(onClose)) {
+                onClose();
+              }
+            }}
+          >{systemTexts['CANCEL']}</Button>
+          <Button
+            color="primary"
+          >{systemTexts['SUBMIT']}</Button>
+        </DialogActions>
       </Dialog>
     </>
   );

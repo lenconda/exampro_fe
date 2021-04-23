@@ -19,7 +19,8 @@ const PapersPage: React.FC<PapersPageProps> = ({
   const search = useLocationQuery('search') as string;
   const [inputSearch, setInputSearch] = useState<string>(undefined);
   const debouncedSearch = useDebouncedValue<string>(inputSearch);
-  const [createPaperOpen, setCreatePaperOpen] = useState<boolean>(true);
+  const [mode, setMode] = useState<'create' | 'edit'>('create');
+  const [createPaperOpen, setCreatePaperOpen] = useState<boolean>(false);
 
   useEffect(() => {
     if (debouncedSearch !== undefined) {
@@ -36,10 +37,13 @@ const PapersPage: React.FC<PapersPageProps> = ({
           search={search}
           CreateIcon={NoteAddIcon}
           onSearchChange={(search) => setInputSearch(search)}
-          onCreateClick={() => setCreatePaperOpen(true)}
+          onCreateClick={() => {
+            setMode('create');
+            setCreatePaperOpen(true);
+          }}
         />
       </div>
-      <AppPaperEditor open={createPaperOpen} paperId={18} />
+      <AppPaperEditor open={createPaperOpen} mode="create" />
     </div>
   );
 };

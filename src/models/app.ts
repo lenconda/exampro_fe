@@ -209,6 +209,7 @@ const AppModel: AppModelType = {
           'SELECT_QUESTIONS': '选择试题',
           'MISS_CHOICE_POINTS': '多选题漏选得分',
           'POINTS': '分数',
+          'IS_PUBLIC': '公开考试',
         },
         paperQuestionItem: {
         },
