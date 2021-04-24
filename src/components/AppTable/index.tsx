@@ -111,6 +111,10 @@ const AppTable: React.FC<AppTableComponentProps> = ({
   const tableContainer = useRef<HTMLDivElement>(undefined);
   const tablePaper = useRef<HTMLDivElement>(undefined);
   const tableWrapper = useRef<HTMLDivElement>(undefined);
+  const tableBody = useRef<HTMLElement>(undefined);
+  const tableHead = useRef<HTMLElement>(undefined);
+  const tablePagination = useRef<HTMLElement>(undefined);
+  const tableToolBar = useRef<HTMLElement>(undefined);
   const [tableContainerMaxHeight, setTableContainerMaxHeight] = useState<number>(0);
   const [innerWidth, innerHeight] = useWindowInnerSizes();
 
@@ -178,12 +182,22 @@ const AppTable: React.FC<AppTableComponentProps> = ({
   }, [loading]);
 
   useEffect(() => {
-    if (!loading && tableContainer.current && tablePaper.current && tableWrapper.current) {
-      const tableWrapperClientHeight = tableWrapper.current.clientHeight;
-      const tableContainerHeight = tableContainer.current.clientHeight;
-      const tablePaperHeight = tablePaper.current.clientHeight;
-      const heightDifference = tablePaperHeight - tableContainerHeight;
-      const newTableContainerMaxHeight = tableWrapperClientHeight - heightDifference - 10;
+    if (
+      !loading
+      && tableContainer.current
+      && tablePaper.current
+      && tableWrapper.current
+      && tableBody.current
+      && tableHead
+      && tablePagination
+    ) {
+      const newTableContainerMaxHeight =
+        window.innerHeight
+        - tableBody.current.offsetTop
+        - tablePagination.current.clientHeight
+        - tableHead.current.clientHeight
+        - (tableToolBar.current ? tableToolBar.current.clientHeight : 0)
+        - 48;
       if (newTableContainerMaxHeight > containerMinHeight) {
         setTableContainerMaxHeight(newTableContainerMaxHeight);
       } else {
@@ -191,6 +205,7 @@ const AppTable: React.FC<AppTableComponentProps> = ({
       }
     }
   }, [
+    tableBody.current,
     tableContainer.current,
     tablePaper.current,
     loading,
@@ -198,132 +213,136 @@ const AppTable: React.FC<AppTableComponentProps> = ({
     innerWidth,
     innerHeight,
     tableWrapper.current,
+    tableHead.current,
+    tablePagination.current,
+    tableToolBar.current,
   ]);
 
   return (
     <div className={wrapperClassName}>
       {
-        loading && (
-          <div className="app-loading">
-            <CircularProgress classes={{ root: 'app-loading__icon' }} />
-          </div>
-        )
-      }
-      {
-        data.length === 0
+        loading
           ? (
-            <div className="app-empty">
-              <FileQuestion classes={{ root: 'app-empty__icon' }} />
-              <Typography classes={{ root: 'app-empty__text' }}>{texts['005']}</Typography>
+            <div className="app-loading">
+              <CircularProgress classes={{ root: 'app-loading__icon' }} />
             </div>
           )
-          : (
-            <div className={clsx(classes.wrapper)} ref={tableWrapper}>
-              <Paper ref={tablePaper}>
-                {
-                  selectedItemIndexes.length > 0 && (
-                    <AppTableToolbar
-                      buttons={toolbarButtons}
-                      selected={selectedItemIndexes.map((index) => data[index])}
-                    />
-                  )
-                }
-                <TableContainer
-                  component={Paper}
-                  elevation={0}
-                  ref={tableContainer}
-                  classes={{ root: clsx(classes.tableContainer) }}
-                  style={{
-                    maxHeight: tableContainerMaxHeight,
-                  }}
-                >
-                  <Table
-                    {...props}
-                    stickyHeader={true}
-                    classes={{
-                      root: clsx(classes.table, _.get(props, 'classes.root')),
+          : data.length === 0
+            ? (
+              <div className="app-empty">
+                <FileQuestion classes={{ root: 'app-empty__icon' }} />
+                <Typography classes={{ root: 'app-empty__text' }}>{texts['005']}</Typography>
+              </div>
+            )
+            : (
+              <div className={clsx(classes.wrapper)} ref={tableWrapper}>
+                <Paper ref={tablePaper}>
+                  {
+                    selectedItemIndexes.length > 0 && (
+                      <AppTableToolbar
+                        innerRef={tableToolBar}
+                        buttons={toolbarButtons}
+                        selected={selectedItemIndexes.map((index) => data[index])}
+                      />
+                    )
+                  }
+                  <TableContainer
+                    component={Paper}
+                    elevation={0}
+                    ref={tableContainer}
+                    classes={{ root: clsx(classes.tableContainer) }}
+                    style={{
+                      maxHeight: tableContainerMaxHeight,
                     }}
                   >
-                    {
-                      schema.length > 0 && (
-                        <TableHead>
-                          <TableRow>
-                            <TableCell>
-                              <Checkbox
-                                color="primary"
-                                indeterminate={
-                                  selectedItemIndexes.length !== 0
+                    <Table
+                      {...props}
+                      stickyHeader={true}
+                      classes={{
+                        root: clsx(classes.table, _.get(props, 'classes.root')),
+                      }}
+                    >
+                      {
+                        schema.length > 0 && (
+                          <TableHead innerRef={tableHead}>
+                            <TableRow>
+                              <TableCell>
+                                <Checkbox
+                                  color="primary"
+                                  indeterminate={
+                                    selectedItemIndexes.length !== 0
                                 && data.length !== 0
                                 && selectedItemIndexes.length < data.length
-                                }
-                                checked={
-                                  selectedItemIndexes.length !== 0
+                                  }
+                                  checked={
+                                    selectedItemIndexes.length !== 0
                                 && data.length !== 0
                                 && selectedItemIndexes.length === data.length
-                                }
-                                onChange={handleHeadCheckboxChange}
-                              />
-                            </TableCell>
-                            {
-                              schema.map((schemaItem, index) => (
-                                <TableCell
-                                  key={index}
-                                  {...(schemaItem.TableCellProps || {})}
-                                  style={{
-                                    minWidth: schemaItem.minWidth || 140,
-                                  }}
-                                >{schemaItem.title}</TableCell>
-                              ))
-                            }
-                          </TableRow>
-                        </TableHead>
-                      )
-                    }
-                    <TableBody classes={{ root: classes.tableBody }}>
-                      {
-                        data.map((dataItem, index) => (
-                          <TableRow
-                            key={index}
-                            classes={{
-                              root: clsx({
-                                [classes.tableRowSelected]: selectedItemIndexes.includes(index),
-                              }),
-                            }}
-                            onClick={() => handleRowClick(index)}
-                          >
-                            <TableCell>
-                              <Checkbox
-                                color="primary"
-                                checked={selectedItemIndexes.includes(index)}
-                                onChange={(event) => handleRowCheckboxChange(event, index)}
-                                onClick={(event) => event.stopPropagation()}
-                              />
-                            </TableCell>
-                            {
-                              schema.map((schemaItem, index) => (
-                                <TableCell key={index}>{renderTableCell(dataItem, schemaItem)}</TableCell>
-                              ))
-                            }
-                          </TableRow>
-                        ))
+                                  }
+                                  onChange={handleHeadCheckboxChange}
+                                />
+                              </TableCell>
+                              {
+                                schema.map((schemaItem, index) => (
+                                  <TableCell
+                                    key={index}
+                                    {...(schemaItem.TableCellProps || {})}
+                                    style={{
+                                      minWidth: schemaItem.minWidth || 140,
+                                    }}
+                                  >{schemaItem.title}</TableCell>
+                                ))
+                              }
+                            </TableRow>
+                          </TableHead>
+                        )
                       }
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-                <TablePagination
-                  {...TablePaginationProps}
-                  component={Box}
-                  rowsPerPageOptions={[5, 10, 20, 50]}
-                  labelRowsPerPage={texts['001']}
-                  backIconButtonText={texts['002']}
-                  nextIconButtonText={texts['003']}
-                  labelDisplayedRows={({ from, to, count }) => `${count} ${texts['004']} ${from}-${to}`}
-                  onChangePage={handleChangePage}
-                  onChangeRowsPerPage={handleChangeRowsPerPage}
-                />
-              </Paper>
-            </div>
-          )
+                      <TableBody classes={{ root: classes.tableBody }} innerRef={tableBody}>
+                        {
+                          data.map((dataItem, index) => (
+                            <TableRow
+                              key={index}
+                              classes={{
+                                root: clsx({
+                                  [classes.tableRowSelected]: selectedItemIndexes.includes(index),
+                                }),
+                              }}
+                              onClick={() => handleRowClick(index)}
+                            >
+                              <TableCell>
+                                <Checkbox
+                                  color="primary"
+                                  checked={selectedItemIndexes.includes(index)}
+                                  onChange={(event) => handleRowCheckboxChange(event, index)}
+                                  onClick={(event) => event.stopPropagation()}
+                                />
+                              </TableCell>
+                              {
+                                schema.map((schemaItem, index) => (
+                                  <TableCell key={index}>{renderTableCell(dataItem, schemaItem)}</TableCell>
+                                ))
+                              }
+                            </TableRow>
+                          ))
+                        }
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                  <TablePagination
+                    {...TablePaginationProps}
+                    component={Box}
+                    ref={tablePagination}
+                    rowsPerPageOptions={[5, 10, 20, 50]}
+                    labelRowsPerPage={texts['001']}
+                    backIconButtonText={texts['002']}
+                    nextIconButtonText={texts['003']}
+                    labelDisplayedRows={({ from, to, count }) => `${count} ${texts['004']} ${from}-${to}`}
+                    onChangePage={handleChangePage}
+                    onChangeRowsPerPage={handleChangeRowsPerPage}
+                  />
+                </Paper>
+              </div>
+            )
       }
     </div>
   );

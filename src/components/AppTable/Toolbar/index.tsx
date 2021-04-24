@@ -5,7 +5,7 @@ import { AppState } from '../../../models/app';
 import { useTexts } from '../../../utils/texts';
 import clsx from 'clsx';
 import IconButton, { IconButtonProps } from '@material-ui/core/IconButton';
-import Toolbar from '@material-ui/core/Toolbar';
+import Toolbar, { ToolbarProps } from '@material-ui/core/Toolbar';
 import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
 import { OverridableComponent } from '@material-ui/core/OverridableComponent';
@@ -20,10 +20,12 @@ export interface ToolbarButton {
   IconButtonProps?: IconButtonProps;
 }
 
-export interface AppTableToolBarProps<T = any> extends Dispatch, AppState {
+export interface AppTableToolBarProps<T = any> extends ToolbarProps {
   selected?: T[];
   buttons?: ToolbarButton[];
 }
+
+export interface AppTableToolBarComponentProps<T = any> extends AppTableToolBarProps<T>, Dispatch, AppState {}
 
 const useToolbarStyles = makeStyles((theme: Theme) => createStyles({
   root: {
@@ -45,16 +47,18 @@ const useToolbarStyles = makeStyles((theme: Theme) => createStyles({
   },
 }));
 
-const AppTableToolbar: React.FC<AppTableToolBarProps> = ({
+const AppTableToolbar: React.FC<AppTableToolBarComponentProps> = ({
   selected = [],
   buttons = [],
   dispatch,
+  ...props
 }) => {
   const classes = useToolbarStyles();
   const tableTexts = useTexts(dispatch, 'table');
 
   return (
     <Toolbar
+      {...props}
       className={clsx(classes.root, {
         [classes.highlight]: selected.length > 0,
       })}
@@ -80,4 +84,4 @@ const AppTableToolbar: React.FC<AppTableToolBarProps> = ({
   );
 };
 
-export default connect(({ app }: ConnectState) => app)(AppTableToolbar);
+export default connect(({ app }: ConnectState) => app)(AppTableToolbar) as React.FC<AppTableToolBarProps>;

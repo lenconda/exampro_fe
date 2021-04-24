@@ -117,7 +117,8 @@ export interface PaperResponseData {
   public: boolean;
   missedChoicesScore: number;
   banned?: boolean;
-  role: RoleResponseData;
+  role?: RoleResponseData;
+  creator?: User;
   createdAt?: string;
   updatedAt?: string;
   deletedAt?: string;
