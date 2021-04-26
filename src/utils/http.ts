@@ -3,6 +3,7 @@ import AppAlertManager from '../components/AppAlert/Manager';
 import axios from 'axios';
 import { History } from 'history';
 import _ from 'lodash';
+import qs from 'qs';
 
 const createAxiosInstance = (errorsMap: Record<string, string>, history: History<any>) => {
   const instance = axios.create({
@@ -11,11 +12,23 @@ const createAxiosInstance = (errorsMap: Record<string, string>, history: History
   });
 
   instance.interceptors.request.use(config => {
-    if (localStorage.getItem('token') || sessionStorage.getItem('token')) {
+    const searchToken = _.get(qs.parse(window.location.search.slice(1)), 'token') as string;
+    if (searchToken) {
+      if (JSON.parse(localStorage.getItem('persist') || 'false')) {
+        localStorage.setItem('token', searchToken);
+      } else {
+        sessionStorage.setItem('token', searchToken);
+      }
+    }
+
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token') as string;
+
+    if (token) {
       config.headers = {
-        Authorization: `Bearer ${localStorage.getItem('token') || sessionStorage.getItem('token')}`,
+        Authorization: `Bearer ${token}`,
       };
     }
+
     return config;
   });
 
