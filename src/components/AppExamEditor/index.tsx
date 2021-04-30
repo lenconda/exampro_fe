@@ -1,13 +1,16 @@
 import { getExamUsers } from './service';
 import { AppState } from '../../models/app';
-import { Dispatch, ExamResponseData, PaperQuestionResponseData, PaperResponseData, QuestionResponseData, User } from '../../interfaces';
+import {
+  Dispatch,
+  ExamResponseData,
+  PaperResponseData,
+  User,
+} from '../../interfaces';
 import { connect } from '../../patches/dva';
 import { ConnectState } from '../../models';
 import { useTexts } from '../../utils/texts';
 import Input from '../AppSearchBar/Input';
 import { useDebouncedValue } from '../../utils/hooks';
-import AppQuestionItem from '../AppQuestionItem';
-import { pipeQuestionResponseToMetadata } from '../../utils/pipes';
 import AppUserItem from '../AppUserItem';
 import { queryAllUsers } from '../../service';
 import React, { useEffect, useState } from 'react';
@@ -23,12 +26,12 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Paper from '@material-ui/core/Paper';
 import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
+import TextareaAutosize from '@material-ui/core/TextareaAutosize';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import CheckIcon from '@material-ui/icons/Check';
 import DeleteIcon from '@material-ui/icons/Delete';
 import FileQuestionIcon from 'mdi-material-ui/FileQuestion';
-import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
 import { makeStyles } from '@material-ui/core';
 import _ from 'lodash';
 
@@ -70,10 +73,19 @@ const useStyles = makeStyles((theme) => {
     userItem: {
       marginBottom: theme.spacing(2),
     },
+    participantEmailsInputWrapper: {
+      width: '100%',
+      padding: theme.spacing(2),
+    },
+    participantEmailsInput: {
+      outline: 0,
+      border: 0,
+      width: '100%',
+    },
   };
 });
 
-const examUserTypes = ['maintainer', 'invigilator', 'reviewer', 'participant'];
+const examUserTypes = ['maintainer', 'invigilator', 'reviewer'];
 
 const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
   exam,
@@ -122,15 +134,15 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
     'MAINTAINER': [],
     'INVIGILATOR': [],
     'REVIEWER': [],
-    'PARTICIPANT': [],
   });
 
   const [selectedUsers, setSelectedUsers] = useState<TypedUsers>({
     'MAINTAINER': [],
     'INVIGILATOR': [],
     'REVIEWER': [],
-    'PARTICIPANT': [],
   });
+
+  const [examParticipantEmails, setExamParticipantEmails] = useState<string[]>([]);
 
   const [examUsersLoading, setExamUsersLoading] = useState<Record<string, boolean>>({});
 
@@ -148,7 +160,7 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
       getExamUsers(examId, currentExamUserType).then((users) => {
         setCurrentExamUsers({
           ...currentExamUsers,
-          [type]: users,
+          [currentExamUserType.toUpperCase()]: users,
         });
       }).finally(() => changeLoadingState(type, false));
     }
@@ -168,6 +180,9 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
       for (const examUserType of examUserTypes) {
         fetchExamUsers(exam.id, examUserType);
       }
+      getExamUsers(exam.id, 'participant').then((participants) => {
+        setExamParticipantEmails((participants || []).map((participant) => participant.email));
+      });
     }
   }, [exam, mode]);
 
@@ -203,55 +218,63 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
           </Box>
           {
             (['MAINTAINER', 'INVIGILATOR', 'REVIEWER'].indexOf(tabs[selectedTabIndex]) !== -1) && (
-              <Box className={classes.searchWrapper}>
-                <Input
-                  placeholder={searchBarTexts['INPUT_TO_QUERY']}
-                  value={searchContent}
-                  onFocus={() => setIsSearching(true)}
-                  onValueChange={(value) => setSearchContent(value)}
-                />
+              <>
+                <Box className={classes.searchWrapper}>
+                  <Input
+                    placeholder={searchBarTexts['INPUT_TO_QUERY']}
+                    value={searchContent}
+                    onFocus={() => setIsSearching(true)}
+                    onValueChange={(value) => setSearchContent(value)}
+                  />
+                  {
+                    isSearching && (
+                      <Button
+                        variant="contained"
+                        color="inherit"
+                        startIcon={<CheckIcon />}
+                        onClick={() => {
+                          setIsSearching(false);
+                          setSearchContent('');
+                        }}
+                      >{systemTexts['OK']}</Button>
+                    )
+                  }
+                </Box>
                 {
-                  isSearching && (
-                    <Button
-                      variant="contained"
-                      color="inherit"
-                      startIcon={<CheckIcon />}
-                      onClick={() => {
-                        setIsSearching(false);
-                        setSearchContent('');
-                      }}
-                    >{systemTexts['OK']}</Button>
+                  (
+                    selectedUsers[tabs[selectedTabIndex]]
+                    && _.isArray(selectedUsers[tabs[selectedTabIndex]])
+                    && selectedUsers[tabs[selectedTabIndex]].length > 0
+                  ) && (
+                    <Box className={classes.buttonsWrapper}>
+                      <Button
+                        variant="text"
+                        startIcon={<DeleteIcon />}
+                        classes={{
+                          root: classes.deleteButton,
+                        }}
+                        // onClick={}
+                      >
+                        {systemTexts['DELETE']}&nbsp;
+                        ({(selectedUsers[tabs[selectedTabIndex]] || []).length})
+                      </Button>
+                    </Box>
                   )
                 }
-              </Box>
-            )
-          }
-          {
-            (
-              ['MAINTAINER', 'INVIGILATOR', 'REVIEWER', 'PARTICIPANT'].indexOf(tabs[selectedTabIndex]) !== -1
-              && selectedUsers[tabs[selectedTabIndex]]
-              && _.isArray(selectedUsers[tabs[selectedTabIndex]])
-              && selectedUsers[tabs[selectedTabIndex]].length > 0
-            ) && (
-              <Box className={classes.buttonsWrapper}>
-                <Button
-                  variant="text"
-                  startIcon={<DeleteIcon />}
-                  classes={{
-                    root: classes.deleteButton,
-                  }}
-                  // onClick={}
-                >
-                  {systemTexts['DELETE']}&nbsp;
-                  ({selectedUsers[selectedTabIndex].length})
-                </Button>
-              </Box>
+              </>
             )
           }
         </DialogTitle>
         <DialogContent>
           {
             tabs[selectedTabIndex] === 'BASIC_SETTINGS' && (<></>)
+          }
+          {
+            tabs[selectedTabIndex] === 'PARTICIPANT' && (
+              <Paper classes={{ root: classes.participantEmailsInputWrapper }}>
+                <TextareaAutosize className={classes.participantEmailsInput} rowsMin={3} />
+              </Paper>
+            )
           }
           {
             examUserTypes.indexOf(tabs[selectedTabIndex].toLowerCase()) !== -1 && (
@@ -280,7 +303,6 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
                                 root: classes.userItem,
                               }}
                               onSelect={() => {
-                                console.log([...(currentExamUsers[tabs[selectedTabIndex]] || []), user], tabs[selectedTabIndex].toUpperCase());
                                 setCurrentExamUsers({
                                   ...currentExamUsers,
                                   [tabs[selectedTabIndex].toUpperCase()]: [...(currentExamUsers[tabs[selectedTabIndex].toUpperCase()] || []), user],
