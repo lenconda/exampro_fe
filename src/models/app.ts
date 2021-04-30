@@ -26,6 +26,7 @@ export interface I18N {
     searchBar?: Record<string, string>;
     paperEditor?: Record<string, string>;
     paperQuestionItem?: Record<string, string>;
+    examEditor?: Record<string, string>;
   };
 }
 
@@ -212,6 +213,14 @@ const AppModel: AppModelType = {
           'IS_PUBLIC': '公开考试',
         },
         paperQuestionItem: {
+        },
+        examEditor: {
+          'TITLE': '编辑考试',
+          'BASIC_SETTINGS': '基础设置',
+          'MAINTAINERS': '协作人员',
+          'INVIGILATORS': '监考员',
+          'REVIEWERS': '阅卷人',
+          'PARTICIPANTS': '考生',
         },
         questionItem: {
           'IS_ANSWER': '答案',

@@ -11,6 +11,7 @@ import AppTable, { TableSchema } from '../../../components/AppTable';
 import { useDebouncedValue, useUpdateEffect } from '../../../utils/hooks';
 import AppDialogManager from '../../../components/AppDialog/Manager';
 import AppSearchBar from '../../../components/AppSearchBar';
+import AppExamEditor from '../../../components/AppExamEditor';
 import clsx from 'clsx';
 import _ from 'lodash';
 import React, { useEffect, useRef, useState } from 'react';
@@ -91,6 +92,7 @@ const ExamsPage: React.FC<ExamPageProps> = ({
   const defaultSearch = useLocationQuery('search') as string;
   const [selectedExams, setSelectedExams] = useState<Exam[]>([]);
   const [loadMoreMode, setLoadMoreMode] = useState<boolean>(false);
+  const [examsOpen, setExamsOpen] = useState<boolean>(false);
 
   useEffect(() => {
     if (!roleId && roles.length > 0) {
@@ -282,7 +284,9 @@ const ExamsPage: React.FC<ExamPageProps> = ({
               search={defaultSearch}
               CreateIcon={NotePlus}
               onSearchChange={(search) => setSearchValue(search)}
-              // TODO: onCreateClick={() => {}}
+              onCreateClick={() => {
+                setExamsOpen(true);
+              }}
             />
             <div
               className={clsx('app-page-table-wrapper', {
@@ -438,6 +442,10 @@ const ExamsPage: React.FC<ExamPageProps> = ({
           </Paper>
         </Grid>
       </Grid>
+      <AppExamEditor
+        open={examsOpen}
+        onClose={() => setExamsOpen(false)}
+      />
     </div>
   );
 };
