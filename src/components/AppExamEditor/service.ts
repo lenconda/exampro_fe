@@ -1,99 +1,55 @@
 import AppRequestManager from '../AppRequest/Manager';
-import { PaperQuestionResponseData, PaperResponseData, QuestionResponseData, User } from '../../interfaces';
+import { ExamResponseData, User } from '../../interfaces';
 import _ from 'lodash';
 
-export const queryAllQuestions = async (search: string): Promise<QuestionResponseData[]> => {
+export const queryAllExams = async (search: string): Promise<ExamResponseData[]> => {
   const data = await AppRequestManager.send({
-    url: `/question?${search ? `search=${search}&size=-1` : 'size=-1'}`,
+    url: `/exam?${search ? `search=${search}&size=-1` : 'size=-1'}`,
   });
 
-  return (_.get(data, 'data.data.items') || []) as QuestionResponseData[];
+  return (_.get(data, 'data.data.items') || []) as ExamResponseData[];
 };
 
-export const queryQuestions = async (search: string): Promise<QuestionResponseData[]> => {
+export const queryExams = async (search: string): Promise<ExamResponseData[]> => {
   const data = await AppRequestManager.send({
-    url: `/question?${search}`,
+    url: `/exam?${search}`,
   });
 
-  return (_.get(data, 'data.data.items') || []) as QuestionResponseData[];
+  return (_.get(data, 'data.data.items') || []) as ExamResponseData[];
 };
 
-export const getPaperQuestionsWithAnswers = async (paperId: number): Promise<PaperQuestionResponseData[]> => {
+export const getExamUsers = async (examId: number, role: string) => {
   const data = await AppRequestManager.send({
-    url: `/paper/${paperId}/questions_answers`,
-  });
-
-  return (_.get(data, 'data.data.items') || []) as PaperQuestionResponseData[];
-};
-
-export const createPaperQuestion = (question: QuestionResponseData, points: number) => {
-  return {
-    question,
-    points,
-  } as PaperQuestionResponseData;
-};
-
-export const queryAllUsers = async (search: string): Promise<User[]> => {
-  const data = await AppRequestManager.send({
-    url: `/user/list?${search ? `search=${search}&size=-1` : 'size=-1'}`,
+    url: `/exam/${examId}/${role}`,
   });
 
   return (_.get(data, 'data.data.items') || []) as User[];
 };
 
-export const getPaperMaintainers = async (paperId: number) => {
+export const createExam = async (exam: Partial<ExamResponseData>) => {
   const data = await AppRequestManager.send({
-    url: `/paper/${paperId}/maintainers`,
-  });
-
-  return (_.get(data, 'data.data.items') || []) as User[];
-};
-
-export const createPaper = async (paper: Partial<PaperResponseData>) => {
-  const data = await AppRequestManager.send({
-    url: '/paper',
+    url: '/exam',
     method: 'POST',
-    data: paper,
+    data: exam,
   });
-  return _.get(data, 'data.data') as PaperResponseData;
+  return _.get(data, 'data.data') as ExamResponseData;
 };
 
-export const updatePaper = async (paperId: number, paper: Partial<PaperResponseData>) => {
+export const updateExam = async (examId: number, exam: Partial<ExamResponseData>) => {
   const data = await AppRequestManager.send({
-    url: `/paper/${paperId}`,
+    url: `/exam/${examId}`,
     method: 'PATCH',
-    data: paper,
+    data: exam,
   });
   return _.get(data, 'data.data');
 };
 
-export const createPaperQuestions = async (
-  paperId: number,
-  paperQuestions: Partial<PaperQuestionResponseData>[],
-) => {
+export const createExamUsers = async (examId: number, users: User[], role: string) => {
   const data = await AppRequestManager.send({
-    url: `/paper/${paperId}/questions`,
+    url: `/exam/${examId}/${role}`,
     method: 'POST',
     data: {
-      data: paperQuestions.map((paperQuestion) => {
-        const { question, points } = paperQuestion;
-        const { id } = question;
-        return {
-          id,
-          points,
-        };
-      }),
-    },
-  });
-  return _.get(data, 'data.data');
-};
-
-export const createPaperMaintainers = async (paperId: number, maintainers: User[]) => {
-  const data = await AppRequestManager.send({
-    url: `/paper/${paperId}/maintainers`,
-    method: 'POST',
-    data: {
-      emails: maintainers.map((maintainer) => maintainer.email),
+      emails: users.map((user) => user.email),
     },
   });
   return _.get(data, 'data.data');

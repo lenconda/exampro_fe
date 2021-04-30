@@ -92,7 +92,9 @@ const ExamsPage: React.FC<ExamPageProps> = ({
   const defaultSearch = useLocationQuery('search') as string;
   const [selectedExams, setSelectedExams] = useState<Exam[]>([]);
   const [loadMoreMode, setLoadMoreMode] = useState<boolean>(false);
-  const [examsOpen, setExamsOpen] = useState<boolean>(false);
+
+  const [examEditorOpen, setExamEditorOpen] = useState<boolean>(false);
+  const [examEditorMode, setExamEditorMode] = useState<'create' | 'edit'>('create');
 
   useEffect(() => {
     if (!roleId && roles.length > 0) {
@@ -285,7 +287,8 @@ const ExamsPage: React.FC<ExamPageProps> = ({
               CreateIcon={NotePlus}
               onSearchChange={(search) => setSearchValue(search)}
               onCreateClick={() => {
-                setExamsOpen(true);
+                setExamEditorMode('create');
+                setExamEditorOpen(true);
               }}
             />
             <div
@@ -378,8 +381,10 @@ const ExamsPage: React.FC<ExamPageProps> = ({
                                 && (selectedExams[0].startTime ? Date.parse(selectedExams[0].startTime) > Date.now() : true)
                                 && Date.now() < Date.parse(selectedExams[0].endTime),
                               IconButtonProps: {
-                              // TODO: push to edit exam page
-                                onClick: () => {},
+                                onClick: () => {
+                                  setExamEditorMode('edit');
+                                  setExamEditorOpen(true);
+                                },
                               },
                             },
                             {
@@ -443,8 +448,11 @@ const ExamsPage: React.FC<ExamPageProps> = ({
         </Grid>
       </Grid>
       <AppExamEditor
-        open={examsOpen}
-        onClose={() => setExamsOpen(false)}
+        open={examEditorOpen}
+        exam={selectedExams[0]}
+        mode={examEditorMode}
+        roleId={roleId}
+        onClose={() => setExamEditorOpen(false)}
       />
     </div>
   );

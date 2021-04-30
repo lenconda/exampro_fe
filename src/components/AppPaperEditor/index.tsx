@@ -1,5 +1,15 @@
 import PaperQuestionItem from './PaperQuestionItem';
-import { createPaper, createPaperMaintainers, createPaperQuestion, createPaperQuestions, getPaperMaintainers, getPaperQuestionsWithAnswers, queryAllQuestions, queryAllUsers, updatePaper } from './service';
+import {
+  createPaper,
+  createPaperMaintainers,
+  createPaperQuestion,
+  createPaperQuestions,
+  getPaperMaintainers,
+  getPaperQuestionsWithAnswers,
+  queryAllQuestions,
+  updatePaper,
+} from './service';
+import { queryAllUsers } from '../../service';
 import { AppState } from '../../models/app';
 import { Dispatch, PaperQuestionResponseData, PaperResponseData, QuestionResponseData, User } from '../../interfaces';
 import { connect } from '../../patches/dva';

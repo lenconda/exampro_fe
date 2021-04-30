@@ -124,18 +124,4 @@ export interface PaperResponseData {
   deletedAt?: string;
 }
 
-export interface ExamResponseData {
-  id?: number;
-  title: string;
-  startTime?: string;
-  endTime: string;
-  grades: boolean;
-  notifyParticipants: boolean;
-  public: boolean;
-  delay: number;
-  paper: PaperResponseData;
-  role?: RoleResponseData;
-  createdAt?: string;
-  updatedAt?: string;
-  deletedAt?: string;
-}
+export type ExamResponseData = Exam;

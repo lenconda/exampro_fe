@@ -217,10 +217,10 @@ const AppModel: AppModelType = {
         examEditor: {
           'TITLE': '编辑考试',
           'BASIC_SETTINGS': '基础设置',
-          'MAINTAINERS': '协作人员',
-          'INVIGILATORS': '监考员',
-          'REVIEWERS': '阅卷人',
-          'PARTICIPANTS': '考生',
+          'MAINTAINER': '协作人员',
+          'INVIGILATOR': '监考员',
+          'REVIEWER': '阅卷人',
+          'PARTICIPANT': '考生',
         },
         questionItem: {
           'IS_ANSWER': '答案',

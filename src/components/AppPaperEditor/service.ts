@@ -33,14 +33,6 @@ export const createPaperQuestion = (question: QuestionResponseData, points: numb
   } as PaperQuestionResponseData;
 };
 
-export const queryAllUsers = async (search: string): Promise<User[]> => {
-  const data = await AppRequestManager.send({
-    url: `/user/list?${search ? `search=${search}&size=-1` : 'size=-1'}`,
-  });
-
-  return (_.get(data, 'data.data.items') || []) as User[];
-};
-
 export const getPaperMaintainers = async (paperId: number) => {
   const data = await AppRequestManager.send({
     url: `/paper/${paperId}/maintainers`,

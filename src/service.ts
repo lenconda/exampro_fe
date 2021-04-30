@@ -1,4 +1,5 @@
 import AppRequestManager from './components/AppRequest/Manager';
+import { User } from './interfaces';
 import _ from 'lodash';
 import katex from 'katex';
 
@@ -15,4 +16,12 @@ export const uploadImage = async (image: File) => {
 
 export const renderKatex = (equation: string): string => {
   return katex.renderToString(equation);
+};
+
+export const queryAllUsers = async (search: string): Promise<User[]> => {
+  const data = await AppRequestManager.send({
+    url: `/user/list?${search ? `search=${search}&size=-1` : 'size=-1'}`,
+  });
+
+  return (_.get(data, 'data.data.items') || []) as User[];
 };
