@@ -272,7 +272,14 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
           {
             tabs[selectedTabIndex] === 'PARTICIPANT' && (
               <Paper classes={{ root: classes.participantEmailsInputWrapper }}>
-                <TextareaAutosize className={classes.participantEmailsInput} rowsMin={3} />
+                <TextareaAutosize
+                  value={examParticipantEmails.join(';\n')}
+                  rowsMin={3}
+                  className={classes.participantEmailsInput}
+                  onChange={(event) => {
+                    setExamParticipantEmails(event.target.value.split(';\n'));
+                  }}
+                />
               </Paper>
             )
           }
