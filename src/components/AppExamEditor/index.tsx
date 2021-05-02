@@ -83,6 +83,9 @@ const useStyles = makeStyles((theme) => {
       border: 0,
       width: '100%',
     },
+    textField: {
+      marginBottom: theme.spacing(2),
+    },
   };
 });
 
@@ -274,6 +277,7 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
                   value={0}
                   fullWidth={true}
                   inputVariant="outlined"
+                  className={classes.textField}
                   onChange={() => {}}
                 />
               </>
