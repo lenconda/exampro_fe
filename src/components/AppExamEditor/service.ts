@@ -1,5 +1,5 @@
 import AppRequestManager from '../AppRequest/Manager';
-import { ExamResponseData, User } from '../../interfaces';
+import { ExamResponseData, PaperResponseData, User } from '../../interfaces';
 import _ from 'lodash';
 
 export const queryAllExams = async (search: string): Promise<ExamResponseData[]> => {
@@ -8,6 +8,14 @@ export const queryAllExams = async (search: string): Promise<ExamResponseData[]>
   });
 
   return (_.get(data, 'data.data.items') || []) as ExamResponseData[];
+};
+
+export const queryAllMaintainedPapers = async (search: string): Promise<PaperResponseData[]> => {
+  const data = await AppRequestManager.send({
+    url: `/paper?${search ? `search=${search}` : ''}&size=-1&roles=resource/paper/owner,resource/paper/maintainer`,
+  });
+
+  return (_.get(data, 'data.data.items') || []) as PaperResponseData[];
 };
 
 export const queryExams = async (search: string): Promise<ExamResponseData[]> => {

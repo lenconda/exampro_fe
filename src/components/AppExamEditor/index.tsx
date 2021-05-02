@@ -1,4 +1,4 @@
-import { getExamUsers } from './service';
+import { getExamUsers, queryAllMaintainedPapers } from './service';
 import { AppState } from '../../models/app';
 import {
   Dispatch,
@@ -15,9 +15,11 @@ import AppUserItem from '../AppUserItem';
 import { queryAllUsers } from '../../service';
 import AppDateTimePicker from '../AppDateTimePicker';
 import React, { useEffect, useState } from 'react';
+import AutoComplete from '@material-ui/lab/Autocomplete';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Checkbox from '@material-ui/core/Checkbox';
+import Chip from '@material-ui/core/Chip';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Dialog, { DialogProps } from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -155,10 +157,15 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
     endTime: new Date().toISOString(),
     duration: 0,
   });
+  const [examPaper, setExamPaper] = useState<PaperResponseData>(null);
+  const [searchPapersLoading, setSearchPapersLoading] = useState<boolean>(false);
+  const [searchPapersValue, setSearchPapersValue] = useState<string>('');
+  const debouncedSearchPapersValue = useDebouncedValue<string>(searchPapersValue);
+  const [searchedPapers, setSearchedPapers] = useState<PaperResponseData[]>([]);
 
   const [examUsersLoading, setExamUsersLoading] = useState<Record<string, boolean>>({});
 
-  const validateExamInfo = (info: Partial<ExamResponseData>) => {
+  const validateExamInfo = (info: Partial<ExamResponseData>, paper: PaperResponseData) => {
     const {
       title,
       startTime,
@@ -166,7 +173,7 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
       duration,
     } = info;
 
-    if (!title || !startTime || !endTime) {
+    if (!title || !startTime || !endTime || !paper) {
       return false;
     }
 
@@ -239,6 +246,13 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
       duration: Math.floor(duration / 60000),
     });
   }, [examBasicInfo.startTime, examBasicInfo.endTime]);
+
+  useEffect(() => {
+    setSearchPapersLoading(true);
+    queryAllMaintainedPapers(debouncedSearchPapersValue).then((papers) => {
+      setSearchedPapers(papers);
+    }).finally(() => setSearchPapersLoading(false));
+  }, [debouncedSearchPapersValue]);
 
   return (
     <>
@@ -329,6 +343,45 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
                       ...examBasicInfo,
                       title: event.target.value,
                     });
+                  }}
+                />
+                <AutoComplete
+                  value={examPaper}
+                  inputValue={searchPapersValue}
+                  loading={searchPapersLoading}
+                  options={searchedPapers}
+                  loadingText={systemTexts['LOADING']}
+                  getOptionSelected={(option, value) => option.id === value.id}
+                  getOptionLabel={(option) => option.title}
+                  renderInput={(autoCompleteProps) => {
+                    return (
+                      <TextField
+                        {...autoCompleteProps}
+                        label={texts['SELECT_PAPER']}
+                        variant="outlined"
+                        fullWidth={true}
+                        classes={{ root: classes.textField }}
+                      />
+                    );
+                  }}
+                  renderOption={(option) => {
+                    return (
+                      <>
+                        {
+                          option.role.id === 'resource/paper/maintainer'
+                            && (
+                              <Chip color="primary" size="small" label={texts['MAINTAINED']} />
+                            )
+                        }&nbsp;{option.title}
+                      </>
+                    );
+                  }}
+                  onChange={(event, value) => {
+                    const paper = value as PaperResponseData;
+                    setExamPaper(paper);
+                  }}
+                  onInputChange={(event, newValue) => {
+                    setSearchPapersValue(newValue);
                   }}
                 />
                 <AppDateTimePicker
@@ -514,7 +567,7 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
           >{systemTexts['CANCEL']}</Button>
           <Button
             color="primary"
-            disabled={!validateExamInfo(examBasicInfo) || submitting}
+            disabled={!validateExamInfo(examBasicInfo, examPaper) || submitting}
             onClick={() => {
               if (mode === 'edit' && !exam) {
                 return;

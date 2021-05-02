@@ -230,6 +230,8 @@ const AppModel: AppModelType = {
           'DELAY': '延迟开始时间（分钟）',
           'IS_PUBLIC': '是否公开考试',
           'NOTIFY_PARTICIPANTS': '是否通知参与考生',
+          'SELECT_PAPER': '选择试卷',
+          'MAINTAINED': '协作',
         },
         questionItem: {
           'IS_ANSWER': '答案',
