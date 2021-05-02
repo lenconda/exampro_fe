@@ -212,7 +212,7 @@ const AppModel: AppModelType = {
           'SELECT_QUESTIONS': '选择试题',
           'MISS_CHOICE_POINTS': '多选题漏选得分',
           'POINTS': '分数',
-          'IS_PUBLIC': '公开考试',
+          'IS_PUBLIC': '是否公开试卷',
         },
         paperQuestionItem: {
         },
@@ -223,6 +223,13 @@ const AppModel: AppModelType = {
           'INVIGILATOR': '监考员',
           'REVIEWER': '阅卷人',
           'PARTICIPANT': '考生',
+          'START_TIME': '开始时间',
+          'END_TIME': '截止时间',
+          'DURATION': '考试时长（分钟）',
+          'EXAM_TITLE': '考试标题',
+          'DELAY': '延迟开始时间（分钟）',
+          'IS_PUBLIC': '是否公开考试',
+          'NOTIFY_PARTICIPANTS': '是否通知参与考生',
         },
         questionItem: {
           'IS_ANSWER': '答案',

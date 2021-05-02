@@ -139,16 +139,53 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
     'INVIGILATOR': [],
     'REVIEWER': [],
   });
-
   const [selectedUsers, setSelectedUsers] = useState<TypedUsers>({
     'MAINTAINER': [],
     'INVIGILATOR': [],
     'REVIEWER': [],
   });
-
   const [examParticipantEmails, setExamParticipantEmails] = useState<string[]>([]);
+  const [examBasicInfo, setExamBasicInfo] = useState<Partial<ExamResponseData>>({
+    title: '',
+    public: false,
+    notifyParticipants: true,
+    grades: true,
+    delay: 0,
+    startTime: new Date().toISOString(),
+    endTime: new Date().toISOString(),
+    duration: 0,
+  });
 
   const [examUsersLoading, setExamUsersLoading] = useState<Record<string, boolean>>({});
+
+  const validateExamInfo = (info: Partial<ExamResponseData>) => {
+    const {
+      title,
+      startTime,
+      endTime,
+      duration,
+    } = info;
+
+    if (!title || !startTime || !endTime) {
+      return false;
+    }
+
+    if (!startTime && !duration) {
+      return false;
+    }
+
+    if (startTime && endTime) {
+      const startTimestamp = Date.parse(startTime);
+      const endTimestamp = Date.parse(endTime);
+      if (Math.floor((endTimestamp - startTimestamp) / 60000) !== duration) {
+        return false;
+      } else {
+        return true;
+      }
+    }
+
+    return true;
+  };
 
   const changeLoadingState = (type: string, loading: boolean) => {
     setExamUsersLoading({
@@ -194,6 +231,14 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
     setSearchedUsers([]);
     searchUsers(debouncedSearchContent);
   }, [debouncedSearchContent, selectedTabIndex]);
+
+  useEffect(() => {
+    const duration = Date.parse(examBasicInfo.endTime) - Date.parse(examBasicInfo.startTime);
+    setExamBasicInfo({
+      ...examBasicInfo,
+      duration: Math.floor(duration / 60000),
+    });
+  }, [examBasicInfo.startTime, examBasicInfo.endTime]);
 
   return (
     <>
@@ -273,12 +318,88 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
           {
             tabs[selectedTabIndex] === 'BASIC_SETTINGS' && (
               <>
+                <TextField
+                  label={texts['EXAM_TITLE']}
+                  variant="outlined"
+                  value={examBasicInfo.title}
+                  fullWidth={true}
+                  classes={{ root: classes.textField }}
+                  onChange={(event) => {
+                    setExamBasicInfo({
+                      ...examBasicInfo,
+                      title: event.target.value,
+                    });
+                  }}
+                />
                 <AppDateTimePicker
-                  value={0}
+                  label={texts['START_TIME']}
+                  value={new Date(examBasicInfo.startTime)}
                   fullWidth={true}
                   inputVariant="outlined"
                   className={classes.textField}
-                  onChange={() => {}}
+                  onChange={(date) => {
+                    setExamBasicInfo({
+                      ...examBasicInfo,
+                      startTime: date.toISOString(),
+                    });
+                  }}
+                />
+                <AppDateTimePicker
+                  label={texts['END_TIME']}
+                  value={new Date(examBasicInfo.endTime)}
+                  fullWidth={true}
+                  inputVariant="outlined"
+                  className={classes.textField}
+                  onChange={(date) => {
+                    setExamBasicInfo({
+                      ...examBasicInfo,
+                      endTime: date.toISOString(),
+                    });
+                  }}
+                />
+                <TextField
+                  label={texts['DURATION']}
+                  type="number"
+                  variant="outlined"
+                  value={examBasicInfo.duration}
+                  fullWidth={true}
+                  classes={{ root: classes.textField }}
+                  onChange={(event) => {
+                    setExamBasicInfo({
+                      ...examBasicInfo,
+                      duration: parseInt(event.target.value as unknown as string, 10),
+                    });
+                  }}
+                />
+                <FormControlLabel
+                  checked={examBasicInfo.public}
+                  label={texts['IS_PUBLIC']}
+                  control={
+                    <Checkbox
+                      color="primary"
+                      onChange={(event) => {
+                        setExamBasicInfo({
+                          ...examBasicInfo,
+                          public: event.target.checked,
+                        });
+                      }}
+                    />
+                  }
+                />
+                <FormControlLabel
+                  checked={examBasicInfo.notifyParticipants}
+                  label={texts['NOTIFY_PARTICIPANTS']}
+                  control={
+                    <Checkbox
+                      color="primary"
+                      onChange={(event) => {
+                        setExamBasicInfo({
+                          ...examBasicInfo,
+                          notifyParticipants: event.target.checked,
+                        });
+                      }}
+                    />
+                  }
                 />
               </>
             )
@@ -393,7 +514,7 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
           >{systemTexts['CANCEL']}</Button>
           <Button
             color="primary"
-            // disabled={!validatePaperData(paperData, currentPaperQuestions) || submitting}
+            disabled={!validateExamInfo(examBasicInfo) || submitting}
             onClick={() => {
               if (mode === 'edit' && !exam) {
                 return;

@@ -47,6 +47,7 @@ export interface Exam {
   notifyParticipants: boolean;
   public: boolean;
   grades: boolean;
+  delay: number;
   startTime: string;
   endTime: string;
   duration?: number;
