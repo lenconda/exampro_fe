@@ -13,6 +13,7 @@ import Input from '../AppSearchBar/Input';
 import { useDebouncedValue } from '../../utils/hooks';
 import AppUserItem from '../AppUserItem';
 import { queryAllUsers } from '../../service';
+import AppDateTimePicker from '../AppDateTimePicker';
 import React, { useEffect, useState } from 'react';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
@@ -267,7 +268,16 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
         </DialogTitle>
         <DialogContent>
           {
-            tabs[selectedTabIndex] === 'BASIC_SETTINGS' && (<></>)
+            tabs[selectedTabIndex] === 'BASIC_SETTINGS' && (
+              <>
+                <AppDateTimePicker
+                  value={0}
+                  fullWidth={true}
+                  inputVariant="outlined"
+                  onChange={() => {}}
+                />
+              </>
+            )
           }
           {
             tabs[selectedTabIndex] === 'PARTICIPANT' && (

@@ -27,6 +27,7 @@ export interface I18N {
     paperEditor?: Record<string, string>;
     paperQuestionItem?: Record<string, string>;
     examEditor?: Record<string, string>;
+    dateTimePicker?: Record<string, string>;
   };
 }
 
@@ -56,9 +57,9 @@ const AppModel: AppModelType = {
   namespace: 'app',
   state: {
     count: 0,
-    locale: 'zh_CN',
+    locale: 'zh-CN',
     i18n: {
-      zh_CN: {
+      'zh-CN': {
         errors: {
           ERR_BODY_EMAIL_REQUIRED: '请输入邮箱',
           ERR_BODY_PASSWORD_REQUIRED: '请输入密码',
@@ -150,6 +151,7 @@ const AppModel: AppModelType = {
           'LOADING': '加载中',
           'EDIT': '编辑',
           'CLOSE': '关闭',
+          'CLEAR': '清空',
         },
         editor: {
           'header-one': '标题 1',
@@ -236,6 +238,12 @@ const AppModel: AppModelType = {
         searchBar: {
           'CREATE': '新建',
           'INPUT_TO_QUERY': '在此键入内容以查询...',
+        },
+        dateTimePicker: {
+          'INVALID_DATE': '无效的日期格式',
+          'MAX_DATE': '日期不应在最大日期之后',
+          'MIN_DATE': '日期不应在最小日期之前',
+          'TODAY': '今天',
         },
         ui: {
           '/user/auth': {
