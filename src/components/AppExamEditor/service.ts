@@ -52,12 +52,23 @@ export const updateExam = async (examId: number, exam: Partial<ExamResponseData>
   return _.get(data, 'data.data');
 };
 
-export const createExamUsers = async (examId: number, users: User[], role: string) => {
+export const createExamUsers = async (examId: number, userEmails: string[], role: string) => {
   const data = await AppRequestManager.send({
-    url: `/exam/${examId}/${role}`,
+    url: `/exam/${examId}/${role.toLowerCase()}`,
     method: 'POST',
     data: {
-      emails: users.map((user) => user.email),
+      emails: userEmails.filter((email) => Boolean(email)),
+    },
+  });
+  return _.get(data, 'data.data');
+};
+
+export const createExamPaper = async (examId: number, paperId: number) => {
+  const data = await AppRequestManager.send({
+    url: `/exam/${examId}/paper`,
+    method: 'POST',
+    data: {
+      paper: paperId,
     },
   });
   return _.get(data, 'data.data');

@@ -1,4 +1,4 @@
-import { getExamUsers, queryAllMaintainedPapers } from './service';
+import { createExam, createExamPaper, createExamUsers, getExamUsers, queryAllMaintainedPapers, updateExam } from './service';
 import { AppState } from '../../models/app';
 import {
   Dispatch,
@@ -14,6 +14,7 @@ import { useDebouncedValue } from '../../utils/hooks';
 import AppUserItem from '../AppUserItem';
 import { queryAllUsers } from '../../service';
 import AppDateTimePicker from '../AppDateTimePicker';
+import { camelToSnake } from '../../utils/objects';
 import React, { useEffect, useState } from 'react';
 import AutoComplete from '@material-ui/lab/Autocomplete';
 import Box from '@material-ui/core/Box';
@@ -92,6 +93,21 @@ const useStyles = makeStyles((theme) => {
 });
 
 const examUserTypes = ['maintainer', 'invigilator', 'reviewer'];
+const defaultExamBasicInfo: Partial<ExamResponseData> = {
+  title: '',
+  public: false,
+  notifyParticipants: true,
+  grades: true,
+  delay: 0,
+  startTime: new Date().toISOString(),
+  endTime: new Date().toISOString(),
+  duration: 0,
+};
+const defaultExamUsers: TypedUsers = {
+  'MAINTAINER': [],
+  'INVIGILATOR': [],
+  'REVIEWER': [],
+};
 
 const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
   exam,
@@ -136,27 +152,10 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
 
   const [submitting, setSubmitting] = useState<boolean>(false);
 
-  const [currentExamUsers, setCurrentExamUsers] = useState<TypedUsers>({
-    'MAINTAINER': [],
-    'INVIGILATOR': [],
-    'REVIEWER': [],
-  });
-  const [selectedUsers, setSelectedUsers] = useState<TypedUsers>({
-    'MAINTAINER': [],
-    'INVIGILATOR': [],
-    'REVIEWER': [],
-  });
+  const [currentExamUsers, setCurrentExamUsers] = useState<TypedUsers>(defaultExamUsers);
+  const [selectedUsers, setSelectedUsers] = useState<TypedUsers>(defaultExamUsers);
   const [examParticipantEmails, setExamParticipantEmails] = useState<string[]>([]);
-  const [examBasicInfo, setExamBasicInfo] = useState<Partial<ExamResponseData>>({
-    title: '',
-    public: false,
-    notifyParticipants: true,
-    grades: true,
-    delay: 0,
-    startTime: new Date().toISOString(),
-    endTime: new Date().toISOString(),
-    duration: 0,
-  });
+  const [examBasicInfo, setExamBasicInfo] = useState<Partial<ExamResponseData>>(defaultExamBasicInfo);
   const [examPaper, setExamPaper] = useState<PaperResponseData>(null);
   const [searchPapersLoading, setSearchPapersLoading] = useState<boolean>(false);
   const [searchPapersValue, setSearchPapersValue] = useState<string>('');
@@ -184,7 +183,10 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
     if (startTime && endTime) {
       const startTimestamp = Date.parse(startTime);
       const endTimestamp = Date.parse(endTime);
-      if (Math.floor((endTimestamp - startTimestamp) / 60000) !== duration) {
+      if (
+        Math.floor((endTimestamp - startTimestamp) / 60000) !== duration
+        || endTimestamp - startTimestamp <= 0
+      ) {
         return false;
       } else {
         return true;
@@ -201,19 +203,6 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
     });
   };
 
-  const fetchExamUsers = (examId: number, type: string) => {
-    const currentExamUserType = type.toLowerCase();
-    if (examUserTypes.indexOf(currentExamUserType) !== -1) {
-      changeLoadingState(type, true);
-      getExamUsers(examId, currentExamUserType).then((users) => {
-        setCurrentExamUsers({
-          ...currentExamUsers,
-          [currentExamUserType.toUpperCase()]: users,
-        });
-      }).finally(() => changeLoadingState(type, false));
-    }
-  };
-
   const searchUsers = (search: string) => {
     if (search) {
       setSearchedUsersLoading(true);
@@ -225,18 +214,24 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
 
   useEffect(() => {
     if (exam && mode === 'edit') {
-      for (const examUserType of examUserTypes) {
-        fetchExamUsers(exam.id, examUserType);
-      }
+      (async () => {
+        const users: TypedUsers = defaultExamUsers;
+        for (const examUserType of examUserTypes) {
+          users[examUserType.toUpperCase()] = await getExamUsers(exam.id, examUserType);
+        }
+        setCurrentExamUsers(defaultExamUsers);
+      })();
 
       getExamUsers(exam.id, 'participant').then((participants) => {
         setExamParticipantEmails((participants || []).map((participant) => participant.email));
       });
 
       const paper = _.get(exam, 'paper') as PaperResponseData;
+
       if (paper) {
         setExamPaper(paper);
       }
+
       const currentExamBasicInfo = _.pick(exam, [
         'title',
         'public',
@@ -249,7 +244,7 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
       ]);
       setExamBasicInfo(currentExamBasicInfo);
     }
-  }, [exam, mode]);
+  }, [exam, mode, currentExamUsers]);
 
   useEffect(() => {
     setSearchedUsers([]);
@@ -478,11 +473,11 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
             tabs[selectedTabIndex] === 'PARTICIPANT' && (
               <Paper classes={{ root: classes.participantEmailsInputWrapper }}>
                 <TextareaAutosize
-                  value={examParticipantEmails.join(';\n')}
+                  value={examParticipantEmails.join(',')}
                   rowsMin={3}
                   className={classes.participantEmailsInput}
                   onChange={(event) => {
-                    setExamParticipantEmails(event.target.value.split(';\n'));
+                    setExamParticipantEmails(event.target.value.split(','));
                   }}
                 />
               </Paper>
@@ -497,7 +492,49 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
                   </div>
                 )
                 : isSearching
-                  ? searchedUsers.length === 0
+                  ? searchedUsersLoading
+                    ? (
+                      <div className="app-loading">
+                        <CircularProgress classes={{ root: 'app-loading__icon' }} />
+                      </div>
+                    )
+                    : searchedUsers.length === 0
+                      ? (
+                        <div className="app-empty">
+                          <FileQuestionIcon classes={{ root: 'app-empty__icon' }} />
+                          <Typography classes={{ root: 'app-empty__text' }}>{systemTexts['EMPTY']}</Typography>
+                        </div>
+                      )
+                      : (
+                        <Box className={classes.itemsWrapper}>
+                          {
+                            searchedUsers.map((user, index) => (
+                              <AppUserItem
+                                key={index}
+                                user={user}
+                                classes={{
+                                  root: classes.userItem,
+                                }}
+                                onSelect={() => {
+                                  setCurrentExamUsers({
+                                    ...currentExamUsers,
+                                    [tabs[selectedTabIndex].toUpperCase()]: [...(currentExamUsers[tabs[selectedTabIndex].toUpperCase()] || []), user],
+                                  });
+                                }}
+                                onCancelSelect={() => {
+                                  setCurrentExamUsers({
+                                    ...currentExamUsers,
+                                    [tabs[selectedTabIndex].toUpperCase()]: currentExamUsers[tabs[selectedTabIndex].toUpperCase()].filter((currentUser) => {
+                                      return user.email !== currentUser.email;
+                                    }),
+                                  });
+                                }}
+                              />
+                            ))
+                          }
+                        </Box>
+                      )
+                  : currentExamUsers[tabs[selectedTabIndex].toUpperCase()].length === 0
                     ? (
                       <div className="app-empty">
                         <FileQuestionIcon classes={{ root: 'app-empty__icon' }} />
@@ -507,43 +544,7 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
                     : (
                       <Box className={classes.itemsWrapper}>
                         {
-                          searchedUsers.map((user, index) => (
-                            <AppUserItem
-                              key={index}
-                              user={user}
-                              classes={{
-                                root: classes.userItem,
-                              }}
-                              onSelect={() => {
-                                setCurrentExamUsers({
-                                  ...currentExamUsers,
-                                  [tabs[selectedTabIndex].toUpperCase()]: [...(currentExamUsers[tabs[selectedTabIndex].toUpperCase()] || []), user],
-                                });
-                              }}
-                              onCancelSelect={() => {
-                                setCurrentExamUsers({
-                                  ...currentExamUsers,
-                                  [tabs[selectedTabIndex].toUpperCase()]: currentExamUsers[tabs[selectedTabIndex].toUpperCase()].filter((currentUser) => {
-                                    return user.email !== currentUser.email;
-                                  }),
-                                });
-                              }}
-                            />
-                          ))
-                        }
-                      </Box>
-                    )
-                  : currentExamUsers[tabs[selectedTabIndex]].length === 0
-                    ? (
-                      <div className="app-empty">
-                        <FileQuestionIcon classes={{ root: 'app-empty__icon' }} />
-                        <Typography classes={{ root: 'app-empty__text' }}>{systemTexts['EMPTY']}</Typography>
-                      </div>
-                    )
-                    : (
-                      <Box className={classes.itemsWrapper}>
-                        {
-                          (currentExamUsers[tabs[selectedTabIndex]] || []).map((user) => (
+                          (currentExamUsers[tabs[selectedTabIndex].toUpperCase()] || []).map((user) => (
                             <AppUserItem
                               key={user.email}
                               user={user}
@@ -578,6 +579,10 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
             disabled={submitting}
             onClick={() => {
               if (_.isFunction(onClose)) {
+                setExamBasicInfo(defaultExamBasicInfo);
+                setCurrentExamUsers(defaultExamUsers);
+                setSelectedUsers(defaultExamUsers);
+                setExamParticipantEmails([]);
                 onClose();
               }
             }}
@@ -590,27 +595,31 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
                 return;
               }
               setSubmitting(true);
-              // const request = mode === 'create' ? createPaper(paperData) : updatePaper(paper.id, paperData);
-              // request
-              //   .then((res) => {
-              //     const id = mode === 'create' ? _.get(res, 'id') : paper.id;
-              //     if (_.isNumber(id)) {
-              //       const requests = [
-              //         createPaperQuestions(id, currentPaperQuestions),
-              //         ...(currentMaintainers.length ? [
-              //           createPaperMaintainers(id, currentMaintainers),
-              //         ] : []),
-              //       ];
-              //       return Promise.all(requests);
-              //     }
-              //     return;
-              //   })
-              //   .then(() => {
-              //     if (_.isFunction(onSubmitExam)) {
-              //       onSubmitExam();
-              //     }
-              //   })
-              //   .finally(() => setSubmitting(false));
+              const snakedExamBasicInfo = camelToSnake(examBasicInfo);
+              const createExamRequest = mode === 'create'
+                ? createExam(snakedExamBasicInfo)
+                : updateExam(exam.id, snakedExamBasicInfo);
+              createExamRequest
+                .then((res) => {
+                  const id = mode === 'create' ? _.get(res, 'id') : exam.id;
+                  if (_.isNumber(id)) {
+                    const requests = Object.keys(currentExamUsers).map((roleId) => {
+                      return createExamUsers(id, currentExamUsers[roleId].map((user) => user.email), roleId.toLowerCase());
+                    });
+                    requests.push(createExamUsers(id, examParticipantEmails, 'participant'));
+                    requests.push(createExamPaper(id, examPaper.id));
+                    return Promise.all(requests);
+                  }
+                  return;
+                }).then(() => {
+                  if (_.isFunction(onSubmitExam)) {
+                    setExamBasicInfo(defaultExamBasicInfo);
+                    setCurrentExamUsers(defaultExamUsers);
+                    setSelectedUsers(defaultExamUsers);
+                    setExamParticipantEmails([]);
+                    onSubmitExam();
+                  }
+                }).finally(() => setSubmitting(false));
             }}
           >{submitting ? systemTexts['SUBMITTING'] : systemTexts['SUBMIT']}</Button>
         </DialogActions>

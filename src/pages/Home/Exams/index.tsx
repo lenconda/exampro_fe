@@ -81,6 +81,9 @@ const ExamsPage: React.FC<ExamPageProps> = ({
     queryExamsLoading,
     page,
     size,
+    lastCursor,
+    error,
+    refresh,
   ] = usePaginationRequest<Exam>(queryExams, { roles: roleId });
   const [schema, setSchema] = useState<TableSchema[]>([]);
   const theme = useTheme();
@@ -453,6 +456,10 @@ const ExamsPage: React.FC<ExamPageProps> = ({
         mode={examEditorMode}
         roleId={roleId}
         onClose={() => setExamEditorOpen(false)}
+        onSubmitExam={() => {
+          setExamEditorOpen(false);
+          refresh();
+        }}
       />
     </div>
   );
