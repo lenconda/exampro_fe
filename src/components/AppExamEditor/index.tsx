@@ -159,27 +159,10 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
 
   const [submitting, setSubmitting] = useState<boolean>(false);
 
-  const [currentExamUsers, setCurrentExamUsers] = useState<TypedUsers>({
-    'MAINTAINER': [],
-    'INVIGILATOR': [],
-    'REVIEWER': [],
-  });
-  const [selectedUsers, setSelectedUsers] = useState<TypedUsers>({
-    'MAINTAINER': [],
-    'INVIGILATOR': [],
-    'REVIEWER': [],
-  });
+  const [currentExamUsers, setCurrentExamUsers] = useState<TypedUsers>(_.clone(defaultExamUsers));
+  const [selectedUsers, setSelectedUsers] = useState<TypedUsers>(_.clone(defaultExamUsers));
   const [examParticipantEmails, setExamParticipantEmails] = useState<string[]>([]);
-  const [examBasicInfo, setExamBasicInfo] = useState<Partial<ExamResponseData>>({
-    title: '',
-    public: false,
-    notifyParticipants: true,
-    grades: true,
-    delay: 0,
-    startTime: new Date().toISOString(),
-    endTime: new Date().toISOString(),
-    duration: 0,
-  });
+  const [examBasicInfo, setExamBasicInfo] = useState<Partial<ExamResponseData>>(_.clone(defaultExamBasicInfo));
   const [examPaper, setExamPaper] = useState<PaperResponseData>(null);
   const [searchPapersLoading, setSearchPapersLoading] = useState<boolean>(false);
   const [searchPapersValue, setSearchPapersValue] = useState<string>('');
@@ -236,10 +219,18 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
     }
   };
 
+  const clearContent = () => {
+    setExamBasicInfo(_.clone(defaultExamBasicInfo));
+    setCurrentExamUsers(_.clone(defaultExamUsers));
+    setSelectedUsers(_.clone(defaultExamUsers));
+    setExamPaper(null);
+    setExamParticipantEmails([]);
+  };
+
   useEffect(() => {
     if (exam && mode === 'edit') {
       (async () => {
-        const users: TypedUsers = defaultExamUsers;
+        const users: TypedUsers = _.clone(defaultExamUsers);
         for (const examUserType of examUserTypes) {
           changeLoadingState(examUserType, false);
           try {
@@ -248,7 +239,7 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
             changeLoadingState(examUserType, false);
           }
         }
-        setCurrentExamUsers(defaultExamUsers);
+        setCurrentExamUsers(users);
       })();
 
       getExamUsers(exam.id, 'participant').then((participants) => {
@@ -273,15 +264,11 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
       ]);
       setExamBasicInfo(currentExamBasicInfo);
     }
-  }, [exam, mode, currentExamUsers]);
+  }, [exam, mode]);
 
   useEffect(() => {
     setSearchedUsers([]);
-    setSelectedUsers({
-      'MAINTAINER': [],
-      'INVIGILATOR': [],
-      'REVIEWER': [],
-    });
+    setSelectedUsers(_.clone(defaultExamUsers));
     searchUsers(debouncedSearchContent);
   }, [debouncedSearchContent, selectedTabIndex]);
 
@@ -614,11 +601,8 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
             color="primary"
             disabled={submitting}
             onClick={() => {
+              clearContent();
               if (_.isFunction(onClose)) {
-                setExamBasicInfo(defaultExamBasicInfo);
-                setCurrentExamUsers(defaultExamUsers);
-                setSelectedUsers(defaultExamUsers);
-                setExamParticipantEmails([]);
                 onClose();
               }
             }}
@@ -648,11 +632,8 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
                   }
                   return;
                 }).then(() => {
+                  clearContent();
                   if (_.isFunction(onSubmitExam)) {
-                    setExamBasicInfo(defaultExamBasicInfo);
-                    setCurrentExamUsers(defaultExamUsers);
-                    setSelectedUsers(defaultExamUsers);
-                    setExamParticipantEmails([]);
                     onSubmitExam();
                   }
                 }).finally(() => setSubmitting(false));
