@@ -23,6 +23,7 @@ import { queryAllUsers } from '../../service';
 import AppDateTimePicker from '../AppDateTimePicker';
 import { camelToSnake } from '../../utils/objects';
 import React, { useEffect, useState } from 'react';
+import Alert from '@material-ui/lab/Alert';
 import AutoComplete from '@material-ui/lab/Autocomplete';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
@@ -87,6 +88,7 @@ const useStyles = makeStyles((theme) => {
     participantEmailsInputWrapper: {
       width: '100%',
       padding: theme.spacing(2),
+      marginTop: theme.spacing(2),
     },
     participantEmailsInput: {
       outline: 0,
@@ -349,7 +351,19 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
                         classes={{
                           root: classes.deleteButton,
                         }}
-                        // onClick={}
+                        onClick={() => {
+                          const selectedTabId = tabs[selectedTabIndex];
+                          setCurrentExamUsers({
+                            ...currentExamUsers,
+                            [selectedTabId]: currentExamUsers[selectedTabId].filter((currentExamUser) => {
+                              return selectedUsers[selectedTabId].findIndex((selectedUser) => currentExamUser.email === selectedUser.email) === -1;
+                            }),
+                          });
+                          setSelectedUsers({
+                            ...selectedUsers,
+                            [selectedTabId]: [],
+                          });
+                        }}
                       >
                         {systemTexts['DELETE']}&nbsp;
                         ({(selectedUsers[tabs[selectedTabIndex]] || []).length})
@@ -443,7 +457,8 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
                     });
                   }}
                 />
-                <TextField
+                {/* TODO: 目前不开放设置时长 */}
+                {/* <TextField
                   label={texts['DURATION']}
                   type="number"
                   variant="outlined"
@@ -456,7 +471,7 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
                       duration: parseInt(event.target.value as unknown as string, 10),
                     });
                   }}
-                />
+                /> */}
                 <FormControlLabel
                   checked={examBasicInfo.public}
                   label={texts['IS_PUBLIC']}
@@ -492,16 +507,19 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
           }
           {
             tabs[selectedTabIndex] === 'PARTICIPANT' && (
-              <Paper classes={{ root: classes.participantEmailsInputWrapper }}>
-                <TextareaAutosize
-                  value={examParticipantEmails.join(',')}
-                  rowsMin={3}
-                  className={classes.participantEmailsInput}
-                  onChange={(event) => {
-                    setExamParticipantEmails(event.target.value.split(','));
-                  }}
-                />
-              </Paper>
+              <>
+                <Alert severity="info">{texts['PARTICIPANT_MESSAGE']}</Alert>
+                <Paper classes={{ root: classes.participantEmailsInputWrapper }}>
+                  <TextareaAutosize
+                    value={examParticipantEmails.join(',')}
+                    rowsMin={3}
+                    className={classes.participantEmailsInput}
+                    onChange={(event) => {
+                      setExamParticipantEmails(event.target.value.split(','));
+                    }}
+                  />
+                </Paper>
+              </>
             )
           }
           {

@@ -232,6 +232,7 @@ const AppModel: AppModelType = {
           'NOTIFY_PARTICIPANTS': '通知参与考生',
           'SELECT_PAPER': '选择试卷',
           'MAINTAINED': '协作',
+          'PARTICIPANT_MESSAGE': '输入考生邮箱地址，每个邮箱地址之间使用 \',\' 分隔。未注册的邮箱地址将会自动注册。',
         },
         questionItem: {
           'IS_ANSWER': '答案',
