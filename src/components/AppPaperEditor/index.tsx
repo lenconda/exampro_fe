@@ -11,7 +11,12 @@ import {
 } from './service';
 import { queryAllUsers } from '../../service';
 import { AppState } from '../../models/app';
-import { Dispatch, PaperQuestionResponseData, PaperResponseData, QuestionResponseData, User } from '../../interfaces';
+import {
+  Dispatch,
+  PaperQuestionResponseData,
+  PaperResponseData,
+  QuestionResponseData, User,
+} from '../../interfaces';
 import { connect } from '../../patches/dva';
 import { ConnectState } from '../../models';
 import { useTexts } from '../../utils/texts';
@@ -20,11 +25,11 @@ import { useDebouncedValue } from '../../utils/hooks';
 import AppQuestionItem from '../AppQuestionItem';
 import { pipeQuestionResponseToMetadata } from '../../utils/pipes';
 import AppUserItem from '../AppUserItem';
+import AppIndicator from '../AppIndicator';
 import React, { useEffect, useState } from 'react';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Checkbox from '@material-ui/core/Checkbox';
-import CircularProgress from '@material-ui/core/CircularProgress';
 import Dialog, { DialogProps } from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -34,10 +39,8 @@ import Paper from '@material-ui/core/Paper';
 import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
 import TextField from '@material-ui/core/TextField';
-import Typography from '@material-ui/core/Typography';
 import CheckIcon from '@material-ui/icons/Check';
 import DeleteIcon from '@material-ui/icons/Delete';
-import FileQuestionIcon from 'mdi-material-ui/FileQuestion';
 import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
 import { makeStyles } from '@material-ui/core';
 import _ from 'lodash';
@@ -416,9 +419,7 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                     isSearching
                       ? searchedQuestionsLoading
                         ? (
-                          <div className="app-loading">
-                            <CircularProgress classes={{ root: 'app-loading__icon' }} />
-                          </div>
+                          <AppIndicator type="loading" />
                         )
                         : !searchContent
                           ? null
@@ -453,16 +454,11 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                               );
                             })
                             : (
-                              <div className="app-empty">
-                                <FileQuestionIcon classes={{ root: 'app-empty__icon' }} />
-                                <Typography classes={{ root: 'app-empty__text' }}>{systemTexts['EMPTY']}</Typography>
-                              </div>
+                              <AppIndicator type="empty" />
                             )
                       : paperQuestionsLoading
                         ? (
-                          <div className="app-loading">
-                            <CircularProgress classes={{ root: 'app-loading__icon' }} />
-                          </div>
+                          <AppIndicator type="loading" />
                         )
                         : currentPaperQuestions.length > 0
                           ? (
@@ -519,10 +515,7 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                             </DragDropContext>
                           )
                           : (
-                            <div className="app-empty">
-                              <FileQuestionIcon classes={{ root: 'app-empty__icon' }} />
-                              <Typography classes={{ root: 'app-empty__text' }}>{systemTexts['EMPTY']}</Typography>
-                            </div>
+                            <AppIndicator type="empty" />
                           )
                   }
                 </Box>
@@ -536,9 +529,7 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                   isSearching
                     ? searchedUsersLoading
                       ? (
-                        <div className="app-loading">
-                          <CircularProgress classes={{ root: 'app-loading__icon' }} />
-                        </div>
+                        <AppIndicator type="loading" />
                       )
                       : !searchContent
                         ? null
@@ -562,16 +553,11 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                             );
                           })
                           : (
-                            <div className="app-empty">
-                              <FileQuestionIcon classes={{ root: 'app-empty__icon' }} />
-                              <Typography classes={{ root: 'app-empty__text' }}>{systemTexts['EMPTY']}</Typography>
-                            </div>
+                            <AppIndicator type="empty" />
                           )
                     : maintainersLoading
                       ? (
-                        <div className="app-loading">
-                          <CircularProgress classes={{ root: 'app-loading__icon' }} />
-                        </div>
+                        <AppIndicator type="loading" />
                       )
                       : currentMaintainers.length > 0
                         ? currentMaintainers.map((maintainer) => {
@@ -593,10 +579,7 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                           );
                         })
                         : (
-                          <div className="app-empty">
-                            <FileQuestionIcon classes={{ root: 'app-empty__icon' }} />
-                            <Typography classes={{ root: 'app-empty__text' }}>{systemTexts['EMPTY']}</Typography>
-                          </div>
+                          <AppIndicator type="empty" />
                         )
                 }
               </Box>

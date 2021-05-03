@@ -12,6 +12,7 @@ import { useDebouncedValue, useUpdateEffect } from '../../../utils/hooks';
 import AppDialogManager from '../../../components/AppDialog/Manager';
 import AppSearchBar from '../../../components/AppSearchBar';
 import AppExamEditor from '../../../components/AppExamEditor';
+import AppIndicator from '../../../components/AppIndicator';
 import clsx from 'clsx';
 import _ from 'lodash';
 import React, { useEffect, useRef, useState } from 'react';
@@ -28,9 +29,7 @@ import Tabs from '@material-ui/core/Tabs';
 import TablePagination from '@material-ui/core/TablePagination';
 import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
-import CircularProgress from '@material-ui/core/CircularProgress';
 import FileDocumentEdit from 'mdi-material-ui/FileDocumentEdit';
-import FileQuestion from 'mdi-material-ui/FileQuestion';
 import FileEye from 'mdi-material-ui/FileEye';
 import './index.less';
 
@@ -221,9 +220,7 @@ const ExamsPage: React.FC<ExamPageProps> = ({
             {
               rolesLoading
                 ? (
-                  <div className="app-loading">
-                    <CircularProgress classes={{ root: 'app-loading__icon' }} color="primary" />
-                  </div>
+                  <AppIndicator type="loading" />
                 )
                 : (
                   <Tabs
@@ -302,16 +299,11 @@ const ExamsPage: React.FC<ExamPageProps> = ({
               {
                 queryExamsLoading
                   ? (
-                    <div className="app-loading">
-                      <CircularProgress classes={{ root: 'app-loading__icon' }} />
-                    </div>
+                    <AppIndicator type="loading" />
                   )
                   : examItems.length === 0
                     ? (
-                      <div className="app-empty">
-                        <FileQuestion classes={{ root: 'app-empty__icon' }} />
-                        <Typography classes={{ root: 'app-empty__text' }}>{systemTexts['EMPTY']}</Typography>
-                      </div>
+                      <AppIndicator type="empty" />
                     )
                     : (
                       <>

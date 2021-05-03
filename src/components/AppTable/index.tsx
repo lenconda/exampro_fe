@@ -6,7 +6,7 @@ import { Dispatch } from '../../interfaces';
 import { useTexts } from '../../utils/texts';
 import { useUpdateEffect } from '../../utils/hooks';
 import { useWindowInnerSizes } from '../../utils/window';
-import { FileQuestion } from 'mdi-material-ui';
+import AppIndicator from '../AppIndicator';
 import React, { useEffect, useState, useRef } from 'react';
 import { lighten, makeStyles } from '@material-ui/core/styles';
 import Table, { TableProps } from '@material-ui/core/Table';
@@ -16,7 +16,6 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
-import CircularProgress from '@material-ui/core/CircularProgress';
 import Checkbox from '@material-ui/core/Checkbox';
 import TablePagination, { TablePaginationProps } from '@material-ui/core/TablePagination';
 import Typography from '@material-ui/core/Typography';
@@ -223,16 +222,11 @@ const AppTable: React.FC<AppTableComponentProps> = ({
       {
         loading
           ? (
-            <div className="app-loading">
-              <CircularProgress classes={{ root: 'app-loading__icon' }} />
-            </div>
+            <AppIndicator type="loading" />
           )
           : data.length === 0
             ? (
-              <div className="app-empty">
-                <FileQuestion classes={{ root: 'app-empty__icon' }} />
-                <Typography classes={{ root: 'app-empty__text' }}>{texts['005']}</Typography>
-              </div>
+              <AppIndicator type="empty" />
             )
             : (
               <div className={clsx(classes.wrapper)} ref={tableWrapper}>

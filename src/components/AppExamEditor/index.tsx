@@ -22,6 +22,7 @@ import AppUserItem from '../AppUserItem';
 import { queryAllUsers } from '../../service';
 import AppDateTimePicker from '../AppDateTimePicker';
 import { camelToSnake } from '../../utils/objects';
+import AppIndicator from '../AppIndicator';
 import React, { useEffect, useState } from 'react';
 import Alert from '@material-ui/lab/Alert';
 import AutoComplete from '@material-ui/lab/Autocomplete';
@@ -29,7 +30,6 @@ import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Checkbox from '@material-ui/core/Checkbox';
 import Chip from '@material-ui/core/Chip';
-import CircularProgress from '@material-ui/core/CircularProgress';
 import Dialog, { DialogProps } from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -40,10 +40,8 @@ import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
 import TextareaAutosize from '@material-ui/core/TextareaAutosize';
 import TextField from '@material-ui/core/TextField';
-import Typography from '@material-ui/core/Typography';
 import CheckIcon from '@material-ui/icons/Check';
 import DeleteIcon from '@material-ui/icons/Delete';
-import FileQuestionIcon from 'mdi-material-ui/FileQuestion';
 import { makeStyles } from '@material-ui/core';
 import _ from 'lodash';
 
@@ -527,23 +525,16 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
             examUserTypes.indexOf(tabs[selectedTabIndex].toLowerCase()) !== -1 && (
               examUsersLoading[tabs[selectedTabIndex]]
                 ? (
-                  <div className="app-loading">
-                    <CircularProgress classes={{ root: 'app-loading__icon' }} />
-                  </div>
+                  <AppIndicator type="loading" />
                 )
                 : isSearching
                   ? searchedUsersLoading
                     ? (
-                      <div className="app-loading">
-                        <CircularProgress classes={{ root: 'app-loading__icon' }} />
-                      </div>
+                      <AppIndicator type="loading" />
                     )
                     : searchedUsers.length === 0
                       ? (
-                        <div className="app-empty">
-                          <FileQuestionIcon classes={{ root: 'app-empty__icon' }} />
-                          <Typography classes={{ root: 'app-empty__text' }}>{systemTexts['EMPTY']}</Typography>
-                        </div>
+                        <AppIndicator type="empty" />
                       )
                       : (
                         <Box className={classes.itemsWrapper}>
@@ -577,10 +568,7 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
                       )
                   : currentExamUsers[tabs[selectedTabIndex].toUpperCase()].length === 0
                     ? (
-                      <div className="app-empty">
-                        <FileQuestionIcon classes={{ root: 'app-empty__icon' }} />
-                        <Typography classes={{ root: 'app-empty__text' }}>{systemTexts['EMPTY']}</Typography>
-                      </div>
+                      <AppIndicator type="empty" />
                     )
                     : (
                       <Box className={classes.itemsWrapper}>

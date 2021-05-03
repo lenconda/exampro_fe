@@ -12,6 +12,7 @@ import { pushSearch, useLocationQuery } from '../../../utils/history';
 import { usePaginationRequest, useRequest } from '../../../utils/request';
 import { pipeQuestionResponseToMetadata } from '../../../utils/pipes';
 import AppSearchBar from '../../../components/AppSearchBar';
+import AppIndicator from '../../../components/AppIndicator';
 import Badge from '@material-ui/core/Badge';
 import Box from '@material-ui/core/Box';
 import Checkbox from '@material-ui/core/Checkbox';
@@ -21,7 +22,6 @@ import MenuItem from '@material-ui/core/MenuItem';
 import TablePagination from '@material-ui/core/TablePagination';
 import Typography from '@material-ui/core/Typography';
 import AddCommentIcon from '@material-ui/icons/AddComment';
-import FileQuestionIcon from 'mdi-material-ui/FileQuestion';
 import FilterMenuOutlineIcon from 'mdi-material-ui/FilterMenuOutline';
 import IconButton from '@material-ui/core/IconButton';
 import React, { useEffect, useState } from 'react';
@@ -211,17 +211,12 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
           {
             queryQuestionsLoading
               ? (
-                <div className="app-loading">
-                  <CircularProgress classes={{ root: 'app-loading__icon' }} />
-                </div>
+                <AppIndicator type="loading" />
               )
               : (
                 questionItems.length === 0
                   ? (
-                    <div className="app-empty">
-                      <FileQuestionIcon classes={{ root: 'app-empty__icon' }} />
-                      <Typography classes={{ root: 'app-empty__text' }}>{systemTexts['EMPTY']}</Typography>
-                    </div>
+                    <AppIndicator type="empty" />
                   )
                   : (
                     <>

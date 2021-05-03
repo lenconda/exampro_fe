@@ -88,10 +88,6 @@ const HomePage: React.FC<HomePageProps> = ({
     ? () => window().document.body
     : undefined;
 
-  const AppSidebarMenu: React.FC = () => {
-    return <AppMenu items={sidebarMenu} loading={sidebarMenuLoading} />;
-  };
-
   return (
     <div className="app-page app-page-home">
       <CssBaseline />
@@ -159,7 +155,7 @@ const HomePage: React.FC<HomePageProps> = ({
               keepMounted: true, // Better open performance on mobile.
             }}
           >
-            <AppSidebarMenu />
+            <AppMenu items={sidebarMenu} loading={sidebarMenuLoading} />
           </Drawer>
         </Hidden>
         <Hidden xsDown={true} implementation="css">
@@ -168,9 +164,9 @@ const HomePage: React.FC<HomePageProps> = ({
               paper: classes.drawerPaper,
             }}
             variant="permanent"
-            open
+            open={true}
           >
-            <AppSidebarMenu />
+            <AppMenu items={sidebarMenu} loading={sidebarMenuLoading} />
           </Drawer>
         </Hidden>
       </nav>
