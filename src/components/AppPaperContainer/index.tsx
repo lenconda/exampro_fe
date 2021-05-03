@@ -65,17 +65,21 @@ const AppPaperContainer: React.FC<AppPaperContainerComponentProps> = ({
             ? (<AppIndicator type="empty" />)
             : questions.map((question, index) => {
               return (
-                <AppQuestionItem
+                <Paper
+                  key={question.id}
                   classes={{
                     root: classes.questionItem,
                   }}
-                  answerable={mode === 'answer'}
-                  key={question.id}
-                  questionNumber={index + 1}
-                  question={pipeQuestionResponseToMetadata(question)}
-                  showButtons={[]}
-                  canCollapse={false}
-                />
+                  elevation={0}
+                >
+                  <AppQuestionItem
+                    answerable={mode === 'answer'}
+                    questionNumber={index + 1}
+                    question={pipeQuestionResponseToMetadata(question)}
+                    showButtons={[]}
+                    canCollapse={false}
+                  />
+                </Paper>
               );
             })
       }

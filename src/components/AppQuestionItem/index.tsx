@@ -416,6 +416,7 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
                         <Paper key={index} classes={{ root: classes.blankWrapper }}>
                           <Typography classes={{ root: classes.blankNumberWrapper }}>{index + 1}.</Typography>
                           <InputBase
+                            fullWidth={true}
                             onChange={(event) => {
                               setFilledBlanks(filledBlanks.map((value, answerIndex) => {
                                 if (index === answerIndex) {
