@@ -548,6 +548,7 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                               <AppUserItem
                                 key={index}
                                 user={user}
+                                selected={maintainers.findIndex((maintainer) => maintainer.email === user.email) !== -1}
                                 classes={{
                                   root: classes.userItem,
                                 }}
@@ -578,6 +579,7 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                             <AppUserItem
                               key={maintainer.email}
                               user={maintainer}
+                              selected={selectedMaintainers.findIndex((currentMaintainer) => maintainer.email === currentMaintainer.email) !== -1}
                               classes={{
                                 root: classes.userItem,
                               }}

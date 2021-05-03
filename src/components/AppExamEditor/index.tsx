@@ -1,4 +1,11 @@
-import { createExam, createExamPaper, createExamUsers, getExamUsers, queryAllMaintainedPapers, updateExam } from './service';
+import {
+  createExam,
+  createExamPaper,
+  createExamUsers,
+  getExamUsers,
+  queryAllMaintainedPapers,
+  updateExam,
+} from './service';
 import { AppState } from '../../models/app';
 import {
   Dispatch,
@@ -152,10 +159,27 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
 
   const [submitting, setSubmitting] = useState<boolean>(false);
 
-  const [currentExamUsers, setCurrentExamUsers] = useState<TypedUsers>(defaultExamUsers);
-  const [selectedUsers, setSelectedUsers] = useState<TypedUsers>(defaultExamUsers);
+  const [currentExamUsers, setCurrentExamUsers] = useState<TypedUsers>({
+    'MAINTAINER': [],
+    'INVIGILATOR': [],
+    'REVIEWER': [],
+  });
+  const [selectedUsers, setSelectedUsers] = useState<TypedUsers>({
+    'MAINTAINER': [],
+    'INVIGILATOR': [],
+    'REVIEWER': [],
+  });
   const [examParticipantEmails, setExamParticipantEmails] = useState<string[]>([]);
-  const [examBasicInfo, setExamBasicInfo] = useState<Partial<ExamResponseData>>(defaultExamBasicInfo);
+  const [examBasicInfo, setExamBasicInfo] = useState<Partial<ExamResponseData>>({
+    title: '',
+    public: false,
+    notifyParticipants: true,
+    grades: true,
+    delay: 0,
+    startTime: new Date().toISOString(),
+    endTime: new Date().toISOString(),
+    duration: 0,
+  });
   const [examPaper, setExamPaper] = useState<PaperResponseData>(null);
   const [searchPapersLoading, setSearchPapersLoading] = useState<boolean>(false);
   const [searchPapersValue, setSearchPapersValue] = useState<string>('');
@@ -217,7 +241,12 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
       (async () => {
         const users: TypedUsers = defaultExamUsers;
         for (const examUserType of examUserTypes) {
-          users[examUserType.toUpperCase()] = await getExamUsers(exam.id, examUserType);
+          changeLoadingState(examUserType, false);
+          try {
+            users[examUserType.toUpperCase()] = await getExamUsers(exam.id, examUserType);
+          } finally {
+            changeLoadingState(examUserType, false);
+          }
         }
         setCurrentExamUsers(defaultExamUsers);
       })();
@@ -248,6 +277,11 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
 
   useEffect(() => {
     setSearchedUsers([]);
+    setSelectedUsers({
+      'MAINTAINER': [],
+      'INVIGILATOR': [],
+      'REVIEWER': [],
+    });
     searchUsers(debouncedSearchContent);
   }, [debouncedSearchContent, selectedTabIndex]);
 
@@ -512,6 +546,7 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
                               <AppUserItem
                                 key={index}
                                 user={user}
+                                selected={currentExamUsers[tabs[selectedTabIndex]].findIndex((examUser) => user.email === examUser.email) !== -1}
                                 classes={{
                                   root: classes.userItem,
                                 }}
@@ -548,6 +583,7 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
                             <AppUserItem
                               key={user.email}
                               user={user}
+                              selected={selectedUsers[tabs[selectedTabIndex]].findIndex((examUser) => user.email === examUser.email) !== -1}
                               classes={{
                                 root: classes.userItem,
                               }}

@@ -11,6 +11,7 @@ import { makeStyles } from '@material-ui/core';
 
 export interface AppUserItemProps extends PaperProps {
   user?: User;
+  selected?: boolean;
   onSelect?(): void;
   onCancelSelect?(): void;
 }
@@ -41,6 +42,7 @@ const useStyles = makeStyles((theme) => {
 
 const AppUserItem: React.FC<AppUserItemProps> = ({
   user,
+  selected = false,
   onSelect,
   onCancelSelect,
   ...props
@@ -56,6 +58,7 @@ const AppUserItem: React.FC<AppUserItemProps> = ({
     >
       <Checkbox
         color="primary"
+        checked={selected}
         onChange={(event) => {
           const checked = event.target.checked;
           if (checked) {
