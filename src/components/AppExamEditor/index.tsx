@@ -228,9 +228,26 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
       for (const examUserType of examUserTypes) {
         fetchExamUsers(exam.id, examUserType);
       }
+
       getExamUsers(exam.id, 'participant').then((participants) => {
         setExamParticipantEmails((participants || []).map((participant) => participant.email));
       });
+
+      const paper = _.get(exam, 'paper') as PaperResponseData;
+      if (paper) {
+        setExamPaper(paper);
+      }
+      const currentExamBasicInfo = _.pick(exam, [
+        'title',
+        'public',
+        'notifyParticipants',
+        'grades',
+        'delay',
+        'startTime',
+        'endTime',
+        'duration',
+      ]);
+      setExamBasicInfo(currentExamBasicInfo);
     }
   }, [exam, mode]);
 
