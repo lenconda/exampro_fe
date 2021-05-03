@@ -105,7 +105,7 @@ const examUserTypes = ['maintainer', 'invigilator', 'reviewer'];
 const defaultExamBasicInfo: Partial<ExamResponseData> = {
   title: '',
   public: false,
-  notifyParticipants: true,
+  notifyParticipants: false,
   grades: true,
   delay: 0,
   startTime: new Date().toISOString(),
@@ -487,7 +487,8 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
                     />
                   }
                 />
-                <FormControlLabel
+                {/* TODO: 目前默认不通知 */}
+                {/* <FormControlLabel
                   checked={examBasicInfo.notifyParticipants}
                   label={texts['NOTIFY_PARTICIPANTS']}
                   control={
@@ -501,7 +502,7 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
                       }}
                     />
                   }
-                />
+                /> */}
               </>
             )
           }
