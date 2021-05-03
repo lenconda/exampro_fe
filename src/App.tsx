@@ -26,6 +26,8 @@ const UserAuthPage = React.lazy(() => import('./pages/User/Auth'));
 const UserCompletePage = React.lazy(() => import('./pages/User/Complete'));
 // /user/verify_email
 const UserVerifyEmailPage = React.lazy(() => import('./pages/User/VerifyEmail'));
+// /exam/answer
+const ExamAnswerPage = React.lazy(() => import('./pages/Exam/Answer'));
 
 export interface AppProps extends AppState {
   dispatch: Dispatch<AnyAction>;
@@ -46,7 +48,9 @@ const App: React.FC<AppProps> = (props) => {
                 <Route path="/user/auth" component={() => <UserAuthPage />} />
                 <Route path="/user/complete" component={() => <UserCompletePage />} />
                 <Route path="/user/verify_email" component={() => <UserVerifyEmailPage />} />
+                <Route path="/exam/answer" component={() => <ExamAnswerPage />} />
                 <Redirect from="/" to="/home" exact={true} />
+                <Redirect from="/exam" to="/exam/answer" exact={true} />
               </Switch>
             </Suspense>
           </Router>

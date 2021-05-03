@@ -6,5 +6,6 @@ export const getPaperQuestions = async (paperId: number) => {
   const data = await AppRequestManager.send({
     url: `/paper/${paperId}/questions`,
   });
-  return _.get(data, 'data.data.items') as QuestionResponseData[];
+  const items = _.get(data, 'data.data.items') || [];
+  return items.map((item) => item.question) as QuestionResponseData[];
 };

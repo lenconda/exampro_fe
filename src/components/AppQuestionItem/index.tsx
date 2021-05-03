@@ -24,6 +24,7 @@ import CheckIcon from '@material-ui/icons/Check';
 import ArrowDropdownIcon from '@material-ui/icons/ArrowDropDown';
 import ArrowDropUpIcon from '@material-ui/icons/ArrowDropUp';
 import EditIcon from '@material-ui/icons/Edit';
+import FlagIcon from '@material-ui/icons/Flag';
 import DeleteIcon from '@material-ui/icons/Delete';
 import React, { useEffect, useRef, useState } from 'react';
 import { ContentState, EditorState } from 'draft-js';
@@ -34,6 +35,8 @@ import _ from 'lodash';
 type ChoiceSelectorProps = (CheckboxProps | RadioProps) & {
   questionType: QuestionType;
 };
+
+type AnswerType = string[] | ContentState;
 
 const ChoiceSelector: React.FC<ChoiceSelectorProps> = ({
   questionType,
@@ -58,7 +61,8 @@ export interface AppQuestionItemProps extends CardProps {
   canCollapse?: boolean;
   answerable?: boolean;
   showButtons?: string[];
-  onAnswerChange?(question: AppQuestionMetaData, answer: string[] | ContentState): void;
+  participantAnswer?: AnswerType;
+  onAnswerChange?(question: AppQuestionMetaData, answer: AnswerType): void;
   onUpdateQuestion?(): void;
   onDeleteQuestion?(): void;
 }
@@ -154,6 +158,7 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
   answerable = true,
   question,
   showButtons = ['edit', 'delete'],
+  participantAnswer,
   dispatch,
   onAnswerChange: onChange,
   onUpdateQuestion,
@@ -257,8 +262,25 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
                 component="span"
                 variant="outlined"
                 color="primary"
-                icon={<CheckIcon />}
+                icon={<CheckIcon fontSize="small" />}
                 label={texts['IS_ANSWER']}
+                size="small"
+                classes={{ root: classes.choiceAnswerTag }}
+              />
+            )
+          }
+          {
+            (
+              !answerable
+              && Array.isArray(participantAnswer)
+              && participantAnswer.indexOf((index + 1).toString()) !== -1
+            ) && (
+              <Chip
+                component="span"
+                variant="outlined"
+                color="secondary"
+                icon={<FlagIcon fontSize="small" />}
+                label={texts['PARTICIPANT_ANSWER']}
                 size="small"
                 classes={{ root: classes.choiceAnswerTag }}
               />
@@ -333,39 +355,127 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
           )
         }
         {
-          (answerable && type === 'short_answer') && (
-            <Box className={classes.shortAnswerEditorWrapper}>
-              <Editor
-                texts={editorTexts}
-                onChange={(data) => setShortAnswerContent(data.getCurrentContent())}
-              />
-            </Box>
+          type === 'short_answer' && (
+            answerable
+              ? (
+                <Box className={classes.shortAnswerEditorWrapper}>
+                  <Editor
+                    texts={editorTexts}
+                    onChange={(data) => setShortAnswerContent(data.getCurrentContent())}
+                  />
+                </Box>
+              )
+              : (
+                <>
+                  {
+                    (answer && answer instanceof ContentState) && (
+                      <>
+                        <Chip
+                          label={texts['STANDARD_ANSWER']}
+                          variant="outlined"
+                          size="small"
+                          classes={{ root: 'app-margin-bottom' }}
+                        />
+                        <Editor
+                          texts={editorTexts}
+                          readonly={true}
+                          editorState={EditorState.createWithContent(answer)}
+                        />
+                      </>
+                    )
+                  }
+                  {
+                    (participantAnswer && participantAnswer instanceof ContentState) && (
+                      <>
+                        <Chip
+                          label={texts['PARTICIPANT_ANSWER']}
+                          variant="outlined"
+                          size="small"
+                          classes={{ root: 'app-margin-bottom app-margin-top' }}
+                        />
+                        <Editor
+                          texts={editorTexts}
+                          readonly={true}
+                          editorState={EditorState.createWithContent(participantAnswer)}
+                        />
+                      </>
+                    )
+                  }
+                </>
+              )
           )
         }
         {
-          (answerable && type === 'fill_in_blank' && blankCount > 0) && (
-            <Box>
-              {
-                new Array(blankCount).fill(null).map((value, index) => {
-                  return (
-                    <Paper key={index} classes={{ root: classes.blankWrapper }}>
-                      <Typography classes={{ root: classes.blankNumberWrapper }}>{index + 1}.</Typography>
-                      <InputBase
-                        onChange={(event) => {
-                          setFilledBlanks(filledBlanks.map((value, answerIndex) => {
-                            if (index === answerIndex) {
-                              return event.target.value;
-                            } else {
-                              return value;
-                            }
-                          }));
-                        }}
-                      />
-                    </Paper>
-                  );
-                })
-              }
-            </Box>
+          (type === 'fill_in_blank' && blankCount > 0) && (
+            answerable
+              ? (
+                <Box>
+                  {
+                    new Array(blankCount).fill(null).map((value, index) => {
+                      return (
+                        <Paper key={index} classes={{ root: classes.blankWrapper }}>
+                          <Typography classes={{ root: classes.blankNumberWrapper }}>{index + 1}.</Typography>
+                          <InputBase
+                            onChange={(event) => {
+                              setFilledBlanks(filledBlanks.map((value, answerIndex) => {
+                                if (index === answerIndex) {
+                                  return event.target.value;
+                                } else {
+                                  return value;
+                                }
+                              }));
+                            }}
+                          />
+                        </Paper>
+                      );
+                    })
+                  }
+                </Box>
+              )
+              : (
+                <>
+                  <Chip
+                    label={texts['STANDARD_ANSWER']}
+                    variant="outlined"
+                    size="small"
+                    classes={{ root: 'app-margin-bottom' }}
+                  />
+                  {
+                    _.isArray(answer) && answer.map((value, index) => {
+                      return (
+                        <Paper key={index} classes={{ root: classes.blankWrapper }}>
+                          <Typography classes={{ root: classes.blankNumberWrapper }}>
+                            {index + 1}.&nbsp;{value}
+                          </Typography>
+                        </Paper>
+                      );
+                    })
+                  }
+                  {
+                    (participantAnswer && _.isArray(participantAnswer)) && (
+                      <>
+                        <Chip
+                          label={texts['PARTICIPANT_ANSWER']}
+                          variant="outlined"
+                          size="small"
+                          classes={{ root: 'app-margin-bottom app-margin-top' }}
+                        />
+                        {
+                          participantAnswer.map((value, index) => {
+                            return (
+                              <Paper key={index} classes={{ root: classes.blankWrapper }}>
+                                <Typography classes={{ root: classes.blankNumberWrapper }}>
+                                  {index + 1}.&nbsp;{value}
+                                </Typography>
+                              </Paper>
+                            );
+                          })
+                        }
+                      </>
+                    )
+                  }
+                </>
+              )
           )
         }
       </CardContent>

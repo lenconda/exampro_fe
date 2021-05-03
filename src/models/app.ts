@@ -244,6 +244,8 @@ const AppModel: AppModelType = {
           'SHORT_ANSWER': '简答',
           'FILL_IN_BLANK': '填空',
           'SURE_TO_DELETE': '将要删除这个试题',
+          'STANDARD_ANSWER': '标准答案',
+          'PARTICIPANT_ANSWER': '考生答案',
         },
         searchBar: {
           'CREATE': '新建',

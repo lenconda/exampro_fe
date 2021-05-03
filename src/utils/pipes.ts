@@ -38,7 +38,7 @@ export const pipeQuestionResponseToMetadata = (questionData: QuestionResponseDat
     choices,
     answer: questionAnswer,
     categories,
-    content: DraftUtils.convertFromRaw(JSON.parse(content)),
+    content: content ? DraftUtils.convertFromRaw(JSON.parse(content)) : content,
     blankCount,
     creator,
     summary,
