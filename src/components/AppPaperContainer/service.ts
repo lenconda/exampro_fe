@@ -1,11 +1,10 @@
 import AppRequestManager from '../AppRequest/Manager';
-import { QuestionResponseData } from '../../interfaces';
+import { PaperQuestionResponseData, QuestionResponseData } from '../../interfaces';
 import _ from 'lodash';
 
 export const getPaperQuestions = async (paperId: number) => {
   const data = await AppRequestManager.send({
     url: `/paper/${paperId}/questions`,
   });
-  const items = _.get(data, 'data.data.items') || [];
-  return items.map((item) => item.question) as QuestionResponseData[];
+  return (_.get(data, 'data.data.items') || []) as PaperQuestionResponseData[];
 };

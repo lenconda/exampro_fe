@@ -1,6 +1,6 @@
 import { getPaperQuestions } from './service';
 import { AppState } from '../../models/app';
-import { Dispatch, PaperResponseData, QuestionResponseData } from '../../interfaces';
+import { Dispatch, PaperQuestionResponseData, PaperResponseData, QuestionResponseData } from '../../interfaces';
 import { connect } from '../../patches/dva';
 import { ConnectState } from '../../models';
 import AppIndicator from '../AppIndicator';
@@ -26,7 +26,7 @@ const useStyles = makeStyles((theme) => {
       paddingBottom: theme.spacing(5),
     },
     questionItem: {
-      marginBottom: theme.spacing(3),
+      marginBottom: theme.spacing(6),
     },
   };
 });
@@ -38,15 +38,15 @@ const AppPaperContainer: React.FC<AppPaperContainerComponentProps> = ({
   ...props
 }) => {
   const classes = useStyles();
-  const [questions, setQuestions] = useState<QuestionResponseData[]>([]);
-  const [questionsLoading, setQuestionsLoading] = useState<boolean>(true);
+  const [paperQuestions, setPaperQuestions] = useState<PaperQuestionResponseData[]>([]);
+  const [paperQuestionsLoading, setPaperQuestionsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     if (paper && paper.id) {
-      setQuestionsLoading(true);
-      getPaperQuestions(paper.id).then((questions) => {
-        setQuestions(questions || []);
-      }).finally(() => setQuestionsLoading(false));
+      setPaperQuestionsLoading(true);
+      getPaperQuestions(paper.id).then((paperQuestions) => {
+        setPaperQuestions(paperQuestions || []);
+      }).finally(() => setPaperQuestionsLoading(false));
     }
   }, [paper]);
 
@@ -59,14 +59,14 @@ const AppPaperContainer: React.FC<AppPaperContainerComponentProps> = ({
       })}
     >
       {
-        questionsLoading
+        paperQuestionsLoading
           ? (<AppIndicator type="loading" />)
-          : questions.length === 0
+          : paperQuestions.length === 0
             ? (<AppIndicator type="empty" />)
-            : questions.map((question, index) => {
+            : paperQuestions.map((paperQuestion, index) => {
               return (
                 <Paper
-                  key={question.id}
+                  key={paperQuestion.id}
                   classes={{
                     root: classes.questionItem,
                   }}
@@ -75,7 +75,7 @@ const AppPaperContainer: React.FC<AppPaperContainerComponentProps> = ({
                   <AppQuestionItem
                     answerable={mode === 'answer'}
                     questionNumber={index + 1}
-                    question={pipeQuestionResponseToMetadata(question)}
+                    question={pipeQuestionResponseToMetadata(paperQuestion.question)}
                     showButtons={[]}
                     canCollapse={false}
                   />
