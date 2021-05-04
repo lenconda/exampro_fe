@@ -16,10 +16,10 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 }));
 
 const paperData = {
-  'id': 1,
+  'id': 2,
   'public': false,
-  'title': '南昌二中高二物理单元测试卷',
-  'missedChoicesScore': 0,
+  'title': '高中生物自测题（一）',
+  'missedChoicesScore': 3,
   'banned': false,
   'createdAt': '2021-05-02T12:46:00.297Z',
   'updatedAt': '2021-05-03T05:14:38.000Z',

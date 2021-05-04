@@ -190,6 +190,11 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
     }).finally(() => setMaintainersLoading(false));
   };
 
+  const clear = () => {
+    setMaintainers([]);
+    setPaperQuestions([]);
+  };
+
   useEffect(() => {
     if (mode === 'create') {
       setPaperData({
@@ -592,6 +597,7 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
             color="primary"
             disabled={submitting}
             onClick={() => {
+              clear();
               if (_.isFunction(onClose)) {
                 onClose();
               }
@@ -621,6 +627,7 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                   return;
                 })
                 .then(() => {
+                  clear();
                   if (_.isFunction(onSubmitPaper)) {
                     onSubmitPaper();
                   }

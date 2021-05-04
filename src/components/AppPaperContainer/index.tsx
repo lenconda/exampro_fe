@@ -23,15 +23,18 @@ export interface AppPaperContainerProps extends PaperProps {
   paper: PaperResponseData;
   mode?: 'answer' | 'review' | 'result';
   result?: ExamResultResponseData;
+  maxWidth?: number;
 }
 export interface AppPaperContainerComponentProps extends AppPaperContainerProps, AppState, Dispatch {}
 
 const useStyles = makeStyles((theme) => {
   return {
     wrapper: {
-      padding: theme.spacing(16),
-      paddingTop: theme.spacing(5),
-      paddingBottom: theme.spacing(5),
+      padding: theme.spacing(5),
+      display: 'flex',
+      justifyContent: 'center',
+    },
+    questionsWrapper: {
     },
     questionItem: {
       marginBottom: theme.spacing(6),
@@ -51,6 +54,7 @@ const AppPaperContainer: React.FC<AppPaperContainerComponentProps> = ({
   paper,
   mode = 'answer',
   result,
+  maxWidth = 600,
   dispatch,
   ...props
 }) => {
@@ -76,47 +80,54 @@ const AppPaperContainer: React.FC<AppPaperContainerComponentProps> = ({
         root: clsx(classes.wrapper, _.get(props, 'classes.root')),
       })}
     >
-      {
-        paperQuestionsLoading
-          ? (<AppIndicator type="loading" />)
-          : paperQuestions.length === 0
-            ? (<AppIndicator type="empty" />)
-            : paperQuestions.map((paperQuestion, index) => {
-              return (
-                <Paper
-                  key={paperQuestion.id}
-                  classes={{
-                    root: classes.questionItem,
-                  }}
-                  elevation={0}
-                >
-                  <AppQuestionItem
-                    answerable={mode === 'answer'}
-                    questionNumber={index + 1}
-                    question={pipeQuestionResponseToMetadata(paperQuestion.question)}
-                    showButtons={[]}
-                    canCollapse={false}
-                  />
-                  <Paper elevation={0} classes={{ root: classes.controlWrapper }}>
-                    {
-                      mode === 'review' && (
-                        <Typography
-                          classes={{ root: classes.controlItem }}
-                        >{texts['POINTS']}:&nbsp;{paperQuestion.points}</Typography>
-                      )
-                    }
-                    {
-                      ((mode === 'result' || mode === 'review') && result) && (
-                        <Typography
-                          classes={{ root: classes.controlItem }}
-                        >{texts['SCORE']}:&nbsp;{result[paperQuestion.question.id].scores}</Typography>
-                      )
-                    }
+      <Paper
+        elevation={0}
+        style={{
+          maxWidth,
+        }}
+      >
+        {
+          paperQuestionsLoading
+            ? (<AppIndicator type="loading" />)
+            : paperQuestions.length === 0
+              ? (<AppIndicator type="empty" />)
+              : paperQuestions.map((paperQuestion, index) => {
+                return (
+                  <Paper
+                    key={paperQuestion.id}
+                    classes={{
+                      root: classes.questionItem,
+                    }}
+                    elevation={0}
+                  >
+                    <AppQuestionItem
+                      answerable={mode === 'answer'}
+                      questionNumber={index + 1}
+                      question={pipeQuestionResponseToMetadata(paperQuestion.question)}
+                      showButtons={[]}
+                      canCollapse={false}
+                    />
+                    <Paper elevation={0} classes={{ root: classes.controlWrapper }}>
+                      {
+                        mode === 'review' && (
+                          <Typography
+                            classes={{ root: classes.controlItem }}
+                          >{texts['POINTS']}:&nbsp;{paperQuestion.points}</Typography>
+                        )
+                      }
+                      {
+                        ((mode === 'result' || mode === 'review') && result) && (
+                          <Typography
+                            classes={{ root: classes.controlItem }}
+                          >{texts['SCORE']}:&nbsp;{result[paperQuestion.question.id].scores}</Typography>
+                        )
+                      }
+                    </Paper>
                   </Paper>
-                </Paper>
-              );
-            })
-      }
+                );
+              })
+        }
+      </Paper>
     </Paper>
   );
 };

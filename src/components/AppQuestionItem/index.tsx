@@ -126,9 +126,9 @@ const useStyles = makeStyles((theme) => {
       border: `1px solid ${theme.palette.grey[300]}`,
     },
     blankWrapper: {
-      paddingTop: theme.spacing(1),
+      paddingTop: theme.spacing(3),
       paddingRight: theme.spacing(2),
-      paddingBottom: theme.spacing(1),
+      paddingBottom: theme.spacing(3),
       paddingLeft: theme.spacing(2),
       marginBottom: theme.spacing(2),
       display: 'flex',
