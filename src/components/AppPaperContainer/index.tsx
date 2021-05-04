@@ -36,7 +36,7 @@ export interface AppPaperContainerComponentProps extends AppPaperContainerProps,
 
 const useStyles = makeStyles((theme) => {
   return {
-    wrapper: {
+    paperContainerWrapper: {
       padding: theme.spacing(5),
       display: 'flex',
       justifyContent: 'center',
@@ -93,7 +93,7 @@ const AppPaperContainer: React.FC<AppPaperContainerComponentProps> = ({
       elevation={0}
       {...props}
       classes={_.merge(props.classes, {
-        root: clsx(classes.wrapper, _.get(props, 'classes.root')),
+        root: clsx(classes.paperContainerWrapper, _.get(props, 'classes.root')),
       })}
     >
       <Paper

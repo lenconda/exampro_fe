@@ -42,6 +42,16 @@ export interface PaginationResponse<T = any> {
   total: number;
 }
 
+export interface UserExam {
+  id: number;
+  confirmed: boolean;
+  leftTimes: number;
+  startTime: string;
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string;
+}
+
 export interface Exam {
   id: number;
   title: string;
@@ -51,6 +61,9 @@ export interface Exam {
   delay: number;
   startTime: string;
   endTime: string;
+  userExam?: UserExam;
+  paper?: PaperResponseData;
+  initiator?: User;
   duration?: number;
   createdAt?: string;
   updatedAt?: string;

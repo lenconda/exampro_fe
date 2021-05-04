@@ -29,6 +29,7 @@ export interface I18N {
     examEditor?: Record<string, string>;
     dateTimePicker?: Record<string, string>;
     paperContainer?: Record<string, string>;
+    examContainer?: Record<string, string>;
   };
 }
 
@@ -261,6 +262,9 @@ const AppModel: AppModelType = {
         paperContainer: {
           'POINTS': '满分',
           'SCORE': '得分',
+        },
+        examContainer: {
+          'INITIATOR': '发起人',
         },
         ui: {
           '/user/auth': {
