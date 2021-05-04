@@ -1,3 +1,4 @@
+import { ContentState } from 'draft-js';
 import { Dispatch as ReduxDispatch, AnyAction } from 'redux';
 
 export interface User {
@@ -126,3 +127,17 @@ export interface PaperResponseData {
 }
 
 export type ExamResponseData = Exam;
+
+export type QuestionChoiceWithAnswer = QuestionChoice & {
+  isAnswer: boolean;
+};
+
+export interface AppQuestionMetaData {
+  type: QuestionType;
+  id?: number;
+  content?: ContentState;
+  choices?: QuestionChoice[];
+  answer?: string[] | ContentState;
+  categories?: QuestionCategory[];
+  blankCount?: number;
+}

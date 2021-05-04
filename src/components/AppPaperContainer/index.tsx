@@ -1,12 +1,19 @@
 import { getPaperQuestions } from './service';
 import { AppState } from '../../models/app';
-import { Dispatch, PaperQuestionResponseData, PaperResponseData, QuestionResponseData } from '../../interfaces';
+import {
+  Dispatch,
+  PaperQuestionResponseData,
+  PaperResponseData,
+  QuestionResponseData,
+} from '../../interfaces';
 import { connect } from '../../patches/dva';
 import { ConnectState } from '../../models';
 import AppIndicator from '../AppIndicator';
 import AppQuestionItem from '../AppQuestionItem';
 import { pipeQuestionResponseToMetadata } from '../../utils/pipes';
+import { useTexts } from '../../utils/texts';
 import Paper, { PaperProps } from '@material-ui/core/Paper';
+import Typography from '@material-ui/core/Typography';
 import React, { useEffect, useState } from 'react';
 import { makeStyles } from '@material-ui/core';
 import _ from 'lodash';
@@ -28,6 +35,14 @@ const useStyles = makeStyles((theme) => {
     questionItem: {
       marginBottom: theme.spacing(6),
     },
+    controlWrapper: {
+      marginTop: theme.spacing(2),
+      display: 'flex',
+      alignItems: 'center',
+    },
+    controlItem: {
+      marginRight: theme.spacing(2),
+    },
   };
 });
 
@@ -38,6 +53,7 @@ const AppPaperContainer: React.FC<AppPaperContainerComponentProps> = ({
   ...props
 }) => {
   const classes = useStyles();
+  const texts = useTexts(dispatch, 'paperContainer');
   const [paperQuestions, setPaperQuestions] = useState<PaperQuestionResponseData[]>([]);
   const [paperQuestionsLoading, setPaperQuestionsLoading] = useState<boolean>(true);
 
@@ -79,6 +95,15 @@ const AppPaperContainer: React.FC<AppPaperContainerComponentProps> = ({
                     showButtons={[]}
                     canCollapse={false}
                   />
+                  <Paper elevation={0} classes={{ root: classes.controlWrapper }}>
+                    {
+                      mode === 'review' && (
+                        <Typography
+                          classes={{ root: classes.controlItem }}
+                        >{texts['POINTS']}:&nbsp;{paperQuestion.points}</Typography>
+                      )
+                    }
+                  </Paper>
                 </Paper>
               );
             })

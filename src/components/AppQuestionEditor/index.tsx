@@ -1,5 +1,5 @@
-import { createCategories, createQuestion, getAllCategoriesWithoutPagination, updateQuestion } from './service';
-import { Dispatch, QuestionCategory, QuestionChoice, QuestionType } from '../../interfaces';
+import { createQuestion, getAllCategoriesWithoutPagination, updateQuestion } from './service';
+import { AppQuestionMetaData, Dispatch, QuestionCategory, QuestionChoice, QuestionChoiceWithAnswer, QuestionType } from '../../interfaces';
 import { AppState } from '../../models/app';
 import Editor from '../Editor';
 import { connect } from '../../patches/dva';
@@ -40,20 +40,6 @@ import DraftEditor, { ContentState, EditorState } from 'draft-js';
 import _ from 'lodash';
 import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautiful-dnd';
 import clsx from 'clsx';
-
-export type QuestionChoiceWithAnswer = QuestionChoice & {
-  isAnswer: boolean;
-};
-
-export interface AppQuestionMetaData {
-  type: QuestionType;
-  id?: number;
-  content?: ContentState;
-  choices?: QuestionChoice[];
-  answer?: string[] | ContentState;
-  categories?: QuestionCategory[];
-  blankCount?: number;
-}
 
 export interface AppQuestionEditorProps extends DialogProps {
   mode?: 'create' | 'edit';

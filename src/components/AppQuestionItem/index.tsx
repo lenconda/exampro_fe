@@ -1,10 +1,10 @@
 import { deleteQuestion } from './service';
-import AppQuestionEditor, { AppQuestionMetaData } from '../AppQuestionEditor';
+import AppQuestionEditor from '../AppQuestionEditor';
 import AppDialogManager from '../AppDialog/Manager';
 import { connect } from '../../patches/dva';
 import { ConnectState } from '../../models';
 import { AppState } from '../../models/app';
-import { Dispatch, QuestionChoice, QuestionType } from '../../interfaces';
+import { AppQuestionMetaData, Dispatch, QuestionChoice, QuestionType } from '../../interfaces';
 import Editor from '../Editor';
 import { useTexts } from '../../utils/texts';
 import Button from '@material-ui/core/Button';

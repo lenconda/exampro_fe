@@ -1,5 +1,4 @@
-import { AppQuestionMetaData } from '../components/AppQuestionEditor';
-import { QuestionCategory, QuestionChoice, QuestionResponseData } from '../interfaces';
+import { AppQuestionMetaData, QuestionCategory, QuestionChoice, QuestionResponseData } from '../interfaces';
 import DraftUtils, { EditorState } from 'draft-js';
 
 export const pipeQuestionResponseToMetadata = (questionData: QuestionResponseData): AppQuestionMetaData => {

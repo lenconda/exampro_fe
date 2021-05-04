@@ -1,11 +1,10 @@
 import { connect } from '../../patches/dva';
 import { ConnectState } from '../../models';
-import { Dispatch, User } from '../../interfaces';
+import { AppQuestionMetaData, Dispatch } from '../../interfaces';
 import { AppState } from '../../models/app';
-import { AppQuestionMetaData } from '../AppQuestionEditor';
 import AppQuestionItem from '../AppQuestionItem';
 import { useTexts } from '../../utils/texts';
-import React, { useState } from 'react';
+import React from 'react';
 import Box from '@material-ui/core/Box';
 import Paper from '@material-ui/core/Paper';
 import TextField from '@material-ui/core/TextField';

@@ -1,14 +1,11 @@
 import { ConnectState } from '../../../models';
 import { AppState } from '../../../models/app';
-import { Dispatch, SidebarMenuItem, User } from '../../../interfaces';
-import { useTexts } from '../../../utils/texts';
+import { Dispatch } from '../../../interfaces';
 import { connect } from '../../../patches/dva';
 import AppPaperContainer from '../../../components/AppPaperContainer';
-import React, { useState, Suspense, useEffect } from 'react';
-import { makeStyles, useTheme, Theme, createStyles } from '@material-ui/core/styles';
-import CssBaseline from '@material-ui/core/CssBaseline';
+import React from 'react';
+import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
-import { useHistory } from 'react-router';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
   content: {
@@ -54,26 +51,12 @@ const AnswerPage: React.FC<AnswerPageProps> = ({
   dispatch,
   ...props
 }) => {
-  const { window } = props;
   const classes = useStyles();
-  const theme = useTheme();
-  const history = useHistory();
-  const dropdownTexts = useTexts(dispatch, 'avatarDropdown');
-  const sidebarMenuTexts = useTexts(dispatch, 'sidebarMenu');
-  const [mobileOpen, setMobileOpen] = useState(false);
-
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
-
-  const container = window !== undefined
-    ? () => window().document.body
-    : undefined;
 
   return (
     <div className="app-page app-page-exam__answer">
       <main className={clsx(classes.content, 'app-container')}>
-        <AppPaperContainer paper={paperData} />
+        <AppPaperContainer paper={paperData} mode="review" />
       </main>
     </div>
   );

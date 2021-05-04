@@ -28,6 +28,7 @@ export interface I18N {
     paperQuestionItem?: Record<string, string>;
     examEditor?: Record<string, string>;
     dateTimePicker?: Record<string, string>;
+    paperContainer?: Record<string, string>;
   };
 }
 
@@ -257,6 +258,10 @@ const AppModel: AppModelType = {
           'MIN_DATE': '日期不应在最小日期之前',
           'TODAY': '今天',
         },
+        paperContainer: {
+          'POINTS': '满分',
+          'SCORE': '得分',
+        },
         ui: {
           '/user/auth': {
             '001': '验证身份',
@@ -308,7 +313,7 @@ const AppModel: AppModelType = {
             '011': '编辑考试',
             '012': '监考',
             '013': '状态',
-            '014': '是否确定删除考试：',
+            '014': '以下考试将会被删除',
           },
           '/home/questions': {
             '001': '查询试题',
@@ -323,7 +328,7 @@ const AppModel: AppModelType = {
             '005': '创建人',
             '006': '创建日期',
             '007': '最近修改日期',
-            '008': '以下考试将会被删除',
+            '008': '以下试卷将会被删除',
           },
         },
       },
