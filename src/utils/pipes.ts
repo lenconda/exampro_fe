@@ -8,7 +8,8 @@ import {
   QuestionResponseData,
   QuestionType,
 } from '../interfaces';
-import DraftUtils, { EditorState } from 'draft-js';
+import DraftUtils, { ContentState, EditorState } from 'draft-js';
+import _ from 'lodash';
 
 export const pipeQuestionAnswerResponseToMetadata = (
   questionType: QuestionType,
@@ -84,4 +85,25 @@ export const pipeQuestionAnswerRequestToMetadata = (
   }
 
   return questionAnswer;
+};
+
+export const pipeQuestionAnswerMetadataToRequest = (
+  questionType: QuestionType,
+  answer: AppQuestionAnswerType,
+): string[] => {
+  let questionAnswerRequestData: string[] = [];
+
+  if (questionType === 'short_answer') {
+    if (answer instanceof ContentState) {
+      questionAnswerRequestData = [JSON.stringify(DraftUtils.convertToRaw(answer))];
+    } else {
+      questionAnswerRequestData = [
+        JSON.stringify(DraftUtils.convertToRaw(EditorState.createEmpty().getCurrentContent())),
+      ];
+    }
+  } else if (_.isArray(answer)) {
+    questionAnswerRequestData = answer;
+  }
+
+  return questionAnswerRequestData;
 };

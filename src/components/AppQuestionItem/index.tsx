@@ -4,7 +4,13 @@ import AppDialogManager from '../AppDialog/Manager';
 import { connect } from '../../patches/dva';
 import { ConnectState } from '../../models';
 import { AppState } from '../../models/app';
-import { AppQuestionAnswerType, AppQuestionMetaData, Dispatch, QuestionChoice, QuestionType } from '../../interfaces';
+import {
+  AppQuestionAnswerType,
+  AppQuestionMetaData,
+  Dispatch,
+  QuestionChoice,
+  QuestionType,
+} from '../../interfaces';
 import Editor from '../Editor';
 import { useTexts } from '../../utils/texts';
 import Button from '@material-ui/core/Button';
@@ -206,7 +212,7 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
   }, [cardContentRef]);
 
   useEffect(() => {
-    if (_.isFunction(onChange)) {
+    if (_.isFunction(onChange) && answerable) {
       if (type === 'single_choice' || type === 'multiple_choices') {
         onChange(question, selectedChoiceIndexes.map((value) => (value + 1).toString()));
       } else if (type === 'fill_in_blank') {
@@ -215,7 +221,7 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
         onChange(question, shortAnswerContent);
       }
     }
-  }, [type, selectedChoiceIndexes, filledBlanks, shortAnswerContent]);
+  }, [type, selectedChoiceIndexes, filledBlanks, shortAnswerContent, answerable]);
 
   const generateChoice = (
     choice: QuestionChoice,

@@ -2,6 +2,7 @@ import { getPaperQuestions } from './service';
 import { AppState } from '../../models/app';
 import {
   Dispatch,
+  ExamAnswerRequestData,
   ExamResultResponseData,
   PaperQuestionResponseData,
   PaperResponseData,
@@ -10,8 +11,13 @@ import { connect } from '../../patches/dva';
 import { ConnectState } from '../../models';
 import AppIndicator from '../AppIndicator';
 import AppQuestionItem from '../AppQuestionItem';
-import { pipeQuestionAnswerRequestToMetadata, pipeQuestionResponseToMetadata } from '../../utils/pipes';
+import {
+  pipeQuestionAnswerMetadataToRequest,
+  pipeQuestionAnswerRequestToMetadata,
+  pipeQuestionResponseToMetadata,
+} from '../../utils/pipes';
 import { useTexts } from '../../utils/texts';
+import { useDebouncedValue } from '../../utils/hooks';
 import Paper, { PaperProps } from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import React, { useEffect, useState } from 'react';
@@ -24,6 +30,7 @@ export interface AppPaperContainerProps extends PaperProps {
   mode?: 'answer' | 'review' | 'result';
   result?: ExamResultResponseData;
   maxWidth?: number;
+  onAnswerChange?(paper: PaperResponseData, answer: ExamAnswerRequestData): void;
 }
 export interface AppPaperContainerComponentProps extends AppPaperContainerProps, AppState, Dispatch {}
 
@@ -56,12 +63,15 @@ const AppPaperContainer: React.FC<AppPaperContainerComponentProps> = ({
   result,
   maxWidth = 600,
   dispatch,
+  onAnswerChange,
   ...props
 }) => {
   const classes = useStyles();
   const texts = useTexts(dispatch, 'paperContainer');
   const [paperQuestions, setPaperQuestions] = useState<PaperQuestionResponseData[]>([]);
   const [paperQuestionsLoading, setPaperQuestionsLoading] = useState<boolean>(true);
+  const [paperAnswer, setPaperAnswer] = useState<ExamAnswerRequestData>({});
+  const debouncedPaperAnswer = useDebouncedValue(paperAnswer);
 
   useEffect(() => {
     if (paper && paper.id) {
@@ -71,6 +81,12 @@ const AppPaperContainer: React.FC<AppPaperContainerComponentProps> = ({
       }).finally(() => setPaperQuestionsLoading(false));
     }
   }, [paper]);
+
+  useEffect(() => {
+    if (_.isFunction(onAnswerChange)) {
+      onAnswerChange(paper, debouncedPaperAnswer);
+    }
+  }, [debouncedPaperAnswer]);
 
   return (
     <Paper
@@ -115,6 +131,12 @@ const AppPaperContainer: React.FC<AppPaperContainerComponentProps> = ({
                       }
                       showButtons={[]}
                       canCollapse={false}
+                      onAnswerChange={(question, answer) => {
+                        setPaperAnswer({
+                          ...paperAnswer,
+                          [question.id.toString()]: Array.from(pipeQuestionAnswerMetadataToRequest(question.type, answer)),
+                        });
+                      }}
                     />
                     <Paper elevation={0} classes={{ root: classes.controlWrapper }}>
                       {

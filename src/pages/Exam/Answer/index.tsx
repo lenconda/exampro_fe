@@ -56,7 +56,7 @@ const AnswerPage: React.FC<AnswerPageProps> = ({
   return (
     <div className="app-page app-page-exam__answer">
       <main className={clsx(classes.content, 'app-container')}>
-        <AppPaperContainer paper={paperData} mode="review" />
+        <AppPaperContainer paper={paperData} mode="answer" />
       </main>
     </div>
   );
