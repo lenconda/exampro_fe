@@ -103,6 +103,7 @@ const AppPaperContainer: React.FC<AppPaperContainerComponentProps> = ({
                     <AppQuestionItem
                       answerable={mode === 'answer'}
                       questionNumber={index + 1}
+                      elevation={0}
                       question={pipeQuestionResponseToMetadata(paperQuestion.question)}
                       participantAnswer={
                         mode !== 'answer'
