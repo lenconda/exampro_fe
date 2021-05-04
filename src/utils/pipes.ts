@@ -61,3 +61,27 @@ export const pipeQuestionResponseToMetadata = (questionData: QuestionResponseDat
 
   return result;
 };
+
+export const pipeQuestionAnswerRequestToMetadata = (
+  questionType: QuestionType,
+  answers: string[],
+): AppQuestionAnswerType => {
+  let questionAnswer: AppQuestionAnswerType;
+
+  if (questionType === 'short_answer') {
+    if (answers.length === 0) {
+      questionAnswer = EditorState.createEmpty().getCurrentContent();
+    } else {
+      const currentContent = answers[0];
+      if (currentContent) {
+        questionAnswer = DraftUtils.convertFromRaw(JSON.parse(currentContent));
+      } else {
+        questionAnswer = EditorState.createEmpty().getCurrentContent();
+      }
+    }
+  } else {
+    questionAnswer = Array.from(answers);
+  }
+
+  return questionAnswer;
+};

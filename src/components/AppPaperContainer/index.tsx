@@ -2,6 +2,7 @@ import { getPaperQuestions } from './service';
 import { AppState } from '../../models/app';
 import {
   Dispatch,
+  ExamResultResponseData,
   PaperQuestionResponseData,
   PaperResponseData,
 } from '../../interfaces';
@@ -21,6 +22,7 @@ import clsx from 'clsx';
 export interface AppPaperContainerProps extends PaperProps {
   paper: PaperResponseData;
   mode?: 'answer' | 'review' | 'result';
+  result?: ExamResultResponseData;
 }
 export interface AppPaperContainerComponentProps extends AppPaperContainerProps, AppState, Dispatch {}
 
@@ -48,6 +50,7 @@ const useStyles = makeStyles((theme) => {
 const AppPaperContainer: React.FC<AppPaperContainerComponentProps> = ({
   paper,
   mode = 'answer',
+  result,
   dispatch,
   ...props
 }) => {
@@ -100,6 +103,13 @@ const AppPaperContainer: React.FC<AppPaperContainerComponentProps> = ({
                         <Typography
                           classes={{ root: classes.controlItem }}
                         >{texts['POINTS']}:&nbsp;{paperQuestion.points}</Typography>
+                      )
+                    }
+                    {
+                      ((mode === 'result' || mode === 'review') && result) && (
+                        <Typography
+                          classes={{ root: classes.controlItem }}
+                        >{texts['SCORE']}:&nbsp;{result[paperQuestion.question.id].scores}</Typography>
                       )
                     }
                   </Paper>

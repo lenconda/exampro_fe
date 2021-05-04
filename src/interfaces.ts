@@ -154,4 +154,4 @@ export interface ExamAnswerScoreItem {
   answer: string[];
   scores: number;
 }
-export type ExamAnswerScoreResponseData = Record<string, ExamAnswerScoreItem>;
+export type ExamResultResponseData = Record<string, ExamAnswerScoreItem>;
