@@ -4,7 +4,7 @@ import AppDialogManager from '../AppDialog/Manager';
 import { connect } from '../../patches/dva';
 import { ConnectState } from '../../models';
 import { AppState } from '../../models/app';
-import { AppQuestionMetaData, Dispatch, QuestionChoice, QuestionType } from '../../interfaces';
+import { AppQuestionAnswerType, AppQuestionMetaData, Dispatch, QuestionChoice, QuestionType } from '../../interfaces';
 import Editor from '../Editor';
 import { useTexts } from '../../utils/texts';
 import Button from '@material-ui/core/Button';
@@ -36,8 +36,6 @@ type ChoiceSelectorProps = (CheckboxProps | RadioProps) & {
   questionType: QuestionType;
 };
 
-type AnswerType = string[] | ContentState;
-
 const ChoiceSelector: React.FC<ChoiceSelectorProps> = ({
   questionType,
   ...props
@@ -61,8 +59,8 @@ export interface AppQuestionItemProps extends CardProps {
   canCollapse?: boolean;
   answerable?: boolean;
   showButtons?: string[];
-  participantAnswer?: AnswerType;
-  onAnswerChange?(question: AppQuestionMetaData, answer: AnswerType): void;
+  participantAnswer?: AppQuestionAnswerType;
+  onAnswerChange?(question: AppQuestionMetaData, answer: AppQuestionAnswerType): void;
   onUpdateQuestion?(): void;
   onDeleteQuestion?(): void;
 }

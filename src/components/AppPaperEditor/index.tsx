@@ -15,7 +15,8 @@ import {
   Dispatch,
   PaperQuestionResponseData,
   PaperResponseData,
-  QuestionResponseData, User,
+  QuestionResponseData,
+  User,
 } from '../../interfaces';
 import { connect } from '../../patches/dva';
 import { ConnectState } from '../../models';

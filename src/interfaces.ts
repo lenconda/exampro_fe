@@ -75,11 +75,15 @@ export interface QuestionChoice {
   id: number;
   content: string;
   order: number;
-  question: Question;
+  question?: Question;
   createdAt?: string;
   updatedAt?: string;
   deletedAt?: string;
 }
+
+export type QuestionAnswer = QuestionChoice;
+export type QuestionAnswerResponseData = QuestionAnswer[];
+export type QuestionChoiceResponseData = QuestionChoice[];
 
 export interface QuestionCategory {
   id: number;
@@ -90,8 +94,8 @@ export interface QuestionCategory {
 }
 
 export interface QuestionResponseData extends Question {
-  answers?: Record<string, string>[];
-  choices?: Record<string, string>[];
+  answers?: QuestionAnswerResponseData;
+  choices?: QuestionChoiceResponseData;
   categories?: QuestionCategory[];
 }
 
@@ -132,12 +136,22 @@ export type QuestionChoiceWithAnswer = QuestionChoice & {
   isAnswer: boolean;
 };
 
+export type AppQuestionAnswerType = string[] | ContentState;
+
 export interface AppQuestionMetaData {
   type: QuestionType;
   id?: number;
   content?: ContentState;
   choices?: QuestionChoice[];
-  answer?: string[] | ContentState;
+  answer?: AppQuestionAnswerType;
   categories?: QuestionCategory[];
   blankCount?: number;
 }
+
+export type ExamAnswerRequestData = Record<string, string[]>;
+export type ExamScoreRequestData = Record<string, number>;
+export interface ExamAnswerScoreItem {
+  answer: string[];
+  scores: number;
+}
+export type ExamAnswerScoreResponseData = Record<string, ExamAnswerScoreItem>;

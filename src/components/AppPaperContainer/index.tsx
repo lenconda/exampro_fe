@@ -4,7 +4,6 @@ import {
   Dispatch,
   PaperQuestionResponseData,
   PaperResponseData,
-  QuestionResponseData,
 } from '../../interfaces';
 import { connect } from '../../patches/dva';
 import { ConnectState } from '../../models';
