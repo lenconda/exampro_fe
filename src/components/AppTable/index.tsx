@@ -196,7 +196,7 @@ const AppTable: React.FC<AppTableComponentProps> = ({
         - tablePagination.current.clientHeight
         - tableHead.current.clientHeight
         - (tableToolBar.current ? tableToolBar.current.clientHeight : 0)
-        - 48;
+        - 83;
       if (newTableContainerMaxHeight > containerMinHeight) {
         setTableContainerMaxHeight(newTableContainerMaxHeight);
       } else {
