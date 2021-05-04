@@ -10,7 +10,7 @@ import { connect } from '../../patches/dva';
 import { ConnectState } from '../../models';
 import AppIndicator from '../AppIndicator';
 import AppQuestionItem from '../AppQuestionItem';
-import { pipeQuestionResponseToMetadata } from '../../utils/pipes';
+import { pipeQuestionAnswerRequestToMetadata, pipeQuestionResponseToMetadata } from '../../utils/pipes';
 import { useTexts } from '../../utils/texts';
 import Paper, { PaperProps } from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -104,6 +104,14 @@ const AppPaperContainer: React.FC<AppPaperContainerComponentProps> = ({
                       answerable={mode === 'answer'}
                       questionNumber={index + 1}
                       question={pipeQuestionResponseToMetadata(paperQuestion.question)}
+                      participantAnswer={
+                        mode !== 'answer'
+                          ? pipeQuestionAnswerRequestToMetadata(
+                            _.get(paperQuestion, 'question.type'),
+                            _.get(_.get(result, _.get(paperQuestion, 'question.id')), 'answer') || [],
+                          )
+                          : null
+                      }
                       showButtons={[]}
                       canCollapse={false}
                     />
