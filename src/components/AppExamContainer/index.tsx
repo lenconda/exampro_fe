@@ -19,6 +19,7 @@ import React, { useEffect, useState } from 'react';
 import { makeStyles } from '@material-ui/core';
 import _ from 'lodash';
 import clsx from 'clsx';
+import './index.less';
 
 export interface AppExamContainerProps extends PaperProps {
   examId: number;
@@ -68,7 +69,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
   const systemTexts = useTexts(dispatch, 'system');
   const [exam, setExam] = useState<ExamResponseData>(undefined);
   const [examLoading, setExamLoading] = useState<boolean>(false);
-  const [examState, setExamState] = useState<ExamState>('waiting_for_confirmation');
+  const [examState, setExamState] = useState<ExamState>('processing');
   const [participantAnswer, setParticipantAnswer] = useState<ExamAnswerRequestData>({});
 
   const fetchExamInfo = (id: number) => {
@@ -108,7 +109,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
               {
                 examState === 'processing' && (
                   exam
-                    ? <AppPaperContainer paper={exam.paper} />
+                    ? <AppPaperContainer paper={exam.paper} mode="answer" />
                     : <AppIndicator type="empty" />
                 )
               }

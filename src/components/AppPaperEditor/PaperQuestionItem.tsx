@@ -104,7 +104,8 @@ const PaperQuestionItem: React.FC<PaperQuestionItemComponentProps> = ({
               />
               <Box className={classes.questionEditorWrapper}>
                 <AppQuestionItem
-                  elevation={snapshot.isDragging ? 0 : 1}
+                  elevation={0}
+                  variant={snapshot.isDragging ? 'elevation' : 'outlined'}
                   classes={{
                     root: clsx(classes.questionItem, {
                       'app-disappear': !question,

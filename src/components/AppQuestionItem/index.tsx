@@ -230,6 +230,8 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
     return (
       <Paper
         key={index}
+        variant="outlined"
+        elevation={0}
         classes={{
           root: clsx(classes.choiceWrapper, {
             [classes.choiceSelected]: selectedChoiceIndexes.indexOf(index) !== -1,
@@ -417,7 +419,7 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
                   {
                     new Array(blankCount).fill(null).map((value, index) => {
                       return (
-                        <Paper key={index} classes={{ root: classes.blankWrapper }}>
+                        <Paper key={index} variant="outlined" classes={{ root: classes.blankWrapper }}>
                           <Typography classes={{ root: classes.blankNumberWrapper }}>{index + 1}.</Typography>
                           <InputBase
                             fullWidth={true}
@@ -448,7 +450,7 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
                   {
                     _.isArray(answer) && answer.map((value, index) => {
                       return (
-                        <Paper key={index} classes={{ root: classes.blankWrapper }}>
+                        <Paper key={index} variant="outlined" classes={{ root: classes.blankWrapper }}>
                           <Typography classes={{ root: classes.blankNumberWrapper }}>
                             {index + 1}.&nbsp;{value}
                           </Typography>

@@ -40,6 +40,7 @@ const useStyles = makeStyles((theme) => {
       padding: theme.spacing(5),
       display: 'flex',
       justifyContent: 'center',
+      backgroundColor: 'transparent',
     },
     questionsWrapper: {
     },
@@ -47,9 +48,9 @@ const useStyles = makeStyles((theme) => {
       marginBottom: theme.spacing(6),
     },
     controlWrapper: {
-      marginTop: theme.spacing(2),
       display: 'flex',
       alignItems: 'center',
+      padding: theme.spacing(2),
     },
     controlItem: {
       marginRight: theme.spacing(2),
@@ -100,6 +101,7 @@ const AppPaperContainer: React.FC<AppPaperContainerComponentProps> = ({
         elevation={0}
         style={{
           maxWidth,
+          backgroundColor: 'transparent',
         }}
       >
         {
@@ -114,6 +116,7 @@ const AppPaperContainer: React.FC<AppPaperContainerComponentProps> = ({
                     classes={{
                       root: classes.questionItem,
                     }}
+                    variant="outlined"
                     elevation={0}
                   >
                     <AppQuestionItem
@@ -138,22 +141,26 @@ const AppPaperContainer: React.FC<AppPaperContainerComponentProps> = ({
                         });
                       }}
                     />
-                    <Paper elevation={0} classes={{ root: classes.controlWrapper }}>
-                      {
-                        mode === 'review' && (
-                          <Typography
-                            classes={{ root: classes.controlItem }}
-                          >{texts['POINTS']}:&nbsp;{paperQuestion.points}</Typography>
-                        )
-                      }
-                      {
-                        ((mode === 'result' || mode === 'review') && result) && (
-                          <Typography
-                            classes={{ root: classes.controlItem }}
-                          >{texts['SCORE']}:&nbsp;{result[paperQuestion.question.id].scores}</Typography>
-                        )
-                      }
-                    </Paper>
+                    {
+                      mode !== 'answer' && (
+                        <Paper elevation={0} classes={{ root: classes.controlWrapper }}>
+                          {
+                            mode === 'review' && (
+                              <Typography
+                                classes={{ root: classes.controlItem }}
+                              >{texts['POINTS']}:&nbsp;{paperQuestion.points}</Typography>
+                            )
+                          }
+                          {
+                            ((mode === 'result' || mode === 'review') && result) && (
+                              <Typography
+                                classes={{ root: classes.controlItem }}
+                              >{texts['SCORE']}:&nbsp;{result[paperQuestion.question.id].scores}</Typography>
+                            )
+                          }
+                        </Paper>
+                      )
+                    }
                   </Paper>
                 );
               })
