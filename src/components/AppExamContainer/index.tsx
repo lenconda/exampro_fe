@@ -11,6 +11,7 @@ import { ConnectState } from '../../models';
 import AppIndicator from '../AppIndicator';
 import { useTexts } from '../../utils/texts';
 import AppPaperContainer from '../AppPaperContainer';
+import Box from '@material-ui/core/Box';
 import Card from '@material-ui/core/Card';
 import Paper, { PaperProps } from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -31,9 +32,10 @@ const useStyles = makeStyles((theme) => {
   return {
     examContainerWrapper: {
       padding: theme.spacing(2),
-      display: 'flex',
+      // display: 'flex',
       justifyContent: 'center',
       backgroundColor: 'transparent',
+      overflowY: 'scroll',
     },
     examInfoWrapper: {
       display: 'flex',
@@ -54,6 +56,9 @@ const useStyles = makeStyles((theme) => {
     },
     infoItem: {
       marginBottom: theme.spacing(1),
+    },
+    examPaperWrapper: {
+      paddingLeft: theme.spacing(32),
     },
   };
 });
@@ -99,62 +104,73 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
       })}
     >
       {
-        examLoading
-          ? <AppIndicator type="loading" />
-          : (
-            <>
-              {
-                examState === 'forbidden' && (<></>)
-              }
-              {
-                examState === 'processing' && (
-                  exam
-                    ? <AppPaperContainer paper={exam.paper} mode="answer" />
-                    : <AppIndicator type="empty" />
-                )
-              }
-              {
-                examState === 'waiting_for_confirmation' && (
-                  exam
-                    ? (
-                      <Card classes={{ root: classes.examInfoWrapper }} variant="outlined">
-                        <Typography
-                          variant="h5"
-                          classes={{ root: classes.examInfoTitle }}
-                        >
-                          <NoteTextIcon color="primary" fontSize="large" classes={{ root: classes.examInfoTitleIcon }} />
-                          {exam.title}
-                        </Typography>
-                        <Typography classes={{ root: classes.infoItem }}>
-                          {examEditorTexts['START_TIME']}:&nbsp;{new Date(exam.startTime).toLocaleString()}
-                        </Typography>
-                        <Typography classes={{ root: classes.infoItem }}>
-                          {examEditorTexts['END_TIME']}:&nbsp;{new Date(exam.endTime).toLocaleString()}
-                        </Typography>
-                        <Typography classes={{ root: classes.infoItem }}>
-                          {examEditorTexts['DURATION']}:&nbsp;{exam.duration}
-                        </Typography>
-                        <Typography classes={{ root: classes.infoItem }}>
-                          {examEditorTexts['DELAY']}:&nbsp;{exam.delay}
-                        </Typography>
-                        <Typography classes={{ root: classes.infoItem }}>
-                          {examEditorTexts['IS_PUBLIC']}:&nbsp;{exam.public ? systemTexts['TRUE'] : systemTexts['FALSE']}
-                        </Typography>
-                        {
-                          exam.initiator && (
-                            <Typography classes={{ root: classes.infoItem }}>
-                              {texts['INITIATOR']}:&nbsp;{exam.initiator.name}&nbsp;({exam.initiator.email})
-                            </Typography>
-                          )
-                        }
-                      </Card>
-                    )
-                    : <AppIndicator type="empty" />
-                )
-              }
-            </>
-          )
+        examState === 'processing' && (
+          <Card style={{ position: 'fixed' }}>Control</Card>
+        )
       }
+      <Box>
+        {
+          examLoading
+            ? <AppIndicator type="loading" />
+            : (
+              <>
+                {
+                  examState === 'forbidden' && (<></>)
+                }
+                {
+                  examState === 'processing' && (
+                    exam
+                      ? (
+                        <Box className={classes.examPaperWrapper}>
+                          <AppPaperContainer paper={exam.paper} mode="answer" />
+                        </Box>
+                      )
+                      : <AppIndicator type="empty" />
+                  )
+                }
+                {
+                  examState === 'waiting_for_confirmation' && (
+                    exam
+                      ? (
+                        <Card classes={{ root: classes.examInfoWrapper }} variant="outlined">
+                          <Typography
+                            variant="h5"
+                            classes={{ root: classes.examInfoTitle }}
+                          >
+                            <NoteTextIcon color="primary" fontSize="large" classes={{ root: classes.examInfoTitleIcon }} />
+                            {exam.title}
+                          </Typography>
+                          <Typography classes={{ root: classes.infoItem }}>
+                            {examEditorTexts['START_TIME']}:&nbsp;{new Date(exam.startTime).toLocaleString()}
+                          </Typography>
+                          <Typography classes={{ root: classes.infoItem }}>
+                            {examEditorTexts['END_TIME']}:&nbsp;{new Date(exam.endTime).toLocaleString()}
+                          </Typography>
+                          <Typography classes={{ root: classes.infoItem }}>
+                            {examEditorTexts['DURATION']}:&nbsp;{exam.duration}
+                          </Typography>
+                          <Typography classes={{ root: classes.infoItem }}>
+                            {examEditorTexts['DELAY']}:&nbsp;{exam.delay}
+                          </Typography>
+                          <Typography classes={{ root: classes.infoItem }}>
+                            {examEditorTexts['IS_PUBLIC']}:&nbsp;{exam.public ? systemTexts['TRUE'] : systemTexts['FALSE']}
+                          </Typography>
+                          {
+                            exam.initiator && (
+                              <Typography classes={{ root: classes.infoItem }}>
+                                {texts['INITIATOR']}:&nbsp;{exam.initiator.name}&nbsp;({exam.initiator.email})
+                              </Typography>
+                            )
+                          }
+                        </Card>
+                      )
+                      : <AppIndicator type="empty" />
+                  )
+                }
+              </>
+            )
+        }
+      </Box>
     </Paper>
   );
 };

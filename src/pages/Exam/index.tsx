@@ -5,6 +5,7 @@ import { connect } from '../../patches/dva';
 import AppExamContainer from '../../components/AppExamContainer';
 import React, { useEffect, useState } from 'react';
 import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
+import Card from '@material-ui/core/Card';
 import clsx from 'clsx';
 import { useParams } from 'react-router';
 import _ from 'lodash';
@@ -17,6 +18,10 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
+    flexShrink: 1,
+  },
+  controlCard: {
+    width: 240,
   },
 }));
 
