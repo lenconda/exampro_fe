@@ -1,5 +1,5 @@
 import { AppQuestionAnswerType, QuestionAnswerStatus, QuestionResponseData } from '../interfaces';
-import { EditorState } from 'draft-js';
+import DraftUtils, { EditorState } from 'draft-js';
 import _ from 'lodash';
 
 export const generateDefaultQuestionAnswer = (question: QuestionResponseData): AppQuestionAnswerType => {
@@ -19,34 +19,39 @@ export const getQuestionAnswerStatus = (
   answer: string[],
 ): QuestionAnswerStatus => {
   const questionType = question.type;
+  if (!_.isArray(answer)) { return 'nil' }
   switch (questionType) {
   case 'single_choice': {
-    if (_.isArray(answer) && answer.length === 1) {
+    if (answer.length === 1) {
       return 'full';
     } else {
       return 'nil';
     }
   }
   case 'multiple_choices': {
-    if (_.isArray(answer)) {
-      if (answer.length === 0) {
-        return 'nil';
-      } else if (answer.length === 1) {
-        return 'partial';
-      } else {
-        return 'full';
-      }
-    } else {
+    if (answer.length === 0) {
       return 'nil';
+    } else if (answer.length === 1) {
+      return 'partial';
+    } else {
+      return 'full';
     }
   }
   case 'fill_in_blank': {
-    if (_.isArray(answer)) {
-      for (const item of answer) {
-        if (!item) {
-          return 'partial';
-        }
+    if (answer.filter((item) => !item).length === answer.length) {
+      return 'nil';
+    }
+    for (const item of answer) {
+      if (!item) {
+        return 'partial';
       }
+    }
+    return 'full';
+  }
+  case 'short_answer': {
+    const [contentString] = answer;
+    const content = DraftUtils.convertFromRaw(JSON.parse(contentString));
+    if (content.hasText()) {
       return 'full';
     } else {
       return 'nil';

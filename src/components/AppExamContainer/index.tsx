@@ -1,4 +1,4 @@
-import { getExamInfo } from './service';
+import { getExamInfo, submitParticipantAnswer } from './service';
 import { AppState } from '../../models/app';
 import {
   Dispatch,
@@ -12,6 +12,7 @@ import { ConnectState } from '../../models';
 import AppIndicator from '../AppIndicator';
 import { useTexts } from '../../utils/texts';
 import AppPaperContainer from '../AppPaperContainer';
+import { getQuestionAnswerStatus } from '../../utils/question';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
@@ -25,7 +26,33 @@ import React, { useEffect, useState } from 'react';
 import { makeStyles } from '@material-ui/core';
 import _ from 'lodash';
 import clsx from 'clsx';
+import parseISO from 'date-fns/parseISO';
+import isAfter from 'date-fns/isAfter';
+import formatDistanceToNowStrict from 'date-fns/formatDistanceToNowStrict';
 import './index.less';
+
+export const getDistanceString = (dateString) => {
+  const formatDistance = ({ days, hours, minutes, seconds }) => [
+    days,
+    ...[hours % 24, minutes % 60, seconds % 60].map(s => `${s}`.padStart(2, '0')),
+  ].join(':');
+
+  const UNITS = ['day', 'hour', 'minute', 'second'];
+  const date = parseISO(dateString);
+
+  let result = { days: 0, hours: 0, minutes: 0, seconds: 0 };
+
+  if (!isAfter(new Date(), date)) {
+    const [days, hours, minutes, seconds] = UNITS.map((unit: any) => formatDistanceToNowStrict(date, {
+      unit,
+      roundingMethod: 'floor',
+    }).replace(/\D/g, '')).map((item) => parseInt(item, 10));
+
+    result = { days, hours, minutes, seconds };
+  }
+
+  return formatDistance(result);
+};
 
 export interface AppExamContainerProps extends PaperProps {
   examId: number;
@@ -77,8 +104,15 @@ const useStyles = makeStyles((theme) => {
     },
     controlCardInfoContent: {
       textAlign: 'center',
+      '& > img': {
+        marginBottom: theme.spacing(3),
+      },
     },
     controlCardProgressWrapper: {},
+    questionAnswerStatusesWrapper: {
+      display: 'flex',
+      flexWrap: 'wrap',
+    },
   };
 });
 
@@ -97,6 +131,9 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
   const [participantAnswer, setParticipantAnswer] = useState<ExamAnswerRequestData>({});
   const [paperQuestionLoaded, setPaperQuestionLoaded] = useState<boolean>(false);
   const [paperQuestions, setPaperQuestions] = useState<PaperQuestionResponseData[]>([]);
+  const [submitAnswerLoading, setSubmitAnswerLoading] = useState<boolean>(false);
+  const [timerUnlocked, setTimerUnlocked] = useState<boolean>(false);
+  const [timerString, setTimerString] = useState<string>('00:00:00');
 
   const fetchExamInfo = (id: number) => {
     setExamLoading(true);
@@ -110,11 +147,39 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
     }).finally(() => setExamLoading(false));
   };
 
+  const submitAnswer = (examId: number, answer: ExamAnswerRequestData) => {
+    setSubmitAnswerLoading(true);
+    submitParticipantAnswer(examId, answer).then(() => {
+      setExamState('submitted');
+    }).finally(() => setSubmitAnswerLoading(false));
+  };
+
   useEffect(() => {
     if (['forbidden'].indexOf(examState) === -1) {
       fetchExamInfo(examId);
     }
   }, [examId, examState]);
+
+  useEffect(() => {
+    let timer;
+
+    if (exam) {
+      if (timerUnlocked && examState === 'processing') {
+        timer = setInterval(() => {
+          const distance = getDistanceString(exam.endTime);
+          setTimerString(distance);
+        }, 1000);
+      }
+      const endTimestamp = Date.parse(exam.endTime);
+      const currentTimestamp = Date.now();
+      if (endTimestamp - currentTimestamp <= 0) {
+        submitAnswer(exam.id, participantAnswer);
+        clearInterval(timer);
+      }
+    }
+
+    return () => clearInterval(timer);
+  }, [timerUnlocked, examState, exam]);
 
   return (
     <Paper
@@ -128,6 +193,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
         (examState === 'processing' && !examLoading && exam && paperQuestionLoaded) && (
           <Card classes={{ root: classes.controlCard }}>
             <CardContent classes={{ root: classes.controlCardInfoContent }}>
+              <img src="/assets/images/logo_text.svg" width="42%" />
               <Tooltip title={exam.title}>
                 <Typography
                   gutterBottom={true}
@@ -138,16 +204,20 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                 variant="h2"
                 classes={{ root: classes.timer }}
                 gutterBottom={true}
-              >00:00:00</Typography>
+              >{timerString}</Typography>
             </CardContent>
             <CardContent classes={{ root: classes.controlCardProgressWrapper }}>
-              <Box>
+              <Box className={classes.questionAnswerStatusesWrapper}>
                 {
                   paperQuestions.map((paperQuestion) => {
+                    const id = _.get(paperQuestion, 'question.id') as number;
+                    const questionAnswerStatus = getQuestionAnswerStatus(paperQuestion.question, participantAnswer[id.toString()]);
                     return (
                       <Checkbox
-                        key={paperQuestion.question.id}
+                        key={id}
                         color="primary"
+                        checked={questionAnswerStatus !== 'nil'}
+                        indeterminate={questionAnswerStatus === 'partial'}
                       />
                     );
                   })
@@ -155,7 +225,13 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
               </Box>
             </CardContent>
             <CardContent>
-              <Button color="primary" variant="contained" fullWidth={true}>{texts['SUBMIT']}</Button>
+              <Button
+                color="primary"
+                variant="contained"
+                disabled={submitAnswerLoading}
+                fullWidth={true}
+                onClick={() => submitAnswer(exam.id, participantAnswer)}
+              >{texts['SUBMIT']}</Button>
             </CardContent>
           </Card>
         )
@@ -181,6 +257,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                             onPaperQuestionLoaded={(loadedPaperQuestions) => {
                               setPaperQuestionLoaded(true);
                               setPaperQuestions(loadedPaperQuestions);
+                              setTimerUnlocked(true);
                             }}
                             onPaperQuestionLoading={() => setPaperQuestionLoaded(false)}
                           />
