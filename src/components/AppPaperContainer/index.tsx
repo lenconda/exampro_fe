@@ -1,13 +1,11 @@
 import { getPaperQuestions } from './service';
 import { AppState } from '../../models/app';
 import {
-  AppQuestionAnswerType,
   Dispatch,
   ExamAnswerRequestData,
   ExamResultResponseData,
   PaperQuestionResponseData,
   PaperResponseData,
-  QuestionResponseData,
 } from '../../interfaces';
 import { connect } from '../../patches/dva';
 import { ConnectState } from '../../models';
@@ -25,7 +23,6 @@ import Paper, { PaperProps } from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import React, { useEffect, useState } from 'react';
 import { makeStyles } from '@material-ui/core';
-import DraftUtils, { EditorState } from 'draft-js';
 import _ from 'lodash';
 import clsx from 'clsx';
 
@@ -174,17 +171,23 @@ const AppPaperContainer: React.FC<AppPaperContainerComponentProps> = ({
                       mode !== 'answer' && (
                         <Paper elevation={0} classes={{ root: classes.controlWrapper }}>
                           {
-                            mode === 'review' && (
+                            (mode === 'review' || mode === 'result') && (
                               <Typography
                                 classes={{ root: classes.controlItem }}
                               >{texts['POINTS']}:&nbsp;{paperQuestion.points}</Typography>
                             )
                           }
                           {
-                            ((mode === 'result' || mode === 'review') && result) && (
+                            (mode === 'result' && result) && (
                               <Typography
                                 classes={{ root: classes.controlItem }}
                               >{texts['SCORE']}:&nbsp;{result[paperQuestion.question.id].scores}</Typography>
+                            )
+                          }
+                          {
+                            (mode === 'review' && result) && (
+                              // TODO: TextField
+                              <></>
                             )
                           }
                         </Paper>
