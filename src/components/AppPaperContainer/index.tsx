@@ -20,6 +20,7 @@ import { useTexts } from '../../utils/texts';
 import { useDebouncedValue } from '../../utils/hooks';
 import { generateDefaultQuestionAnswer } from '../../utils/question';
 import Paper, { PaperProps } from '@material-ui/core/Paper';
+import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import React, { useEffect, useState } from 'react';
 import { makeStyles } from '@material-ui/core';
@@ -52,11 +53,12 @@ const useStyles = makeStyles((theme) => {
     },
     controlWrapper: {
       display: 'flex',
-      alignItems: 'center',
+      flexDirection: 'column',
       padding: theme.spacing(2),
     },
     controlItem: {
       marginRight: theme.spacing(2),
+      marginBottom: theme.spacing(2),
     },
   };
 });
@@ -186,8 +188,10 @@ const AppPaperContainer: React.FC<AppPaperContainerComponentProps> = ({
                           }
                           {
                             (mode === 'review' && result) && (
-                              // TODO: TextField
-                              <></>
+                              <TextField
+                                type="number"
+                                label={texts['INPUT_SCORE']}
+                              />
                             )
                           }
                         </Paper>

@@ -314,6 +314,28 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
           </Card>
         )
       }
+      {
+        (examState === 'reviewing' && exam) && (
+          <Card classes={{ root: classes.controlCard }}>
+            <CardContent classes={{ root: classes.controlCardInfoContent }}>
+              <img src="/assets/images/logo_text.svg" width="42%" />
+              <Tooltip title={exam.title}>
+                <Typography
+                  gutterBottom={true}
+                  color="textSecondary"
+                >{exam.title}</Typography>
+              </Tooltip>
+            </CardContent>
+            <CardContent>
+              <Button
+                color="primary"
+                fullWidth={true}
+                variant="contained"
+              >{texts['SUBMIT_SCORE']}</Button>
+            </CardContent>
+          </Card>
+        )
+      }
       <Box>
         {
           examLoading
@@ -351,6 +373,21 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                           <AppPaperContainer
                             paper={exam.paper}
                             mode="result"
+                            result={examResult}
+                          />
+                        </Box>
+                      )
+                      : <AppIndicator type="empty" />
+                  )
+                }
+                {
+                  examState === 'reviewing' && (
+                    exam
+                      ? (
+                        <Box className={classes.examPaperWrapper}>
+                          <AppPaperContainer
+                            paper={exam.paper}
+                            mode="review"
                             result={examResult}
                           />
                         </Box>

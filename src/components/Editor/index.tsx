@@ -328,13 +328,17 @@ const useEditorStyles = makeStyles((theme) => {
       flexWrap: 'nowrap',
       overflowX: 'scroll',
     },
-    editorContainer: {
+    editorContainer: (props: any) => ({
       paddingTop: theme.spacing(1.5),
       paddingRight: theme.spacing(3),
       paddingBottom: theme.spacing(3),
       paddingLeft: theme.spacing(3),
       overflowY: 'scroll',
-    },
+      userSelect: props.readonly ? 'none' : 'initial',
+      '& .public-DraftEditor-content': {
+        userSelect: props.readonly ? 'none!important' : 'text',
+      } as any,
+    }),
     divider: {
       marginRight: theme.spacing(3),
       marginLeft: theme.spacing(3),
@@ -372,7 +376,7 @@ const Editor: React.FC<EditorProps> = ({
     editorState,
     setEditorState,
   ] = useState<EditorState>(defaultEditorState || EditorState.createEmpty());
-  const classes = useEditorStyles();
+  const classes = useEditorStyles({ readonly });
   const [editorTexts, setEditorTexts] = useState <Record<string, string>>({
     'header-one': 'Heading 1',
     'header-two': 'Heading 2',

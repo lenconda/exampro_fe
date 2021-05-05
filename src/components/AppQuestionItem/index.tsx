@@ -284,7 +284,6 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
               <Chip
                 component="span"
                 variant="outlined"
-                color="secondary"
                 icon={<FlagIcon fontSize="small" />}
                 label={texts['PARTICIPANT_ANSWER']}
                 size="small"
@@ -380,6 +379,8 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
                           label={texts['STANDARD_ANSWER']}
                           variant="outlined"
                           size="small"
+                          color="primary"
+                          icon={<CheckIcon />}
                           classes={{ root: 'app-margin-bottom' }}
                         />
                         <Editor
@@ -397,6 +398,7 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
                           label={texts['PARTICIPANT_ANSWER']}
                           variant="outlined"
                           size="small"
+                          icon={<FlagIcon />}
                           classes={{ root: 'app-margin-bottom app-margin-top' }}
                         />
                         <Editor
@@ -445,6 +447,8 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
                     label={texts['STANDARD_ANSWER']}
                     variant="outlined"
                     size="small"
+                    color="primary"
+                    icon={<CheckIcon />}
                     classes={{ root: 'app-margin-bottom' }}
                   />
                   {
@@ -465,6 +469,7 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
                           label={texts['PARTICIPANT_ANSWER']}
                           variant="outlined"
                           size="small"
+                          icon={<FlagIcon />}
                           classes={{ root: 'app-margin-bottom app-margin-top' }}
                         />
                         {
