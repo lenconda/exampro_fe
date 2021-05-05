@@ -1,5 +1,9 @@
 import AppRequestManager from '../AppRequest/Manager';
-import { ExamAnswerRequestData, ExamResponseData } from '../../interfaces';
+import {
+  ExamAnswerRequestData,
+  ExamResponseData,
+  ExamResultResponseData,
+} from '../../interfaces';
 import _ from 'lodash';
 
 export const getExamInfo = async (examId: number) => {
@@ -24,4 +28,11 @@ export const startExam = async (examId: number) => {
     method: 'POST',
   });
   return;
+};
+
+export const getParticipantExamResult = async (examId: number, participantEmail: string) => {
+  const data = await AppRequestManager.send({
+    url: `/exam/${examId}/result/${participantEmail}`,
+  });
+  return _.get(data, 'data.data') as ExamResultResponseData;
 };

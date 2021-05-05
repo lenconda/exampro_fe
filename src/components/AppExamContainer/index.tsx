@@ -1,4 +1,4 @@
-import { getExamInfo, submitParticipantAnswer } from './service';
+import { getExamInfo, getParticipantExamResult, submitParticipantAnswer } from './service';
 import { AppState } from '../../models/app';
 import {
   Dispatch,
@@ -13,6 +13,7 @@ import AppIndicator from '../AppIndicator';
 import { useTexts } from '../../utils/texts';
 import AppPaperContainer from '../AppPaperContainer';
 import { getQuestionAnswerStatus } from '../../utils/question';
+import { useLocationQuery } from '../../utils/history';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
@@ -132,6 +133,8 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
 }) => {
   const classes = useStyles();
   const history = useHistory();
+  const action = useLocationQuery('action') as string;
+  const participantEmail = useLocationQuery('participant_email') as string;
   const texts = useTexts(dispatch, 'examContainer');
   const examEditorTexts = useTexts(dispatch, 'examEditor');
   const systemTexts = useTexts(dispatch, 'system');
@@ -144,6 +147,8 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
   const [submitAnswerLoading, setSubmitAnswerLoading] = useState<boolean>(false);
   const [timerUnlocked, setTimerUnlocked] = useState<boolean>(false);
   const [timerString, setTimerString] = useState<string>('00:00:00');
+  const [examResult, setExamResult] = useState<ExamResultResponseData>({});
+  const [examResultLoading, setExamResultLoading] = useState<boolean>(false);
 
   const fetchExamInfo = (id: number) => {
     setExamLoading(true);
@@ -157,6 +162,13 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
     }).finally(() => setExamLoading(false));
   };
 
+  const fetchParticipantExamResult = (id: number, email: string) => {
+    setExamResultLoading(true);
+    getParticipantExamResult(id, email).then((result) => {
+      setExamResult(result);
+    }).finally(() => setExamResultLoading(false));
+  };
+
   const submitAnswer = (examId: number, answer: ExamAnswerRequestData) => {
     setSubmitAnswerLoading(true);
     submitParticipantAnswer(examId, answer).then(() => {
@@ -167,6 +179,11 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
   useEffect(() => {
     if (['forbidden'].indexOf(examState) === -1) {
       fetchExamInfo(examId);
+    }
+    if (examState === 'resulted') {
+      if (participantEmail) {
+        fetchParticipantExamResult(examId, participantEmail);
+      }
     }
   }, [examId, examState]);
 
@@ -190,6 +207,12 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
 
     return () => clearInterval(timer);
   }, [timerUnlocked, examState, exam]);
+
+  useEffect(() => {
+    if (action === 'result') {
+      setExamState('resulted');
+    }
+  }, [action]);
 
   return (
     <Paper
@@ -276,7 +299,19 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                   )
                 }
                 {
-                  examState === 'resulted' && (<></>)
+                  examState === 'resulted' && (
+                    exam
+                      ? (
+                        <Box className={classes.examPaperWrapper}>
+                          <AppPaperContainer
+                            paper={exam.paper}
+                            mode="result"
+                            result={examResult}
+                          />
+                        </Box>
+                      )
+                      : <AppIndicator type="empty" />
+                  )
                 }
                 {
                   examState === 'processing' && (
