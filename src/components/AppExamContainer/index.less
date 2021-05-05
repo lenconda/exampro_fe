@@ -1,3 +1,32 @@
 body {
   background-color: #fafafa;
 }
+
+.card {
+  display: flex;
+  flex-direction: column;
+  width: 360px;
+  align-items: stretch;
+  text-align: center;
+  padding-top: 16px;
+  background-color: transparent;
+
+  .card-body {
+    .title {
+      display: flex;
+      font-size: 16px;
+      line-height: 32px;
+      padding: 16px 0;
+      justify-content: center;
+
+      .icon {
+        margin-right: 8px;
+      }
+    }
+  }
+
+  img {
+    align-self: center;
+    margin-bottom: 24px;
+  }
+}

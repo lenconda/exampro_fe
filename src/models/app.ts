@@ -266,6 +266,11 @@ const AppModel: AppModelType = {
         examContainer: {
           'INITIATOR': '发起人',
           'SUBMIT': '交卷',
+          'EXAM_ANSWER_SUBMITTED': '试卷答案已提交',
+          'SUBMITTED_MESSAGE': '考试结束后，可在「主页-考试-我参加的」页面中查询本场考试的成绩。现在，你可以单击「返回主页」按钮回到主页',
+          'GO_BACK': '返回主页',
+          'NO_PRIVILEGE': '没有权限',
+          'NO_PRIVILEGE_MESSAGE': '你没有权限访问、管理、参加这场考试。这通常是由于考试的发起人或管理员没有将你列入考试相关人员名单中',
         },
         ui: {
           '/user/auth': {

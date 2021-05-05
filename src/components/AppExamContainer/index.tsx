@@ -24,12 +24,15 @@ import Typography from '@material-ui/core/Typography';
 import NoteTextIcon from 'mdi-material-ui/NoteText';
 import React, { useEffect, useState } from 'react';
 import { makeStyles } from '@material-ui/core';
+import EmoticonCryOutline from 'mdi-material-ui/EmoticonCryOutline';
+import TextBoxCheckOutline from 'mdi-material-ui/TextBoxCheckOutline';
 import _ from 'lodash';
 import clsx from 'clsx';
 import parseISO from 'date-fns/parseISO';
 import isAfter from 'date-fns/isAfter';
 import formatDistanceToNowStrict from 'date-fns/formatDistanceToNowStrict';
 import './index.less';
+import { useHistory } from 'react-router';
 
 export const getDistanceString = (dateString) => {
   const formatDistance = ({ days, hours, minutes, seconds }) => [
@@ -58,7 +61,13 @@ export interface AppExamContainerProps extends PaperProps {
   examId: number;
 }
 export interface AppExamContainerComponentProps extends AppExamContainerProps, AppState, Dispatch {}
-export type ExamState = 'waiting_for_confirmation' | 'processing' | 'submitted' | 'resulted' | 'forbidden';
+export type ExamState =
+  'waiting_for_confirmation'
+  | 'processing'
+  | 'submitted'
+  | 'reviewing'
+  | 'resulted'
+  | 'forbidden';
 
 const useStyles = makeStyles((theme) => {
   return {
@@ -122,12 +131,13 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
   ...props
 }) => {
   const classes = useStyles();
+  const history = useHistory();
   const texts = useTexts(dispatch, 'examContainer');
   const examEditorTexts = useTexts(dispatch, 'examEditor');
   const systemTexts = useTexts(dispatch, 'system');
   const [exam, setExam] = useState<ExamResponseData>(undefined);
   const [examLoading, setExamLoading] = useState<boolean>(false);
-  const [examState, setExamState] = useState<ExamState>('processing');
+  const [examState, setExamState] = useState<ExamState>('forbidden');
   const [participantAnswer, setParticipantAnswer] = useState<ExamAnswerRequestData>({});
   const [paperQuestionLoaded, setPaperQuestionLoaded] = useState<boolean>(false);
   const [paperQuestions, setPaperQuestions] = useState<PaperQuestionResponseData[]>([]);
@@ -243,7 +253,30 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
             : (
               <>
                 {
-                  examState === 'forbidden' && (<></>)
+                  examState === 'forbidden' && (
+                    <Card elevation={0} classes={{ root: 'card' }}>
+                      <img src="/assets/images/logo_text.svg" width="42%" />
+                      <Card classes={{ root: 'card-body' }} variant="outlined">
+                        <Typography classes={{ root: 'title' }}>
+                          <EmoticonCryOutline color="primary" fontSize="large" classes={{ root: 'icon' }} />
+                          {texts['NO_PRIVILEGE']}
+                        </Typography>
+                        <CardContent>
+                          <Typography gutterBottom={true}>{texts['NO_PRIVILEGE_MESSAGE']}</Typography>
+                        </CardContent>
+                        <CardContent>
+                          <Button
+                            fullWidth={true}
+                            variant="outlined"
+                            onClick={() => history.push('/')}
+                          >{texts['GO_BACK']}</Button>
+                        </CardContent>
+                      </Card>
+                    </Card>
+                  )
+                }
+                {
+                  examState === 'resulted' && (<></>)
                 }
                 {
                   examState === 'processing' && (
@@ -303,6 +336,29 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                         </Card>
                       )
                       : <AppIndicator type="empty" />
+                  )
+                }
+                {
+                  examState === 'submitted' && (
+                    <Card elevation={0} classes={{ root: 'card' }}>
+                      <img src="/assets/images/logo_text.svg" width="42%" />
+                      <Card classes={{ root: 'card-body' }} variant="outlined">
+                        <Typography classes={{ root: 'title' }}>
+                          <TextBoxCheckOutline color="primary" fontSize="large" classes={{ root: 'icon' }} />
+                          {texts['EXAM_ANSWER_SUBMITTED']}
+                        </Typography>
+                        <CardContent>
+                          <Typography gutterBottom={true}>{texts['SUBMITTED_MESSAGE']}</Typography>
+                        </CardContent>
+                        <CardContent>
+                          <Button
+                            fullWidth={true}
+                            variant="outlined"
+                            onClick={() => history.push('/')}
+                          >{texts['GO_BACK']}</Button>
+                        </CardContent>
+                      </Card>
+                    </Card>
                   )
                 }
               </>
