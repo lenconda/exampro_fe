@@ -1,11 +1,13 @@
 import { getPaperQuestions } from './service';
 import { AppState } from '../../models/app';
 import {
+  AppQuestionAnswerType,
   Dispatch,
   ExamAnswerRequestData,
   ExamResultResponseData,
   PaperQuestionResponseData,
   PaperResponseData,
+  QuestionResponseData,
 } from '../../interfaces';
 import { connect } from '../../patches/dva';
 import { ConnectState } from '../../models';
@@ -18,10 +20,12 @@ import {
 } from '../../utils/pipes';
 import { useTexts } from '../../utils/texts';
 import { useDebouncedValue } from '../../utils/hooks';
+import { generateDefaultQuestionAnswer } from '../../utils/question';
 import Paper, { PaperProps } from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import React, { useEffect, useState } from 'react';
 import { makeStyles } from '@material-ui/core';
+import DraftUtils, { EditorState } from 'draft-js';
 import _ from 'lodash';
 import clsx from 'clsx';
 
@@ -31,6 +35,8 @@ export interface AppPaperContainerProps extends PaperProps {
   result?: ExamResultResponseData;
   maxWidth?: number;
   onAnswerChange?(paper: PaperResponseData, answer: ExamAnswerRequestData): void;
+  onPaperQuestionLoaded?(paperQuestions: PaperQuestionResponseData[]): void;
+  onPaperQuestionLoading?(): void;
 }
 export interface AppPaperContainerComponentProps extends AppPaperContainerProps, AppState, Dispatch {}
 
@@ -65,6 +71,8 @@ const AppPaperContainer: React.FC<AppPaperContainerComponentProps> = ({
   maxWidth = 600,
   dispatch,
   onAnswerChange,
+  onPaperQuestionLoaded,
+  onPaperQuestionLoading,
   ...props
 }) => {
   const classes = useStyles();
@@ -77,11 +85,29 @@ const AppPaperContainer: React.FC<AppPaperContainerComponentProps> = ({
   useEffect(() => {
     if (paper && paper.id) {
       setPaperQuestionsLoading(true);
+      if (_.isFunction(onPaperQuestionLoading)) {
+        onPaperQuestionLoading();
+      }
       getPaperQuestions(paper.id).then((paperQuestions) => {
-        setPaperQuestions(paperQuestions || []);
+        const currentPaperQuestions = paperQuestions || [];
+        setPaperQuestions(currentPaperQuestions);
+        if (_.isFunction(onPaperQuestionLoaded)) {
+          onPaperQuestionLoaded(currentPaperQuestions);
+        }
       }).finally(() => setPaperQuestionsLoading(false));
     }
   }, [paper]);
+
+  useEffect(() => {
+    if (paperQuestions.length > 0) {
+      setPaperAnswer(paperQuestions.reduce((result, currentPaperQuestion) => {
+        const question = currentPaperQuestion.question;
+        const { id, type } = question;
+        result[id.toString()] = pipeQuestionAnswerMetadataToRequest(type, generateDefaultQuestionAnswer(question));
+        return result;
+      }, {}));
+    }
+  }, [paperQuestions]);
 
   useEffect(() => {
     if (_.isFunction(onAnswerChange)) {
@@ -106,9 +132,9 @@ const AppPaperContainer: React.FC<AppPaperContainerComponentProps> = ({
       >
         {
           paperQuestionsLoading
-            ? (<AppIndicator type="loading" />)
+            ? <AppIndicator type="loading" />
             : paperQuestions.length === 0
-              ? (<AppIndicator type="empty" />)
+              ? <AppIndicator type="empty" />
               : paperQuestions.map((paperQuestion, index) => {
                 return (
                   <Paper
@@ -136,8 +162,11 @@ const AppPaperContainer: React.FC<AppPaperContainerComponentProps> = ({
                       canCollapse={false}
                       onAnswerChange={(question, answer) => {
                         setPaperAnswer({
-                          ...paperAnswer,
-                          [question.id.toString()]: Array.from(pipeQuestionAnswerMetadataToRequest(question.type, answer)),
+                          ..._.set(
+                            _.clone(paperAnswer),
+                            question.id.toString(),
+                            Array.from(pipeQuestionAnswerMetadataToRequest(question.type, answer)),
+                          ),
                         });
                       }}
                     />

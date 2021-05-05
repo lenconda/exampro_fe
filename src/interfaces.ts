@@ -168,3 +168,5 @@ export interface ExamAnswerScoreItem {
   scores: number;
 }
 export type ExamResultResponseData = Record<string, ExamAnswerScoreItem>;
+
+export type QuestionAnswerStatus = 'full' | 'partial' | 'nil';

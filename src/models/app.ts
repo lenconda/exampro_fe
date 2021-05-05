@@ -265,6 +265,7 @@ const AppModel: AppModelType = {
         },
         examContainer: {
           'INITIATOR': '发起人',
+          'SUBMIT': '交卷',
         },
         ui: {
           '/user/auth': {
