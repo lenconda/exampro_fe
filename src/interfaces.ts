@@ -166,7 +166,14 @@ export type ExamScoreRequestData = Record<string, number>;
 export interface ExamAnswerScoreItem {
   answer: string[];
   scores: number;
+  points: number;
 }
 export type ExamResultResponseData = Record<string, ExamAnswerScoreItem>;
 
 export type QuestionAnswerStatus = 'full' | 'partial' | 'nil';
+
+export interface ExamResultMetadata {
+  totalScore: number;
+  totalPoints: number;
+  percentage: number | string;
+}

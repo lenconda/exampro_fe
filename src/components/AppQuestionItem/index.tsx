@@ -470,7 +470,7 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
                         {
                           participantAnswer.map((value, index) => {
                             return (
-                              <Paper key={index} classes={{ root: classes.blankWrapper }}>
+                              <Paper key={index} classes={{ root: classes.blankWrapper }} variant="outlined">
                                 <Typography classes={{ root: classes.blankNumberWrapper }}>
                                   {index + 1}.&nbsp;{value}
                                 </Typography>

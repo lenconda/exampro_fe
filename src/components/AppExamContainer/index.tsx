@@ -4,6 +4,7 @@ import {
   Dispatch,
   ExamAnswerRequestData,
   ExamResponseData,
+  ExamResultMetadata,
   ExamResultResponseData,
   PaperQuestionResponseData,
 } from '../../interfaces';
@@ -14,6 +15,7 @@ import { useTexts } from '../../utils/texts';
 import AppPaperContainer from '../AppPaperContainer';
 import { getQuestionAnswerStatus } from '../../utils/question';
 import { useLocationQuery } from '../../utils/history';
+import { calculateExamParticipantTotalScore } from '../../utils/exam';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
@@ -112,6 +114,11 @@ const useStyles = makeStyles((theme) => {
       width: '100%',
       textAlign: 'center',
     },
+    scores: {
+      width: '100%',
+      textAlign: 'center',
+      marginBottom: 0,
+    },
     controlCardInfoContent: {
       textAlign: 'center',
       '& > img': {
@@ -149,6 +156,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
   const [timerString, setTimerString] = useState<string>('00:00:00');
   const [examResult, setExamResult] = useState<ExamResultResponseData>({});
   const [examResultLoading, setExamResultLoading] = useState<boolean>(false);
+  const [gradeInfo, setGradeInfo] = useState<ExamResultMetadata>(undefined);
 
   const fetchExamInfo = (id: number) => {
     setExamLoading(true);
@@ -180,12 +188,18 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
     if (['forbidden'].indexOf(examState) === -1) {
       fetchExamInfo(examId);
     }
-    if (examState === 'resulted') {
+    if (examState === 'resulted' || examState === 'reviewing') {
       if (participantEmail) {
         fetchParticipantExamResult(examId, participantEmail);
       }
     }
   }, [examId, examState]);
+
+  useEffect(() => {
+    if (examState === 'resulted' && examResult) {
+      setGradeInfo(calculateExamParticipantTotalScore(examResult));
+    }
+  }, [examResult, examState]);
 
   useEffect(() => {
     let timer;
@@ -211,6 +225,9 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
   useEffect(() => {
     if (action === 'result') {
       setExamState('resulted');
+    }
+    if (action === 'review') {
+      setExamState('reviewing');
     }
   }, [action]);
 
@@ -265,6 +282,34 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                 fullWidth={true}
                 onClick={() => submitAnswer(exam.id, participantAnswer)}
               >{texts['SUBMIT']}</Button>
+            </CardContent>
+          </Card>
+        )
+      }
+      {
+        (examState === 'resulted' && exam) && (
+          <Card classes={{ root: classes.controlCard }}>
+            <CardContent classes={{ root: classes.controlCardInfoContent }}>
+              <img src="/assets/images/logo_text.svg" width="42%" />
+              <Tooltip title={exam.title}>
+                <Typography
+                  gutterBottom={true}
+                  color="textSecondary"
+                >{exam.title}</Typography>
+              </Tooltip>
+              <Typography
+                variant="h2"
+                classes={{ root: classes.scores }}
+                gutterBottom={true}
+              >{gradeInfo.totalScore || '--'}<small>/{gradeInfo.totalPoints}</small></Typography>
+              {
+                gradeInfo.percentage && (
+                  <Typography
+                    variant="h6"
+                    color="textSecondary"
+                  >{gradeInfo.percentage}%</Typography>
+                )
+              }
             </CardContent>
           </Card>
         )
