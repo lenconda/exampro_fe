@@ -19,6 +19,7 @@ import {
 import { useTexts } from '../../utils/texts';
 import { useDebouncedValue } from '../../utils/hooks';
 import { generateDefaultQuestionAnswer } from '../../utils/question';
+import { getPaperQuestionsWithAnswers } from '../AppPaperEditor/service';
 import Paper, { PaperProps } from '@material-ui/core/Paper';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
@@ -35,6 +36,7 @@ export interface AppPaperContainerProps extends PaperProps {
   onAnswerChange?(paper: PaperResponseData, answer: ExamAnswerRequestData): void;
   onPaperQuestionLoaded?(paperQuestions: PaperQuestionResponseData[]): void;
   onPaperQuestionLoading?(): void;
+  onQuestionScoreChange?(questionId: number, score: number): void;
 }
 export interface AppPaperContainerComponentProps extends AppPaperContainerProps, AppState, Dispatch {}
 
@@ -72,6 +74,7 @@ const AppPaperContainer: React.FC<AppPaperContainerComponentProps> = ({
   onAnswerChange,
   onPaperQuestionLoaded,
   onPaperQuestionLoading,
+  onQuestionScoreChange,
   ...props
 }) => {
   const classes = useStyles();
@@ -81,19 +84,32 @@ const AppPaperContainer: React.FC<AppPaperContainerComponentProps> = ({
   const [paperAnswer, setPaperAnswer] = useState<ExamAnswerRequestData>({});
   const debouncedPaperAnswer = useDebouncedValue(paperAnswer);
 
-  useEffect(() => {
-    if (paper && paper.id) {
+  const fetchPaperQuestions = async (mode) => {
+    let request;
+    if (mode === 'answer') {
+      request = getPaperQuestions(paper.id);
+    } else {
+      request = getPaperQuestionsWithAnswers(paper.id);
+    }
+    if (request && request instanceof Promise) {
       setPaperQuestionsLoading(true);
-      if (_.isFunction(onPaperQuestionLoading)) {
-        onPaperQuestionLoading();
-      }
-      getPaperQuestions(paper.id).then((paperQuestions) => {
+      request.then((paperQuestions) => {
         const currentPaperQuestions = paperQuestions || [];
         setPaperQuestions(currentPaperQuestions);
         if (_.isFunction(onPaperQuestionLoaded)) {
           onPaperQuestionLoaded(currentPaperQuestions);
         }
       }).finally(() => setPaperQuestionsLoading(false));
+    }
+  };
+
+  useEffect(() => {
+    if (paper && paper.id) {
+      setPaperQuestionsLoading(true);
+      if (_.isFunction(onPaperQuestionLoading)) {
+        onPaperQuestionLoading();
+      }
+      fetchPaperQuestions(mode);
     }
   }, [paper]);
 
@@ -191,6 +207,12 @@ const AppPaperContainer: React.FC<AppPaperContainerComponentProps> = ({
                               <TextField
                                 type="number"
                                 label={texts['INPUT_SCORE']}
+                                value={result[paperQuestion.question.id].scores}
+                                onChange={(event) => {
+                                  if (_.isFunction(onQuestionScoreChange)) {
+                                    onQuestionScoreChange(paperQuestion.question.id, parseInt(event.target.value, 10));
+                                  }
+                                }}
                               />
                             )
                           }

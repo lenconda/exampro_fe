@@ -1,4 +1,8 @@
-import { getExamInfo, getParticipantExamResult, submitParticipantAnswer } from './service';
+import {
+  getExamInfo,
+  getParticipantExamResult,
+  submitParticipantAnswer,
+} from './service';
 import { AppState } from '../../models/app';
 import {
   Dispatch,
@@ -15,7 +19,10 @@ import { useTexts } from '../../utils/texts';
 import AppPaperContainer from '../AppPaperContainer';
 import { getQuestionAnswerStatus } from '../../utils/question';
 import { useLocationQuery } from '../../utils/history';
-import { calculateExamParticipantTotalScore } from '../../utils/exam';
+import {
+  calculateExamParticipantTotalScore,
+  checkExamParticipantScoresStatus,
+} from '../../utils/exam';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
@@ -199,6 +206,38 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
     if (examState === 'resulted' && examResult) {
       setGradeInfo(calculateExamParticipantTotalScore(examResult));
     }
+    if (examState === 'reviewing' && examResult) {
+      const automaticReviewPoints = Object.keys(examResult).reduce((accumulator, currentQuestionId) => {
+        const currentQuestionResult = examResult[currentQuestionId];
+        const currentPaperQuestion = paperQuestions.find((paperQuestion) => {
+          return paperQuestion.question.id === parseInt(currentQuestionId, 10);
+        });
+        const currentQuestion = _.get(currentPaperQuestion, 'question');
+        if (currentQuestion && currentQuestionResult) {
+          const { type } = currentQuestion;
+          const { scores, answer } = currentQuestionResult;
+          if (scores && _.isNumber(scores)) {
+            return { ...accumulator };
+          }
+          if (type === 'single_choice') {
+            if (!answer || !_.isArray(answer) || answer.length !== 1) {
+              return {
+                ...accumulator,
+                [currentQuestionId.toString()]: {
+                  ...currentQuestionResult,
+                  scores: 0,
+                },
+              } as ExamResultResponseData;
+            } else {
+              const [participantChoice] = answer;
+            }
+          }
+          return { ...accumulator };
+        } else {
+          return { ...accumulator };
+        }
+      }, {});
+    }
   }, [examResult, examState]);
 
   useEffect(() => {
@@ -331,6 +370,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                 color="primary"
                 fullWidth={true}
                 variant="contained"
+                disabled={!checkExamParticipantScoresStatus(examResult)}
               >{texts['SUBMIT_SCORE']}</Button>
             </CardContent>
           </Card>
@@ -389,6 +429,22 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                             paper={exam.paper}
                             mode="review"
                             result={examResult}
+                            onQuestionScoreChange={(questionId, score) => {
+                              const maximumPoints = examResult[questionId].points;
+                              const scores = score > maximumPoints ? maximumPoints : score;
+                              setExamResult({
+                                ...examResult,
+                                [questionId]: {
+                                  ...examResult[questionId],
+                                  scores,
+                                },
+                              });
+                            }}
+                            onPaperQuestionLoaded={(loadedPaperQuestions) => {
+                              setPaperQuestionLoaded(true);
+                              setPaperQuestions(loadedPaperQuestions);
+                              setTimerUnlocked(true);
+                            }}
                           />
                         </Box>
                       )
