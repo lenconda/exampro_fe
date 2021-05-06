@@ -171,6 +171,7 @@ export interface ExamAnswerScoreItem {
 export type ExamResultResponseData = Record<string, ExamAnswerScoreItem>;
 
 export type QuestionAnswerStatus = 'full' | 'partial' | 'nil';
+export type MultipleChoiceAnswerResult = QuestionAnswerStatus | 'ignore';
 
 export interface ExamResultMetadata {
   totalScore: number;

@@ -10,6 +10,7 @@ import {
   ExamResponseData,
   ExamResultMetadata,
   ExamResultResponseData,
+  MultipleChoiceAnswerResult,
   PaperQuestionResponseData,
 } from '../../interfaces';
 import { connect } from '../../patches/dva';
@@ -230,6 +231,50 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
               } as ExamResultResponseData;
             } else {
               const [participantChoice] = answer;
+              const [answerChoice] = (_.get(currentPaperQuestion, 'question.answers') || []) as string[];
+              if (!answerChoice) {
+                return { ...accumulator };
+              }
+              if (participantChoice === answerChoice) {
+                return {
+                  ...accumulator,
+                  [currentQuestionId.toString()]: {
+                    ...currentQuestionResult,
+                    scores: currentPaperQuestion.points,
+                  },
+                } as ExamResultResponseData;
+              } else {
+                return {
+                  ...accumulator,
+                  [currentQuestionId.toString()]: {
+                    ...currentQuestionResult,
+                    scores: 0,
+                  },
+                } as ExamResultResponseData;
+              }
+            }
+          }
+          if (type === 'multiple_choices') {
+            if (!answer || !_.isArray(answer)) {
+              return {
+                ...accumulator,
+                [currentQuestionId.toString()]: {
+                  ...currentQuestionResult,
+                  scores: 0,
+                },
+              } as ExamResultResponseData;
+            } else {
+              let status: MultipleChoiceAnswerResult = 'nil';
+              const participantAnswers = Array.from(answer);
+              const standardAnswers = Array.from(_.get(currentPaperQuestion, 'question.answers') || []) as string[];
+              const incorrectChoices = _.difference(participantAnswers, standardAnswers);
+              if (incorrectChoices.length > 0) {
+                status = 'nil';
+              } else if (participantAnswers.length === standardAnswers.length) {
+                status = 'full';
+              } else {
+                status = 'partial';
+              }
             }
           }
           return { ...accumulator };
