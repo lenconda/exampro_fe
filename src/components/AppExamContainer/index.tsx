@@ -1,5 +1,6 @@
 import {
   getExamInfo,
+  getExamResult,
   getParticipantExamResult,
   putParticipantExamScores,
   startExam,
@@ -15,6 +16,7 @@ import {
   AnswerScoreStatus,
   PaperQuestionResponseData,
   QuestionAnswerResponseData,
+  User,
 } from '../../interfaces';
 import { connect } from '../../patches/dva';
 import { ConnectState } from '../../models';
@@ -27,7 +29,10 @@ import {
   calculateExamParticipantTotalScore,
   checkExamParticipantScoresStatus,
   checkParticipantQualification,
+  checkResultPermission,
+  checkReviewPermission,
 } from '../../utils/exam';
+import { getUserProfile } from '../../service';
 import AppAlertManager from '../AppAlert/Manager';
 import AppUserCard from '../AppUserCard';
 import Alert from '@material-ui/lab/Alert';
@@ -180,6 +185,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
   const [gradeInfo, setGradeInfo] = useState<ExamResultMetadata>(undefined);
   const [submitScoreLoading, setSubmitScoreLoading] = useState<boolean>(false);
   const [startExamLoading, setStartExamLoading] = useState<boolean>(false);
+  const [participant, setParticipant] = useState<User>(undefined);
 
   const fetchExamInfo = (id: number, action?: string) => {
     setExamLoading(true);
@@ -193,9 +199,10 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
     }).finally(() => setExamLoading(false));
   };
 
-  const fetchParticipantExamResult = (id: number, email: string) => {
+  const fetchParticipantExamResult = (id: number, email?: string) => {
     setExamResultLoading(true);
-    getParticipantExamResult(id, email).then((result) => {
+    const request = email ? getParticipantExamResult(id, email) : getExamResult(id);
+    request.then((result) => {
       setExamResult(result);
     }).finally(() => setExamResultLoading(false));
   };
@@ -212,6 +219,10 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
     startExam(examId).then(() => {
       setExamState('processing');
     }).finally(() => setStartExamLoading(false));
+  };
+
+  const fetchParticipantInfo = (email: string) => {
+    getUserProfile(email).then((info) => setParticipant(info));
   };
 
   const submitParticipantScore = (
@@ -240,9 +251,16 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
     if (['forbidden'].indexOf(examState) === -1) {
       fetchExamInfo(examId, action);
     }
-    if (examState === 'resulted' || examState === 'reviewing') {
+    if (examState === 'resulted') {
+      fetchParticipantExamResult(examId, participantEmail);
+    }
+    if (examState === 'reviewing' && participantEmail) {
+      fetchParticipantExamResult(examId, participantEmail);
+
+    }
+    if (examState === 'reviewing') {
       if (participantEmail) {
-        fetchParticipantExamResult(examId, participantEmail);
+        fetchParticipantInfo(participantEmail);
       }
     }
   }, [examId, examState, action]);
@@ -361,7 +379,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
       }
       const endTimestamp = Date.parse(exam.endTime);
       const currentTimestamp = Date.now();
-      if (endTimestamp - currentTimestamp <= 0) {
+      if (endTimestamp - currentTimestamp <= 0 && examState === 'processing') {
         submitAnswer(exam.id, participantAnswer);
         clearInterval(timer);
       }
@@ -372,19 +390,23 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
 
   useEffect(() => {
     if (action === 'result') {
-      if ((!examResult || !checkExamParticipantScoresStatus(examResult)) && !examResultLoading) {
-        setExamState('resulted');
+      if (examResult && !examResultLoading) {
+        if (checkExamParticipantScoresStatus(examResult) && (exam && checkResultPermission(exam))) {
+          setExamState('resulted');
+        } else {
+          setExamState('not_ready');
+        }
+      }
+    } else if (action === 'review') {
+      if (exam && checkReviewPermission(exam)) {
+        setExamState('reviewing');
       } else {
         setExamState('not_ready');
       }
-    }
-    if (action === 'review') {
-      setExamState('reviewing');
-    }
-    if (action === 'participate') {
+    } else if (action === 'participate') {
       setExamState('waiting_for_confirmation');
     }
-  }, [action, examResult]);
+  }, [exam, action, examResult]);
 
   return (
     <Paper
@@ -442,7 +464,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
         )
       }
       {
-        (examState === 'resulted' && exam) && (
+        (examState === 'resulted' && exam && gradeInfo) && (
           <Card classes={{ root: classes.controlCard }}>
             <CardContent classes={{ root: classes.controlCardInfoContent }}>
               <img src="/assets/images/logo_text.svg" width="42%" />
@@ -480,6 +502,11 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                   color="textSecondary"
                 >{exam.title}</Typography>
               </Tooltip>
+              {
+                participant && (
+                  <AppUserCard user={participant} />
+                )
+              }
             </CardContent>
             <CardContent>
               <Button
@@ -523,8 +550,31 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                   )
                 }
                 {
+                  examState === 'not_ready' && (
+                    <Card elevation={0} classes={{ root: 'card' }}>
+                      <img src="/assets/images/logo_text.svg" width="42%" />
+                      <Card classes={{ root: 'card-body' }} variant="outlined">
+                        <Typography classes={{ root: 'title' }}>
+                          <EmoticonCryOutline color="primary" fontSize="large" classes={{ root: 'icon' }} />
+                          {texts['NOT_READY']}
+                        </Typography>
+                        <CardContent>
+                          <Typography gutterBottom={true}>{texts['NOT_READY_MESSAGE']}</Typography>
+                        </CardContent>
+                        <CardContent>
+                          <Button
+                            fullWidth={true}
+                            variant="outlined"
+                            onClick={() => history.push('/')}
+                          >{texts['GO_BACK']}</Button>
+                        </CardContent>
+                      </Card>
+                    </Card>
+                  )
+                }
+                {
                   examState === 'resulted' && (
-                    exam
+                    (exam && !_.isEmpty(examResult))
                       ? (
                         <Box className={classes.examPaperWrapper}>
                           <AppPaperContainer

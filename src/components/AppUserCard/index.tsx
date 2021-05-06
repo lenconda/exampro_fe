@@ -18,6 +18,8 @@ const useStyles = makeStyles((theme) => ({
     paddingRight: theme.spacing(2),
     paddingBottom: theme.spacing(1.2),
     paddingLeft: theme.spacing(2),
+    display: 'flex',
+    justifyContent: 'center',
   },
   avatarWrapper: {
     marginRight: theme.spacing(0.8),

@@ -2,7 +2,7 @@ import { makeStyles } from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
 import InputBase, { InputBaseProps } from '@material-ui/core/InputBase';
 import Paper from '@material-ui/core/Paper';
-import BackspaceIcon from '@material-ui/icons/Backspace';
+import ClearIcon from '@material-ui/icons/Clear';
 import _ from 'lodash';
 import React, { useEffect, useState } from 'react';
 
@@ -17,6 +17,7 @@ const useStyles = makeStyles((theme) => {
   return {
     wrapper: {
       display: 'flex',
+      alignItems: 'center',
       padding: 1,
       paddingRight: theme.spacing(1),
       paddingLeft: theme.spacing(1),
@@ -70,6 +71,7 @@ const Input: React.FC<AppSearchBarInputProps> = ({
       {
         value && (
           <IconButton
+            size="small"
             onMouseDown={(event) => event.preventDefault()}
             onClick={(event) => {
               if (_.isFunction(onValueChange)) {
@@ -77,7 +79,7 @@ const Input: React.FC<AppSearchBarInputProps> = ({
               }
             }}
           >
-            <BackspaceIcon />
+            <ClearIcon fontSize="small" />
           </IconButton>
         )
       }

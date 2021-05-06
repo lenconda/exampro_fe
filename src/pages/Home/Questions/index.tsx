@@ -124,10 +124,10 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
                 (selectedCategoriesString && selectedCategoriesString.split(',').length > 0)
                   ? (
                     <Badge badgeContent={selectedCategoriesString.split(',').length} color="primary">
-                      <FilterMenuOutlineIcon />
+                      <FilterMenuOutlineIcon fontSize="small" />
                     </Badge>
                   )
-                  : <FilterMenuOutlineIcon />
+                  : <FilterMenuOutlineIcon fontSize="small" />
               }
             </IconButton>
           }

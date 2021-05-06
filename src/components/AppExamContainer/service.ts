@@ -44,6 +44,13 @@ export const getParticipantExamResult = async (examId: number, participantEmail:
   return _.get(data, 'data.data') as ExamResultResponseData;
 };
 
+export const getExamResult = async (examId: number) => {
+  const data = await AppRequestManager.send({
+    url: `/exam/${examId}/result`,
+  });
+  return _.get(data, 'data.data') as ExamResultResponseData;
+};
+
 export const putParticipantExamScores = async (
   examId: number,
   participantEmail: string,

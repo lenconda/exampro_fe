@@ -42,7 +42,7 @@ export const calculateExamParticipantTotalScore = (result: ExamResultResponseDat
 
 export const checkParticipantQualification = (exam: ExamResponseData) => {
   const { userExam, startTime, endTime } = exam;
-  if (userExam.startTime) {
+  if (userExam.submitTime) {
     return false;
   }
   const startTimestamp = Date.parse(startTime);
@@ -53,3 +53,13 @@ export const checkParticipantQualification = (exam: ExamResponseData) => {
   }
   return true;
 };
+
+export const checkReviewPermission = (exam: ExamResponseData) => {
+  const { endTime } = exam;
+  const endTimestamp = Date.parse(endTime);
+  if (endTimestamp <= Date.now()) {
+    return true;
+  } else { return false }
+};
+
+export const checkResultPermission = checkReviewPermission;

@@ -25,3 +25,10 @@ export const queryAllUsers = async (search: string): Promise<User[]> => {
 
   return (_.get(data, 'data.data.items') || []) as User[];
 };
+
+export const getUserProfile = async (email: string) => {
+  const data = await AppRequestManager.send({
+    url: `/user/profile/${email}`,
+  });
+  return _.get(data, 'data.data') as User;
+};
