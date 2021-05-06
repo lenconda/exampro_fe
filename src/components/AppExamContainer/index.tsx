@@ -10,8 +10,9 @@ import {
   ExamResponseData,
   ExamResultMetadata,
   ExamResultResponseData,
-  MultipleChoiceAnswerResult,
+  AnswerScoreStatus,
   PaperQuestionResponseData,
+  QuestionAnswerResponseData,
 } from '../../interfaces';
 import { connect } from '../../patches/dva';
 import { ConnectState } from '../../models';
@@ -208,82 +209,102 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
       setGradeInfo(calculateExamParticipantTotalScore(examResult));
     }
     if (examState === 'reviewing' && examResult) {
-      const automaticReviewPoints = Object.keys(examResult).reduce((accumulator, currentQuestionId) => {
+      const automaticScores = Object.keys(examResult).reduce((accumulator, currentQuestionId) => {
         const currentQuestionResult = examResult[currentQuestionId];
         const currentPaperQuestion = paperQuestions.find((paperQuestion) => {
           return paperQuestion.question.id === parseInt(currentQuestionId, 10);
         });
         const currentQuestion = _.get(currentPaperQuestion, 'question');
+        let scoreStatus: AnswerScoreStatus = 'ignore';
         if (currentQuestion && currentQuestionResult) {
           const { type } = currentQuestion;
           const { scores, answer } = currentQuestionResult;
           if (scores && _.isNumber(scores)) {
-            return { ...accumulator };
-          }
-          if (type === 'single_choice') {
-            if (!answer || !_.isArray(answer) || answer.length !== 1) {
-              return {
-                ...accumulator,
-                [currentQuestionId.toString()]: {
-                  ...currentQuestionResult,
-                  scores: 0,
-                },
-              } as ExamResultResponseData;
-            } else {
-              const [participantChoice] = answer;
-              const [answerChoice] = (_.get(currentPaperQuestion, 'question.answers') || []) as string[];
-              if (!answerChoice) {
-                return { ...accumulator };
-              }
-              if (participantChoice === answerChoice) {
-                return {
-                  ...accumulator,
-                  [currentQuestionId.toString()]: {
-                    ...currentQuestionResult,
-                    scores: currentPaperQuestion.points,
-                  },
-                } as ExamResultResponseData;
+            scoreStatus = 'ignore';
+          } else {
+            const answerChoices = (_.get(currentPaperQuestion, 'question.answers') || []) as QuestionAnswerResponseData;
+            if (type === 'single_choice') {
+              if (!answer || !_.isArray(answer) || answer.length !== 1) {
+                scoreStatus = 'nil';
               } else {
-                return {
-                  ...accumulator,
-                  [currentQuestionId.toString()]: {
-                    ...currentQuestionResult,
-                    scores: 0,
-                  },
-                } as ExamResultResponseData;
+                const [participantChoice] = answer;
+                const [answerChoiceItem] = answerChoices;
+                const answerChoice = _.get(answerChoiceItem, 'content');
+                if (!answerChoice) {
+                  scoreStatus = 'ignore';
+                }
+                if (participantChoice === answerChoice) {
+                  scoreStatus = 'full';
+                } else {
+                  scoreStatus = 'nil';
+                }
               }
+            } else if (type === 'multiple_choices') {
+              if (!answer || !_.isArray(answer)) {
+                scoreStatus = 'nil';
+              } else {
+                const participantAnswers = Array.from(answer);
+                const standardAnswerItems = Array.from(answerChoices);
+                const standardAnswers = standardAnswerItems.map((item) => item.content);
+                const incorrectChoices = _.difference(participantAnswers, standardAnswers);
+                if (standardAnswerItems.length === 0) {
+                  scoreStatus = 'ignore';
+                } else {
+                  // eslint-disable-next-line max-depth
+                  if (incorrectChoices.length > 0) {
+                    scoreStatus = 'nil';
+                  } else if (participantAnswers.length === standardAnswers.length) {
+                    scoreStatus = 'full';
+                  } else {
+                    scoreStatus = 'partial';
+                  }
+                }
+              }
+            } else {
+              scoreStatus = 'ignore';
             }
           }
-          if (type === 'multiple_choices') {
-            if (!answer || !_.isArray(answer)) {
-              return {
-                ...accumulator,
-                [currentQuestionId.toString()]: {
-                  ...currentQuestionResult,
-                  scores: 0,
-                },
-              } as ExamResultResponseData;
-            } else {
-              let status: MultipleChoiceAnswerResult = 'nil';
-              const participantAnswers = Array.from(answer);
-              const standardAnswers = Array.from(_.get(currentPaperQuestion, 'question.answers') || []) as string[];
-              const incorrectChoices = _.difference(participantAnswers, standardAnswers);
-              if (incorrectChoices.length > 0) {
-                status = 'nil';
-              } else if (participantAnswers.length === standardAnswers.length) {
-                status = 'full';
-              } else {
-                status = 'partial';
-              }
-            }
-          }
-          return { ...accumulator };
         } else {
+          scoreStatus = 'ignore';
+        }
+        switch (scoreStatus) {
+        case 'full': {
+          return {
+            ...accumulator,
+            [currentQuestionId.toString()]: {
+              ...currentQuestionResult,
+              scores: currentPaperQuestion.points,
+            },
+          };
+        }
+        case 'partial': {
+          return {
+            ...accumulator,
+            [currentQuestionId.toString()]: {
+              ...currentQuestionResult,
+              scores: _.get(exam, 'paper.missedChoicesScore') || 0,
+            },
+          };
+        }
+        case 'nil': {
+          return {
+            ...accumulator,
+            [currentQuestionId.toString()]: {
+              ...currentQuestionResult,
+              scores: 0,
+            },
+          };
+        }
+        default: {
           return { ...accumulator };
         }
+        }
       }, {});
+      if (Object.keys(automaticScores).length > 0) {
+        setExamResult(_.merge(examResult, automaticScores));
+      }
     }
-  }, [examResult, examState]);
+  }, [examResult, examState, paperQuestions]);
 
   useEffect(() => {
     let timer;

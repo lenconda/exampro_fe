@@ -4,7 +4,7 @@ import _ from 'lodash';
 export const checkExamParticipantScoresStatus = (result: ExamResultResponseData): boolean => {
   for (const questionIdString of Object.keys(result)) {
     const { scores } = result[questionIdString];
-    if (!scores) {
+    if (!_.isNumber(scores)) {
       return false;
     }
   }
