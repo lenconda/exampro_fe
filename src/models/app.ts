@@ -273,6 +273,7 @@ const AppModel: AppModelType = {
           'NO_PRIVILEGE': '没有权限',
           'NO_PRIVILEGE_MESSAGE': '你没有权限访问、管理、参加这场考试。这通常是由于考试的发起人或管理员没有将你列入考试相关人员名单中',
           'SUBMIT_SCORE': '提交成绩',
+          'SUBMIT_SUCCESSFULLY': '考生成绩提交成功，5秒后跳转至主页',
         },
         ui: {
           '/user/auth': {

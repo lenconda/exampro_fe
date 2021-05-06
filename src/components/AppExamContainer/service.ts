@@ -2,6 +2,7 @@ import AppRequestManager from '../AppRequest/Manager';
 import {
   ExamAnswerRequestData,
   ExamResponseData,
+  ExamResultRequestData,
   ExamResultResponseData,
 } from '../../interfaces';
 import _ from 'lodash';
@@ -35,4 +36,17 @@ export const getParticipantExamResult = async (examId: number, participantEmail:
     url: `/exam/${examId}/result/${participantEmail}`,
   });
   return _.get(data, 'data.data') as ExamResultResponseData;
+};
+
+export const putParticipantExamScores = async (
+  examId: number,
+  participantEmail: string,
+  score: ExamResultRequestData,
+) => {
+  const data = await AppRequestManager.send({
+    url: `/exam/${examId}/score/${participantEmail}`,
+    data: { score },
+    method: 'PUT',
+  });
+  return;
 };

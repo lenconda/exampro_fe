@@ -178,3 +178,5 @@ export interface ExamResultMetadata {
   totalPoints: number;
   percentage: number | string;
 }
+
+export type ExamResultRequestData = Record<string, number>;

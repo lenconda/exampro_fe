@@ -1,6 +1,7 @@
 import {
   getExamInfo,
   getParticipantExamResult,
+  putParticipantExamScores,
   submitParticipantAnswer,
 } from './service';
 import { AppState } from '../../models/app';
@@ -25,6 +26,7 @@ import {
   calculateExamParticipantTotalScore,
   checkExamParticipantScoresStatus,
 } from '../../utils/exam';
+import AppAlertManager from '../AppAlert/Manager';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
@@ -166,6 +168,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
   const [examResult, setExamResult] = useState<ExamResultResponseData>({});
   const [examResultLoading, setExamResultLoading] = useState<boolean>(false);
   const [gradeInfo, setGradeInfo] = useState<ExamResultMetadata>(undefined);
+  const [submitScoreLoading, setSubmitScoreLoading] = useState<boolean>(false);
 
   const fetchExamInfo = (id: number) => {
     setExamLoading(true);
@@ -190,7 +193,29 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
     setSubmitAnswerLoading(true);
     submitParticipantAnswer(examId, answer).then(() => {
       setExamState('submitted');
-    }).finally(() => setSubmitAnswerLoading(false));
+    });
+  };
+
+  const submitParticipantScore = (
+    examId: number,
+    result: ExamResultResponseData,
+    participantEmail: string,
+  ) => {
+    if (!participantEmail) { return }
+    setSubmitScoreLoading(true);
+    putParticipantExamScores(examId, participantEmail, Object.keys(result).reduce((score, currentQuestionId) => {
+      return {
+        ...score,
+        [currentQuestionId]: result[currentQuestionId].scores,
+      };
+    }, {})).then(() => {
+      AppAlertManager.create(texts['SUBMIT_SUCCESSFULLY'], {
+        variant: 'success',
+      });
+      setTimeout(() => {
+        history.replace('/');
+      }, 5000);
+    }).finally(() => setSubmitScoreLoading(false));
   };
 
   useEffect(() => {
@@ -436,7 +461,8 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                 color="primary"
                 fullWidth={true}
                 variant="contained"
-                disabled={!checkExamParticipantScoresStatus(examResult)}
+                disabled={!checkExamParticipantScoresStatus(examResult) || submitScoreLoading}
+                onClick={() => submitParticipantScore(examId, examResult, participantEmail)}
               >{texts['SUBMIT_SCORE']}</Button>
             </CardContent>
           </Card>
