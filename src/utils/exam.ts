@@ -1,4 +1,4 @@
-import { ExamResultMetadata, ExamResultResponseData } from '../interfaces';
+import { ExamResponseData, ExamResultMetadata, ExamResultResponseData } from '../interfaces';
 import _ from 'lodash';
 
 export const checkExamParticipantScoresStatus = (result: ExamResultResponseData): boolean => {
@@ -38,4 +38,18 @@ export const calculateExamParticipantTotalScore = (result: ExamResultResponseDat
     totalScore,
     percentage: _.isNumber(totalScore) ? ((totalScore / totalPoints) * 100).toFixed(2) : null,
   };
+};
+
+export const checkParticipantQualification = (exam: ExamResponseData) => {
+  const { userExam, startTime, endTime } = exam;
+  if (userExam.startTime) {
+    return false;
+  }
+  const startTimestamp = Date.parse(startTime);
+  const endTimestamp = Date.parse(endTime);
+  const currentTimestamp = Date.now();
+  if (!(startTimestamp <= currentTimestamp && currentTimestamp <= endTimestamp)) {
+    return false;
+  }
+  return true;
 };

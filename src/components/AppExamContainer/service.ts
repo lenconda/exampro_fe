@@ -7,9 +7,15 @@ import {
 } from '../../interfaces';
 import _ from 'lodash';
 
-export const getExamInfo = async (examId: number) => {
+export const getExamInfo = async (examId: number, action: string = '') => {
+  const actionRoleMap = {
+    review: 'resource/exam/reviewer',
+    participate: 'resource/exam/participant',
+    result: 'resource/exam/participant',
+    result_participant: 'resource/exam/initiator',
+  };
   const data = await AppRequestManager.send({
-    url: `/exam/${examId}`,
+    url: `/exam/${examId}?role=${actionRoleMap[action] || ''}`,
   });
   return _.get(data, 'data.data') as ExamResponseData;
 };

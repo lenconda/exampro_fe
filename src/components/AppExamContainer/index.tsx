@@ -2,6 +2,7 @@ import {
   getExamInfo,
   getParticipantExamResult,
   putParticipantExamScores,
+  startExam,
   submitParticipantAnswer,
 } from './service';
 import { AppState } from '../../models/app';
@@ -25,8 +26,12 @@ import { useLocationQuery } from '../../utils/history';
 import {
   calculateExamParticipantTotalScore,
   checkExamParticipantScoresStatus,
+  checkParticipantQualification,
 } from '../../utils/exam';
 import AppAlertManager from '../AppAlert/Manager';
+import AppUserCard from '../AppUserCard';
+import Alert from '@material-ui/lab/Alert';
+import AlertTitle from '@material-ui/lab/AlertTitle';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
@@ -80,6 +85,7 @@ export type ExamState =
   | 'processing'
   | 'submitted'
   | 'reviewing'
+  | 'not_ready'
   | 'resulted'
   | 'forbidden';
 
@@ -110,6 +116,10 @@ const useStyles = makeStyles((theme) => {
     },
     infoItem: {
       marginBottom: theme.spacing(1),
+    },
+    userItem: {
+      display: 'flex',
+      alignItems: 'center',
     },
     examPaperWrapper: {
       paddingLeft: theme.spacing(32),
@@ -158,7 +168,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
   const systemTexts = useTexts(dispatch, 'system');
   const [exam, setExam] = useState<ExamResponseData>(undefined);
   const [examLoading, setExamLoading] = useState<boolean>(false);
-  const [examState, setExamState] = useState<ExamState>('forbidden');
+  const [examState, setExamState] = useState<ExamState>(undefined);
   const [participantAnswer, setParticipantAnswer] = useState<ExamAnswerRequestData>({});
   const [paperQuestionLoaded, setPaperQuestionLoaded] = useState<boolean>(false);
   const [paperQuestions, setPaperQuestions] = useState<PaperQuestionResponseData[]>([]);
@@ -169,10 +179,11 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
   const [examResultLoading, setExamResultLoading] = useState<boolean>(false);
   const [gradeInfo, setGradeInfo] = useState<ExamResultMetadata>(undefined);
   const [submitScoreLoading, setSubmitScoreLoading] = useState<boolean>(false);
+  const [startExamLoading, setStartExamLoading] = useState<boolean>(false);
 
-  const fetchExamInfo = (id: number) => {
+  const fetchExamInfo = (id: number, action?: string) => {
     setExamLoading(true);
-    getExamInfo(id).then((exam) => {
+    getExamInfo(id, action).then((exam) => {
       setExam(exam);
     }).catch((err) => {
       const statusCode = _.get(err, 'response.status');
@@ -194,6 +205,13 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
     submitParticipantAnswer(examId, answer).then(() => {
       setExamState('submitted');
     });
+  };
+
+  const startParticipantExam = (examId: number) => {
+    setStartExamLoading(true);
+    startExam(examId).then(() => {
+      setExamState('processing');
+    }).finally(() => setStartExamLoading(false));
   };
 
   const submitParticipantScore = (
@@ -220,14 +238,14 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
 
   useEffect(() => {
     if (['forbidden'].indexOf(examState) === -1) {
-      fetchExamInfo(examId);
+      fetchExamInfo(examId, action);
     }
     if (examState === 'resulted' || examState === 'reviewing') {
       if (participantEmail) {
         fetchParticipantExamResult(examId, participantEmail);
       }
     }
-  }, [examId, examState]);
+  }, [examId, examState, action]);
 
   useEffect(() => {
     if (examState === 'resulted' && examResult) {
@@ -354,12 +372,19 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
 
   useEffect(() => {
     if (action === 'result') {
-      setExamState('resulted');
+      if ((!examResult || !checkExamParticipantScoresStatus(examResult)) && !examResultLoading) {
+        setExamState('resulted');
+      } else {
+        setExamState('not_ready');
+      }
     }
     if (action === 'review') {
       setExamState('reviewing');
     }
-  }, [action]);
+    if (action === 'participate') {
+      setExamState('waiting_for_confirmation');
+    }
+  }, [action, examResult]);
 
   return (
     <Paper
@@ -586,17 +611,45 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                             {examEditorTexts['DURATION']}:&nbsp;{exam.duration}
                           </Typography>
                           <Typography classes={{ root: classes.infoItem }}>
-                            {examEditorTexts['DELAY']}:&nbsp;{exam.delay}
-                          </Typography>
-                          <Typography classes={{ root: classes.infoItem }}>
                             {examEditorTexts['IS_PUBLIC']}:&nbsp;{exam.public ? systemTexts['TRUE'] : systemTexts['FALSE']}
                           </Typography>
                           {
                             exam.initiator && (
-                              <Typography classes={{ root: classes.infoItem }}>
-                                {texts['INITIATOR']}:&nbsp;{exam.initiator.name}&nbsp;({exam.initiator.email})
+                              <Typography classes={{ root: clsx(classes.infoItem, classes.userItem) }} component="div">
+                                {texts['INITIATOR']}: <AppUserCard user={exam.initiator} />
                               </Typography>
                             )
+                          }
+                          <Button
+                            fullWidth={true}
+                            disabled={!checkParticipantQualification(exam) || startExamLoading}
+                            color="primary"
+                            variant="contained"
+                            classes={{ root: 'app-margin-top app-margin-bottom' }}
+                            onClick={() => startParticipantExam(examId)}
+                          >{texts['START_EXAM']}</Button>
+                          {
+                            checkParticipantQualification(exam)
+                              ? (
+                                <Alert severity="info">
+                                  <AlertTitle>{texts['NOTES']}</AlertTitle>
+                                  <div
+                                    dangerouslySetInnerHTML={{
+                                      __html: texts['NOTES_CONTENT'],
+                                    }}
+                                  ></div>
+                                </Alert>
+                              )
+                              : (
+                                <Alert severity="warning">
+                                  <AlertTitle>{texts['CANNOT_START_EXAM']}</AlertTitle>
+                                  <div
+                                    dangerouslySetInnerHTML={{
+                                      __html: texts['CANNOT_START_EXAM_REASONS'],
+                                    }}
+                                  ></div>
+                                </Alert>
+                              )
                           }
                         </Card>
                       )
