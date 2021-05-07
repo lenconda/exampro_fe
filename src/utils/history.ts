@@ -35,7 +35,7 @@ export const useLocationQuery = <T extends QSTypes>(
   };
 
   const history = useHistory();
-  const [queryValue, setQueryValue] = useState<QSTypes>(getQuery(window.location.search));
+  const [queryValue, setQueryValue] = useState<QSTypes>(getQuery(window.location.search) || getQuery(history.location.search));
 
   useEffect(() => {
     const destroy = history.listen(patchedHistoryListener((location) => {

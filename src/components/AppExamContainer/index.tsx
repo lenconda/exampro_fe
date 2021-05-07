@@ -157,9 +157,6 @@ const useStyles = makeStyles((theme) => {
       flexWrap: 'wrap',
     },
     mainContent: {
-      position: 'absolute',
-      top: theme.spacing(2),
-      left: theme.spacing(15),
     },
   };
 });
@@ -193,15 +190,17 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
   const [participant, setParticipant] = useState<User>(undefined);
 
   const fetchExamInfo = (id: number, action?: string) => {
-    setExamLoading(true);
-    getExamInfo(id, action).then((exam) => {
-      setExam(exam);
-    }).catch((err) => {
-      const statusCode = _.get(err, 'response.status');
-      if (statusCode === 403) {
-        setExamState('forbidden');
-      }
-    }).finally(() => setExamLoading(false));
+    if (action) {
+      setExamLoading(true);
+      getExamInfo(id, action).then((exam) => {
+        setExam(exam);
+      }).catch((err) => {
+        const statusCode = _.get(err, 'response.status');
+        if (statusCode === 403) {
+          setExamState('forbidden');
+        }
+      }).finally(() => setExamLoading(false));
+    }
   };
 
   const fetchParticipantExamResult = (id: number, email?: string) => {
@@ -225,6 +224,12 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
     setStartExamLoading(true);
     startExam(examId).then(() => {
       setExamState('processing');
+    }).catch((err) => {
+      if (_.get(err, 'response.status') === 403) {
+        history.push(pushSearch(history, {
+          action: 'not_ready',
+        }));
+      }
     }).finally(() => setStartExamLoading(false));
   };
 
@@ -413,12 +418,14 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
     } else if (action === 'participate_confirm') {
       setExamState('waiting_for_confirmation');
     } else if (action === 'participate') {
-      if (checkParticipantQualification(exam)) {
-        setExamState('processing');
-      } else {
-        history.push(pushSearch(history, {
-          action: 'not_ready',
-        }));
+      if (exam) {
+        if (checkParticipantQualification(exam)) {
+          setExamState('processing');
+        } else {
+          history.push(pushSearch(history, {
+            action: 'not_ready',
+          }));
+        }
       }
     } else if (action === 'submitted') {
       setExamState('submitted');
