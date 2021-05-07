@@ -41,7 +41,11 @@ export const calculateExamParticipantTotalScore = (result: ExamResultResponseDat
 };
 
 export const checkParticipantQualification = (exam: ExamResponseData) => {
+  if (!exam) { return false }
   const { userExam, startTime, endTime } = exam;
+  if (!userExam) {
+    return false;
+  }
   if (userExam.submitTime) {
     return false;
   }

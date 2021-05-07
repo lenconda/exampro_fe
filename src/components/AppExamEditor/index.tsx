@@ -273,6 +273,7 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
         'delay',
         'startTime',
         'endTime',
+        'resultTime',
         'duration',
       ]);
       setExamBasicInfo(currentExamBasicInfo);

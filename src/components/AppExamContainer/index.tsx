@@ -413,9 +413,17 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
     } else if (action === 'participate_confirm') {
       setExamState('waiting_for_confirmation');
     } else if (action === 'participate') {
-      setExamState('processing');
+      if (checkParticipantQualification(exam)) {
+        setExamState('processing');
+      } else {
+        history.push(pushSearch(history, {
+          action: 'not_ready',
+        }));
+      }
     } else if (action === 'submitted') {
       setExamState('submitted');
+    } else if (action === 'not_ready') {
+      setExamState('not_ready');
     }
   }, [exam, action, examResult]);
 
