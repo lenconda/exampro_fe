@@ -42,34 +42,59 @@ export const calculateExamParticipantTotalScore = (result: ExamResultResponseDat
 
 export const checkParticipantQualification = (exam: ExamResponseData) => {
   if (!exam) {
-    console.log('NO EXAM');
     return false;
   }
   const { userExam, startTime, endTime } = exam;
   if (!userExam) {
-    console.log('NO USER_EXAM');
     return false;
   }
   if (userExam.submitTime) {
-    console.log('SUBMITTED');
     return false;
   }
   const startTimestamp = Date.parse(startTime);
   const endTimestamp = Date.parse(endTime);
   const currentTimestamp = Date.now();
   if (!(startTimestamp <= currentTimestamp && currentTimestamp <= endTimestamp)) {
-    console.log('TIME ISSUE');
     return false;
   }
   return true;
 };
 
 export const checkReviewPermission = (exam: ExamResponseData) => {
-  const { endTime } = exam;
-  const endTimestamp = Date.parse(endTime);
-  if (endTimestamp <= Date.now()) {
-    return true;
-  } else { return false }
+  if (!exam) {
+    return false;
+  }
+  const { resultTime, startTime } = exam;
+  if (!resultTime) {
+    return false;
+  }
+  const resultTimestamp = Date.parse(resultTime);
+  const currentTimestamp = Date.now();
+  if (startTime && Date.parse(startTime) > currentTimestamp) {
+    return false;
+  }
+  if (resultTimestamp < currentTimestamp) {
+    return false;
+  }
+  return true;
 };
 
-export const checkResultPermission = checkReviewPermission;
+export const checkResultPermission = (exam: ExamResponseData) => {
+  if (!exam) {
+    return false;
+  }
+  const { resultTime, startTime } = exam;
+  if (!resultTime) {
+    return false;
+  }
+  const resultTimestamp = Date.parse(resultTime);
+  const currentTimestamp = Date.now();
+  if (startTime && Date.parse(startTime) > currentTimestamp) {
+    return false;
+  }
+  if (resultTimestamp > currentTimestamp) {
+    return false;
+  }
+  return true;
+};
+

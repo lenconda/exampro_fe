@@ -207,7 +207,7 @@ const AppPaperContainer: React.FC<AppPaperContainerComponentProps> = ({
                               <TextField
                                 type="number"
                                 label={texts['INPUT_SCORE']}
-                                value={result[paperQuestion.question.id].scores}
+                                value={_.get(result[paperQuestion.question.id], 'scores')}
                                 onChange={(event) => {
                                   if (_.isFunction(onQuestionScoreChange)) {
                                     onQuestionScoreChange(paperQuestion.question.id, parseInt(event.target.value, 10));

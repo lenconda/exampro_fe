@@ -271,14 +271,13 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
     }
     if (examState === 'reviewing' && participantEmail) {
       fetchParticipantExamResult(examId, participantEmail);
-
     }
     if (examState === 'reviewing') {
       if (participantEmail) {
         fetchParticipantInfo(participantEmail);
       }
     }
-  }, [examId, examState, action]);
+  }, [examId, examState, action, participantEmail]);
 
   useEffect(() => {
     if (examState === 'resulted' && examResult) {
@@ -405,8 +404,8 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
 
   useEffect(() => {
     if (action === 'result') {
-      if (examResult && !examResultLoading) {
-        if (checkExamParticipantScoresStatus(examResult) && (exam && checkResultPermission(exam))) {
+      if (examResult && !examResultLoading && exam) {
+        if (checkExamParticipantScoresStatus(examResult) && checkResultPermission(exam)) {
           setExamState('resulted');
         } else {
           setExamState('not_ready');
