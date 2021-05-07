@@ -24,7 +24,7 @@ import AppIndicator from '../AppIndicator';
 import { useTexts } from '../../utils/texts';
 import AppPaperContainer from '../AppPaperContainer';
 import { getQuestionAnswerStatus } from '../../utils/question';
-import { useLocationQuery } from '../../utils/history';
+import { pushSearch, useLocationQuery } from '../../utils/history';
 import {
   calculateExamParticipantTotalScore,
   checkExamParticipantScoresStatus,
@@ -210,7 +210,9 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
   const submitAnswer = (examId: number, answer: ExamAnswerRequestData) => {
     setSubmitAnswerLoading(true);
     submitParticipantAnswer(examId, answer).then(() => {
-      setExamState('submitted');
+      history.push(pushSearch(history, {
+        action: 'submitted',
+      }));
     });
   };
 
@@ -403,8 +405,12 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
       } else {
         setExamState('not_ready');
       }
-    } else if (action === 'participate') {
+    } else if (action === 'participate_confirm') {
       setExamState('waiting_for_confirmation');
+    } else if (action === 'participate') {
+      setExamState('processing');
+    } else if (action === 'submitted') {
+      setExamState('submitted');
     }
   }, [exam, action, examResult]);
 
@@ -676,7 +682,12 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                             color="primary"
                             variant="contained"
                             classes={{ root: 'app-margin-top app-margin-bottom' }}
-                            onClick={() => startParticipantExam(examId)}
+                            onClick={() => {
+                              startParticipantExam(examId);
+                              history.push(pushSearch(history, {
+                                action: 'participate',
+                              }));
+                            }}
                           >{texts['START_EXAM']}</Button>
                           {
                             checkParticipantQualification(exam)
