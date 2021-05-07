@@ -227,6 +227,7 @@ const AppModel: AppModelType = {
           'PARTICIPANT': '考生',
           'START_TIME': '开始时间',
           'END_TIME': '截止时间',
+          'RESULT_TIME': '出分时间（可选）',
           'DURATION': '考试时长（分钟）',
           'EXAM_TITLE': '考试标题',
           'DELAY': '延迟开始时间（分钟）',

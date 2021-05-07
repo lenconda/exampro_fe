@@ -108,6 +108,7 @@ const defaultExamBasicInfo: Partial<ExamResponseData> = {
   delay: 0,
   startTime: new Date().toISOString(),
   endTime: new Date().toISOString(),
+  resultTime: new Date().toISOString(),
   duration: 0,
 };
 const defaultExamUsers: TypedUsers = {
@@ -177,6 +178,7 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
       startTime,
       endTime,
       duration,
+      resultTime,
     } = info;
 
     if (!title || !startTime || !endTime || !paper) {
@@ -195,9 +197,20 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
         || endTimestamp - startTimestamp <= 0
       ) {
         return false;
-      } else {
-        return true;
       }
+      // eslint-disable-next-line no-unreachable
+      if (resultTime) {
+        const resultTimestamp = Date.parse(resultTime);
+        if (resultTimestamp >= endTimestamp) {
+          return true;
+        } else {
+          return false;
+        }
+      }
+    }
+
+    if (!endTime) {
+      return false;
     }
 
     return true;
@@ -452,6 +465,19 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
                     setExamBasicInfo({
                       ...examBasicInfo,
                       endTime: date.toISOString(),
+                    });
+                  }}
+                />
+                <AppDateTimePicker
+                  label={texts['RESULT_TIME']}
+                  value={new Date(examBasicInfo.resultTime)}
+                  fullWidth={true}
+                  inputVariant="outlined"
+                  className={classes.textField}
+                  onChange={(date) => {
+                    setExamBasicInfo({
+                      ...examBasicInfo,
+                      resultTime: date.toISOString(),
                     });
                   }}
                 />
