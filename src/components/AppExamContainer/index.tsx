@@ -188,6 +188,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
   const [submitScoreLoading, setSubmitScoreLoading] = useState<boolean>(false);
   const [startExamLoading, setStartExamLoading] = useState<boolean>(false);
   const [participant, setParticipant] = useState<User>(undefined);
+  const [examConfirmed, setExamConfirmed] = useState<boolean>(false);
 
   const fetchExamInfo = (id: number, action?: string) => {
     if (action) {
@@ -214,23 +215,25 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
   const submitAnswer = (examId: number, answer: ExamAnswerRequestData) => {
     setSubmitAnswerLoading(true);
     submitParticipantAnswer(examId, answer).then(() => {
-      history.push(pushSearch(history, {
-        action: 'submitted',
-      }));
-    });
+      setExamState('submitted');
+    }).finally(() => setSubmitAnswerLoading(false));
   };
 
   const startParticipantExam = (examId: number) => {
     setStartExamLoading(true);
+    setExamConfirmed(true);
     startExam(examId).then(() => {
       setExamState('processing');
     }).catch((err) => {
       if (_.get(err, 'response.status') === 403) {
-        history.push(pushSearch(history, {
-          action: 'not_ready',
-        }));
+        setExamState('not_ready');
       }
-    }).finally(() => setStartExamLoading(false));
+    }).finally(() => {
+      setStartExamLoading(false);
+      history.push(pushSearch(history, {
+        action: 'participate',
+      }));
+    });
   };
 
   const fetchParticipantInfo = (email: string) => {
@@ -260,7 +263,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
   };
 
   useEffect(() => {
-    if (['forbidden'].indexOf(examState) === -1) {
+    if (['forbidden', 'submitted'].indexOf(examState) === -1) {
       fetchExamInfo(examId, action);
     }
     if (examState === 'resulted') {
@@ -419,12 +422,15 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
       setExamState('waiting_for_confirmation');
     } else if (action === 'participate') {
       if (exam) {
+        if (!((exam.userExam && exam.userExam.startTime) || examConfirmed)) {
+          history.push(pushSearch(history, {
+            action: 'participate_confirm',
+          }));
+        }
         if (checkParticipantQualification(exam)) {
           setExamState('processing');
         } else {
-          history.push(pushSearch(history, {
-            action: 'not_ready',
-          }));
+          setExamState('forbidden');
         }
       }
     } else if (action === 'submitted') {
@@ -432,7 +438,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
     } else if (action === 'not_ready') {
       setExamState('not_ready');
     }
-  }, [exam, action, examResult]);
+  }, [exam, action, examResult, examConfirmed]);
 
   return (
     <Paper
@@ -708,9 +714,6 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                             classes={{ root: 'app-margin-top app-margin-bottom' }}
                             onClick={() => {
                               startParticipantExam(examId);
-                              history.push(pushSearch(history, {
-                                action: 'participate',
-                              }));
                             }}
                           >{texts['START_EXAM']}</Button>
                           {

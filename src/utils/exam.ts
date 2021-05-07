@@ -51,12 +51,14 @@ export const checkParticipantQualification = (exam: ExamResponseData) => {
     return false;
   }
   if (userExam.submitTime) {
+    console.log('SUBMITTED');
     return false;
   }
   const startTimestamp = Date.parse(startTime);
   const endTimestamp = Date.parse(endTime);
   const currentTimestamp = Date.now();
   if (!(startTimestamp <= currentTimestamp && currentTimestamp <= endTimestamp)) {
+    console.log('TIME ISSUE');
     return false;
   }
   return true;
