@@ -62,6 +62,7 @@ export interface Exam {
   delay: number;
   startTime: string;
   endTime: string;
+  resultTime: string;
   userExam?: UserExam;
   paper?: PaperResponseData;
   initiator?: User;
@@ -181,3 +182,5 @@ export interface ExamResultMetadata {
 }
 
 export type ExamResultRequestData = Record<string, number>;
+
+export type ExamStatus = 'PREPARING' | 'IN_PROGRESS' | 'FINISHED' | 'RESULTED';

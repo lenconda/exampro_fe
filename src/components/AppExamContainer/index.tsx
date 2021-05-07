@@ -156,6 +156,11 @@ const useStyles = makeStyles((theme) => {
       display: 'flex',
       flexWrap: 'wrap',
     },
+    mainContent: {
+      position: 'absolute',
+      top: theme.spacing(2),
+      left: theme.spacing(15),
+    },
   };
 });
 
@@ -526,7 +531,11 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
           </Card>
         )
       }
-      <Box>
+      <Box
+        className={clsx({
+          [classes.mainContent]: ['result', 'processing', 'review'].indexOf(examState) !== -1,
+        })}
+      >
         {
           examLoading
             ? <AppIndicator type="loading" />

@@ -1,6 +1,5 @@
 import { ConnectState } from '.';
-import { ExamStatus } from '../pages/Home/Exams/service';
-import { User } from '../interfaces';
+import { ExamStatus, User } from '../interfaces';
 import { getUserProfile } from '../pages/Home/service';
 import { Effect, Subscription } from 'dva';
 import _ from 'lodash';
@@ -119,6 +118,7 @@ const AppModel: AppModelType = {
           'PREPARING': '未开始',
           'IN_PROGRESS': '进行中',
           'FINISHED': '已结束',
+          'RESULTED': '已出分',
         },
         table: {
           '001': '每页数量',

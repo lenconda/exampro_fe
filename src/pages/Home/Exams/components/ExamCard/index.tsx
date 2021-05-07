@@ -20,6 +20,7 @@ import TimerSandEmpty from 'mdi-material-ui/TimerSandEmpty';
 import clsx from 'clsx';
 import _ from 'lodash';
 import { OverridableComponent } from '@material-ui/core/OverridableComponent';
+import { useHistory } from 'react-router';
 
 export interface ExamCardComponentProps extends CardProps {
   exam: Exam;
@@ -80,6 +81,7 @@ const ExamCard: React.FC<ExamCardProps> = ({
   dispatch,
   ...props
 }) => {
+  const history = useHistory();
   const examCardTexts = useTexts(dispatch, 'examCard');
   const [info, setInfo] = useState<ExamCardInfoType>({});
   const classes = useStyles();
@@ -188,19 +190,22 @@ const ExamCard: React.FC<ExamCardProps> = ({
       </CardContent>
       <Divider />
       <CardActions classes={{ root: classes.actions }}>
-        {
-          status === 'FINISHED' && (
-            <Button
-              color="primary"
-              classes={{ root: classes.actionButton }}
-            >{examCardTexts['008']}</Button>
-          )
-        }
+        <Button
+          color="primary"
+          disabled={status !== 'RESULTED'}
+          classes={{ root: classes.actionButton }}
+          onClick={() => history.push({
+            pathname: `/exam/${exam.id}?action=result`,
+          })}
+        >{examCardTexts['008']}</Button>
         <Button
           disabled={status !== 'IN_PROGRESS'}
           color="primary"
           variant="contained"
           classes={{ root: classes.actionButton }}
+          onClick={() => history.push({
+            pathname: `/exam/${exam.id}?action=participate_confirm`,
+          })}
         >{examCardTexts['007']}</Button>
       </CardActions>
     </Card>

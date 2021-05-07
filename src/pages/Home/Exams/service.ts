@@ -1,8 +1,6 @@
 import AppRequestManager from '../../../components/AppRequest/Manager';
-import { Exam, ExamRole } from '../../../interfaces';
+import { Exam, ExamRole, ExamStatus } from '../../../interfaces';
 import _ from 'lodash';
-
-export type ExamStatus = 'PREPARING' | 'IN_PROGRESS' | 'FINISHED';
 
 export const getExamRoleTypes = async (roleTexts: Record<string, string>) => {
   const data = await AppRequestManager.send({
@@ -36,9 +34,13 @@ export const deleteExams = async (exams: Exam[]) => {
 };
 
 export const getExamStatus = (exam: Exam): ExamStatus => {
-  const { startTime, endTime } = exam;
+  const { startTime, endTime, resultTime } = exam;
   const now = Date.now();
   const endTimestamp = Date.parse(endTime);
+  const resultTimestamp = Date.parse(resultTime);
+  if (now > resultTimestamp) {
+    return 'RESULTED';
+  }
   if (!startTime) {
     if (now < endTimestamp) {
       return 'IN_PROGRESS';

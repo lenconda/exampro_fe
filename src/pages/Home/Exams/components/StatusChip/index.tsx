@@ -1,8 +1,7 @@
 import { connect } from '../../../../../patches/dva';
 import { ConnectState } from '../../../../../models';
-import { ExamStatus } from '../../service';
 import { AppState } from '../../../../../models/app';
-import { Dispatch } from '../../../../../interfaces';
+import { Dispatch, ExamStatus } from '../../../../../interfaces';
 import { useTexts } from '../../../../../utils/texts';
 import React from 'react';
 import Chip, { ChipProps } from '@material-ui/core/Chip';
@@ -62,6 +61,14 @@ const StatusChip: React.FC<StatusChipProps> = ({
         size="small"
         {...props}
         classes={{ root: clsx(rootClass, classes.finished) }}
+      />;
+    }
+    case 'RESULTED': {
+      return <Chip
+        label={examStatusesTexts['RESULTED']}
+        size="small"
+        {...props}
+        classes={{ root: clsx(rootClass) }}
       />;
     }
     default:

@@ -333,32 +333,41 @@ const ExamsPage: React.FC<ExamPageProps> = ({
                               );
                             })
                           }
-                          <TablePagination
-                            component={Box}
-                            page={page - 1}
-                            rowsPerPage={size}
-                            count={totalExams}
-                            rowsPerPageOptions={[5, 10, 20, 50]}
-                            labelRowsPerPage={tableTexts['001']}
-                            backIconButtonText={tableTexts['002']}
-                            nextIconButtonText={tableTexts['003']}
-                            labelDisplayedRows={({ from, to, count }) => `${count} ${tableTexts['004']} ${from}-${to}`}
-                            onChangePage={(event, newPageNumber) => {
-                              history.push({
-                                search: pushSearch(history, {
-                                  page: newPageNumber + 1,
-                                }),
-                              });
-                            }}
-                            onChangeRowsPerPage={(event) => {
-                              history.push({
-                                search: pushSearch(history, {
-                                  size: event.target.value,
-                                  page: 1,
-                                }),
-                              });
-                            }}
-                          />
+                          <Grid
+                            item={true}
+                            xs={12}
+                            sm={12}
+                            md={12}
+                            lg={12}
+                            xl={12}
+                          >
+                            <TablePagination
+                              component={Box}
+                              page={page - 1}
+                              rowsPerPage={size}
+                              count={totalExams}
+                              rowsPerPageOptions={[5, 10, 20, 50]}
+                              labelRowsPerPage={tableTexts['001']}
+                              backIconButtonText={tableTexts['002']}
+                              nextIconButtonText={tableTexts['003']}
+                              labelDisplayedRows={({ from, to, count }) => `${count} ${tableTexts['004']} ${from}-${to}`}
+                              onChangePage={(event, newPageNumber) => {
+                                history.push({
+                                  search: pushSearch(history, {
+                                    page: newPageNumber + 1,
+                                  }),
+                                });
+                              }}
+                              onChangeRowsPerPage={(event) => {
+                                history.push({
+                                  search: pushSearch(history, {
+                                    size: event.target.value,
+                                    page: 1,
+                                  }),
+                                });
+                              }}
+                            />
+                          </Grid>
                         </Grid>
                         <AppTable
                           schema={schema}
