@@ -21,6 +21,9 @@ const useStyles = makeStyles((theme) => {
       backgroundColor: theme.palette.success.main,
       color: theme.palette.primary.contrastText,
     },
+    finished: {
+      backgroundColor: theme.palette.warning.main,
+    },
   };
 });
 
@@ -58,7 +61,7 @@ const StatusChip: React.FC<StatusChipProps> = ({
         size="small"
         color="secondary"
         {...props}
-        classes={{ root: clsx(rootClass) }}
+        classes={{ root: clsx(rootClass, classes.finished) }}
       />;
     }
     case 'RESULTED': {
