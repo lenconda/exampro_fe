@@ -282,6 +282,7 @@ const AppModel: AppModelType = {
           'NOTES_CONTENT': '1. 考试期间禁止离开浏览器页面<br />2. 考试期间请不要刷新浏览器页面',
           'NOT_READY': '暂时无法执行指定的操作',
           'NOT_READY_MESSAGE': '你暂未获得该项操作的许可，这是因为当前时间没有处在操作许可的时间范围内。现在，你可以单击「返回主页」按钮回到主页',
+          'PROGRESS': '答题进展',
         },
         ui: {
           '/user/auth': {

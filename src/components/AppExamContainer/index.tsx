@@ -17,6 +17,7 @@ import {
   PaperQuestionResponseData,
   QuestionAnswerResponseData,
   User,
+  QuestionAnswerStatus,
 } from '../../interfaces';
 import { connect } from '../../patches/dva';
 import { ConnectState } from '../../models';
@@ -42,15 +43,18 @@ import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Checkbox from '@material-ui/core/Checkbox';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Grid from '@material-ui/core/Grid';
+import Menu from '@material-ui/core/Menu';
 import Paper, { PaperProps } from '@material-ui/core/Paper';
 import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
 import NoteTextIcon from 'mdi-material-ui/NoteText';
 import React, { useEffect, useRef, useState } from 'react';
 import { makeStyles, useTheme, useMediaQuery } from '@material-ui/core';
-import EmoticonCryOutline from 'mdi-material-ui/EmoticonCryOutline';
-import TextBoxCheckOutline from 'mdi-material-ui/TextBoxCheckOutline';
+import EmoticonCryOutlineIcon from 'mdi-material-ui/EmoticonCryOutline';
+import ProgressClockIcon from 'mdi-material-ui/ProgressClock';
+import TextBoxCheckOutlineIcon from 'mdi-material-ui/TextBoxCheckOutline';
 import _ from 'lodash';
 import clsx from 'clsx';
 import parseISO from 'date-fns/parseISO';
@@ -158,6 +162,11 @@ const useStyles = makeStyles((theme) => {
     timer: {
       width: '100%',
       textAlign: 'center',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      flexShrink: 1,
+      flexGrow: 0,
     },
     scores: {
       width: '100%',
@@ -174,6 +183,8 @@ const useStyles = makeStyles((theme) => {
     questionAnswerStatusesWrapper: {
       display: 'flex',
       flexWrap: 'wrap',
+      maxHeight: 400,
+      overflowY: 'scroll',
     },
     mainContent: {
     },
@@ -182,6 +193,19 @@ const useStyles = makeStyles((theme) => {
     },
     examContainer: {
       overflowY: 'hidden',
+    },
+    controlCardInfoContentHorizontal: {
+      display: 'flex',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+    },
+    controlButtonWrapper: {
+      display: 'flex',
+      justifyContent: 'flex-end',
+    },
+    questionAnswerStatusesCard: {
+      width: 240,
     },
   };
 });
@@ -217,6 +241,30 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
   const [startExamLoading, setStartExamLoading] = useState<boolean>(false);
   const [participant, setParticipant] = useState<User>(undefined);
   const [examConfirmed, setExamConfirmed] = useState<boolean>(false);
+  const [participantAnswerStatus, setParticipantAnswerStatus] = useState<Record<string, QuestionAnswerStatus>>({});
+  const [answerStatusAnchor, setAnswerStatusAnchor] = React.useState<null | HTMLButtonElement>(null);
+
+  const showCard = () => {
+    if (
+      (examState === 'processing' && !examLoading && exam && paperQuestionLoaded)
+      || (examState === 'resulted' && exam && gradeInfo)
+      || (examState === 'reviewing' && exam)
+    ) {
+      return true;
+    }
+    return false;
+  };
+
+  const getAnsweredQuestionsCount = () => {
+    return Object.keys(participantAnswerStatus).filter((questionId) => {
+      const currentAnswerStatus = participantAnswerStatus[questionId];
+      if (currentAnswerStatus !== 'nil') {
+        return true;
+      } else {
+        return false;
+      }
+    }).length;
+  };
 
   const fetchExamInfo = (id: number, action?: string) => {
     if (action) {
@@ -467,6 +515,48 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
     }
   }, [exam, action, examResult, examConfirmed]);
 
+  useEffect(() => {
+    const currentParticipantAnswerStatus = Object.keys(participantAnswer).reduce((accumulator, currentQuestionId) => {
+      const currentPaperQuestion = paperQuestions.find((paperQuestion) => {
+        return paperQuestion.question.id.toString() === currentQuestionId;
+      });
+      if (currentPaperQuestion) {
+        return {
+          ...accumulator,
+          [currentQuestionId]: getQuestionAnswerStatus(currentPaperQuestion.question, participantAnswer[currentQuestionId]),
+        };
+      } else {
+        return accumulator;
+      }
+    }, {});
+    setParticipantAnswerStatus(currentParticipantAnswerStatus);
+  }, [participantAnswer]);
+
+  const statusesWrapper = (
+    <Box className={classes.questionAnswerStatusesWrapper}>
+      {
+        paperQuestions.map((paperQuestion, index) => {
+          const id = _.get(paperQuestion, 'question.id') as number;
+          const questionAnswerStatus = getQuestionAnswerStatus(paperQuestion.question, participantAnswer[id.toString()]);
+          return (
+            <FormControlLabel
+              key={id}
+              label={`${index + 1}.`}
+              labelPlacement="start"
+              control={
+                <Checkbox
+                  color="primary"
+                  checked={questionAnswerStatus !== 'nil'}
+                  indeterminate={questionAnswerStatus === 'partial'}
+                />
+              }
+            />
+          );
+        })
+      }
+    </Box>
+  );
+
   return (
     <Paper
       elevation={0}
@@ -484,19 +574,25 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
             spacing={mediaUpMd ? 3 : 0}
             classes={{ root: classes.examContainer }}
           >
-            <Grid
-              item={true}
-              xs={12}
-              sm={12}
-              md={4}
-              lg={4}
-              xl={3}
-              classes={{ root: classes.controlColumnWrapper }}
-            >
-              {
-                (examState === 'processing' && !examLoading && exam && paperQuestionLoaded) && (
+            {
+              showCard() && (
+                <Grid
+                  item={true}
+                  xs={12}
+                  sm={12}
+                  md={4}
+                  lg={4}
+                  xl={3}
+                  classes={{ root: classes.controlColumnWrapper }}
+                >
                   <Card classes={{ root: classes.controlCard }}>
-                    <CardContent classes={{ root: classes.controlCardInfoContent }}>
+                    <CardContent
+                      classes={{
+                        root: clsx(classes.controlCardInfoContent, {
+                          [classes.controlCardInfoContentHorizontal]: !mediaUpMd,
+                        }),
+                      }}
+                    >
                       <Box>
                         <img src="/assets/images/logo_text.svg" height="30" />
                         <Tooltip title={exam.title}>
@@ -506,100 +602,105 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                           >{exam.title}</Typography>
                         </Tooltip>
                       </Box>
-                      <Typography
-                        variant="h2"
-                        classes={{ root: classes.timer }}
-                        gutterBottom={true}
-                      >{timerString}</Typography>
-                    </CardContent>
-                    <CardContent classes={{ root: classes.controlCardProgressWrapper }}>
-                      <Box className={classes.questionAnswerStatusesWrapper}>
-                        {
-                          paperQuestions.map((paperQuestion) => {
-                            const id = _.get(paperQuestion, 'question.id') as number;
-                            const questionAnswerStatus = getQuestionAnswerStatus(paperQuestion.question, participantAnswer[id.toString()]);
-                            return (
-                              <Checkbox
-                                key={id}
-                                color="primary"
-                                checked={questionAnswerStatus !== 'nil'}
-                                indeterminate={questionAnswerStatus === 'partial'}
-                              />
-                            );
-                          })
-                        }
-                      </Box>
-                    </CardContent>
-                    <CardContent>
-                      <Button
-                        color="primary"
-                        variant="contained"
-                        disabled={submitAnswerLoading}
-                        fullWidth={true}
-                        onClick={() => submitAnswer(exam.id, participantAnswer)}
-                      >{texts['SUBMIT']}</Button>
-                    </CardContent>
-                  </Card>
-                )
-              }
-              {
-                (examState === 'resulted' && exam && gradeInfo) && (
-                  <Card classes={{ root: classes.controlCard }}>
-                    <CardContent classes={{ root: classes.controlCardInfoContent }}>
-                      <img src="/assets/images/logo_text.svg" height="30" />
-                      <Tooltip title={exam.title}>
-                        <Typography
-                          gutterBottom={true}
-                          color="textSecondary"
-                        >{exam.title}</Typography>
-                      </Tooltip>
-                      <Typography
-                        variant="h2"
-                        classes={{ root: classes.scores }}
-                        gutterBottom={true}
-                      >{gradeInfo.totalScore || '--'}<small>/{gradeInfo.totalPoints}</small></Typography>
                       {
-                        gradeInfo.percentage && (
-                          <Typography
-                            variant="h6"
-                            color="textSecondary"
-                          >{gradeInfo.percentage}%</Typography>
+                        examState === 'processing' && (
+                          <>
+                            <Typography
+                              variant={mediaUpMd ? 'h2' : 'h4'}
+                              classes={{ root: classes.timer }}
+                              gutterBottom={true}
+                            >{timerString}</Typography>
+                            {
+                              paperQuestions && (
+                                mediaUpMd
+                                  ? (
+                                    <>
+                                      <Typography classes={{ root: 'app-icon-typography' }}>
+                                        <ProgressClockIcon />
+                                        {texts['PROGRESS']}:&nbsp;
+                                        {getAnsweredQuestionsCount()}/{paperQuestions.length}
+                                      </Typography>
+                                      {statusesWrapper}
+                                    </>
+                                  )
+                                  : (
+                                    <>
+                                      <Button
+                                        style={{
+                                          flexShrink: 0,
+                                          flexGrow: 0,
+                                        }}
+                                        startIcon={<ProgressClockIcon />}
+                                        onClick={(event) => setAnswerStatusAnchor(event.target as HTMLButtonElement)}
+                                      >{texts['PROGRESS']}:&nbsp;{getAnsweredQuestionsCount()}/{paperQuestions.length}</Button>
+                                      <Menu
+                                        classes={{ paper: classes.questionAnswerStatusesCard }}
+                                        open={Boolean(answerStatusAnchor)}
+                                        anchorEl={answerStatusAnchor}
+                                        onClose={() => setAnswerStatusAnchor(null)}
+                                      >{statusesWrapper}</Menu>
+                                    </>
+                                  )
+                              )
+                            }
+                          </>
                         )
                       }
-                    </CardContent>
-                  </Card>
-                )
-              }
-              {
-                (examState === 'reviewing' && exam) && (
-                  <Card classes={{ root: classes.controlCard }}>
-                    <CardContent classes={{ root: classes.controlCardInfoContent }}>
-                      <img src="/assets/images/logo_text.svg" height="30" />
-                      <Tooltip title={exam.title}>
-                        <Typography
-                          gutterBottom={true}
-                          color="textSecondary"
-                        >{exam.title}</Typography>
-                      </Tooltip>
                       {
-                        participant && (
+                        examState === 'resulted' && (
+                          <Box>
+                            <Typography
+                              variant="h2"
+                              classes={{ root: classes.scores }}
+                              gutterBottom={true}
+                            >{gradeInfo.totalScore || '--'}<small>/{gradeInfo.totalPoints}</small></Typography>
+                            {
+                              gradeInfo.percentage && (
+                                <Typography
+                                  variant="h6"
+                                  color="textSecondary"
+                                >{gradeInfo.percentage}%</Typography>
+                              )
+                            }
+                          </Box>
+                        )
+                      }
+                      {
+                        (examState === 'reviewing' && participant) && (
                           <AppUserCard user={participant} />
                         )
                       }
                     </CardContent>
-                    <CardContent>
-                      <Button
-                        color="primary"
-                        fullWidth={true}
-                        variant="contained"
-                        disabled={!checkExamParticipantScoresStatus(examResult) || submitScoreLoading}
-                        onClick={() => submitParticipantScore(examId, examResult, participantEmail)}
-                      >{texts['SUBMIT_SCORE']}</Button>
-                    </CardContent>
+                    {
+                      examState === 'processing' && (
+                        <CardContent classes={{ root: classes.controlButtonWrapper }}>
+                          <Button
+                            color="primary"
+                            variant="contained"
+                            disabled={submitAnswerLoading}
+                            fullWidth={mediaUpMd}
+                            onClick={() => submitAnswer(exam.id, participantAnswer)}
+                          >{texts['SUBMIT']}</Button>
+                        </CardContent>
+                      )
+                    }
+                    {
+                      examState === 'reviewing' && (
+                        <CardContent classes={{ root: classes.controlButtonWrapper }}>
+                          <Button
+                            color="primary"
+                            fullWidth={mediaUpMd}
+                            variant="contained"
+                            disabled={!checkExamParticipantScoresStatus(examResult) || submitScoreLoading}
+                            onClick={() => submitParticipantScore(examId, examResult, participantEmail)}
+                          >{texts['SUBMIT_SCORE']}</Button>
+                        </CardContent>
+                      )
+                    }
                   </Card>
-                )
-              }
-            </Grid>
+                </Grid>
+              )
+            }
             <Grid
               item={true}
               xs={12}
@@ -694,7 +795,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                     <img src="/assets/images/logo_text.svg" width="42%" />
                     <Card classes={{ root: 'card-body' }} variant="outlined">
                       <Typography classes={{ root: 'title' }}>
-                        <EmoticonCryOutline color="primary" fontSize="large" classes={{ root: 'icon' }} />
+                        <EmoticonCryOutlineIcon color="primary" fontSize="large" classes={{ root: 'icon' }} />
                         {texts['NO_PRIVILEGE']}
                       </Typography>
                       <CardContent>
@@ -717,7 +818,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                     <img src="/assets/images/logo_text.svg" width="42%" />
                     <Card classes={{ root: 'card-body' }} variant="outlined">
                       <Typography classes={{ root: 'title' }}>
-                        <EmoticonCryOutline color="primary" fontSize="large" classes={{ root: 'icon' }} />
+                        <EmoticonCryOutlineIcon color="primary" fontSize="large" classes={{ root: 'icon' }} />
                         {texts['NOT_READY']}
                       </Typography>
                       <CardContent>
@@ -809,7 +910,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                     <img src="/assets/images/logo_text.svg" width="42%" />
                     <Card classes={{ root: 'card-body' }} variant="outlined">
                       <Typography classes={{ root: 'title' }}>
-                        <TextBoxCheckOutline color="primary" fontSize="large" classes={{ root: 'icon' }} />
+                        <TextBoxCheckOutlineIcon color="primary" fontSize="large" classes={{ root: 'icon' }} />
                         {texts['EXAM_ANSWER_SUBMITTED']}
                       </Typography>
                       <CardContent>
