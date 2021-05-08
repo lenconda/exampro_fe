@@ -157,7 +157,7 @@ const useStyles = makeStyles((theme) => {
     controlCard: {
       width: '100%',
       userSelect: 'none',
-      marginTop: theme.spacing(5),
+      position: 'relative',
     },
     timer: {
       width: '100%',
@@ -179,6 +179,9 @@ const useStyles = makeStyles((theme) => {
         marginBottom: theme.spacing(3),
       },
     },
+    controlCardWithTopMargin: {
+      marginTop: theme.spacing(5),
+    },
     controlCardProgressWrapper: {},
     questionAnswerStatusesWrapper: {
       display: 'flex',
@@ -189,7 +192,10 @@ const useStyles = makeStyles((theme) => {
     mainContent: {
     },
     controlColumnWrapper: {
-      position: 'relative',
+    },
+    controlColumnWrapperWithPadding: {
+      padding: theme.spacing(3),
+      paddingBottom: 0,
     },
     examContainer: {
       overflowY: 'hidden',
@@ -583,9 +589,19 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                   md={4}
                   lg={4}
                   xl={3}
-                  classes={{ root: classes.controlColumnWrapper }}
+                  classes={{
+                    item: clsx(classes.controlColumnWrapper, {
+                      [classes.controlColumnWrapperWithPadding]: !mediaUpMd,
+                    }),
+                  }}
                 >
-                  <Card classes={{ root: classes.controlCard }}>
+                  <Card
+                    classes={{
+                      root: clsx(classes.controlCard, {
+                        [classes.controlCardWithTopMargin]: mediaUpMd,
+                      }),
+                    }}
+                  >
                     <CardContent
                       classes={{
                         root: clsx(classes.controlCardInfoContent, {
@@ -606,7 +622,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                         examState === 'processing' && (
                           <>
                             <Typography
-                              variant={mediaUpMd ? 'h2' : 'h4'}
+                              variant={mediaUpMd ? 'h3' : 'h4'}
                               classes={{ root: classes.timer }}
                               gutterBottom={true}
                             >{timerString}</Typography>
