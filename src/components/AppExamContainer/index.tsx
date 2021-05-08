@@ -622,7 +622,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                         examState === 'processing' && (
                           <>
                             <Typography
-                              variant={mediaUpMd ? 'h3' : 'h4'}
+                              variant="h4"
                               classes={{ root: classes.timer }}
                               gutterBottom={true}
                             >{timerString}</Typography>
