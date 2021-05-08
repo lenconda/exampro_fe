@@ -408,7 +408,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                   scoreStatus = 'ignore';
                 } else {
                   // eslint-disable-next-line max-depth
-                  if (incorrectChoices.length > 0) {
+                  if (incorrectChoices.length > 0 || participantAnswers.length === 0) {
                     scoreStatus = 'nil';
                   } else if (participantAnswers.length === standardAnswers.length) {
                     scoreStatus = 'full';
