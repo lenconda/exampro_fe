@@ -117,8 +117,8 @@ const AppModel: AppModelType = {
         examStatuses: {
           'PREPARING': '未开始',
           'IN_PROGRESS': '进行中',
-          'FINISHED': '已结束',
-          'RESULTED': '已出分',
+          'FINISHED': '待批阅',
+          'RESULTED': '已结束',
         },
         table: {
           '001': '每页数量',

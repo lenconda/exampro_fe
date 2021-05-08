@@ -253,8 +253,8 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
   const showCard = () => {
     if (
       (examState === 'processing' && !examLoading && exam && paperQuestionLoaded)
-      || (examState === 'resulted' && exam && gradeInfo)
-      || (examState === 'reviewing' && exam)
+      || (examState === 'resulted' && exam && !_.isEmpty(gradeInfo) && paperQuestionLoaded)
+      || (examState === 'reviewing' && exam && paperQuestionLoaded)
     ) {
       return true;
     }
@@ -733,12 +733,14 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                       <>
                         {
                           examState === 'resulted' && (
-                            (exam && !_.isEmpty(examResult))
+                            exam
                               ? (
                                 <AppPaperContainer
                                   paper={exam.paper}
                                   mode="result"
                                   result={examResult}
+                                  onPaperQuestionLoading={() => setPaperQuestionLoaded(false)}
+                                  onPaperQuestionLoaded={() => setPaperQuestionLoaded(true)}
                                 />
                               )
                               : <AppIndicator type="empty" />

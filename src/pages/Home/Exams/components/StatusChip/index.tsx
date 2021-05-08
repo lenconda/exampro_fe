@@ -21,9 +21,6 @@ const useStyles = makeStyles((theme) => {
       backgroundColor: theme.palette.success.main,
       color: theme.palette.primary.contrastText,
     },
-    finished: {
-      color: theme.palette.primary.main,
-    },
   };
 });
 
@@ -59,8 +56,9 @@ const StatusChip: React.FC<StatusChipProps> = ({
       return <Chip
         label={examStatusesTexts['FINISHED']}
         size="small"
+        color="secondary"
         {...props}
-        classes={{ root: clsx(rootClass, classes.finished) }}
+        classes={{ root: clsx(rootClass) }}
       />;
     }
     case 'RESULTED': {

@@ -33,10 +33,20 @@ export const calculateExamParticipantTotalScore = (result: ExamResultResponseDat
     percentage: null,
   } as Partial<ExamResultMetadata>);
 
+  let percentage = '0';
+
+  if (!_.isNumber(totalScore)) {
+    percentage = null;
+  } else if (totalPoints === 0) {
+    percentage = '0';
+  } else {
+    percentage = ((totalScore / totalPoints) * 100).toFixed(2);
+  }
+
   return {
     totalPoints,
     totalScore,
-    percentage: _.isNumber(totalScore) ? ((totalScore / totalPoints) * 100).toFixed(2) : null,
+    percentage,
   };
 };
 
