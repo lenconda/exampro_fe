@@ -198,7 +198,7 @@ const useStyles = makeStyles((theme) => {
       display: 'flex',
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'flex-start',
+      justifyContent: 'space-between',
     },
     controlButtonWrapper: {
       display: 'flex',
@@ -653,7 +653,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                               variant="h2"
                               classes={{ root: classes.scores }}
                               gutterBottom={true}
-                            >{gradeInfo.totalScore || '--'}<small>/{gradeInfo.totalPoints}</small></Typography>
+                            >{_.isNumber(gradeInfo.totalScore) ? gradeInfo.totalScore : '--'}<small>/{gradeInfo.totalPoints}</small></Typography>
                             {
                               gradeInfo.percentage && (
                                 <Typography
@@ -737,7 +737,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                                   mode="review"
                                   result={examResult}
                                   onQuestionScoreChange={(questionId, score) => {
-                                    const maximumPoints = examResult[questionId].points;
+                                    const maximumPoints = _.get(examResult[questionId], 'points');
                                     const scores = score > maximumPoints ? maximumPoints : score;
                                     setExamResult({
                                       ...examResult,

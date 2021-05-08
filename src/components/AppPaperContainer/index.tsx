@@ -199,7 +199,7 @@ const AppPaperContainer: React.FC<AppPaperContainerComponentProps> = ({
                             (mode === 'result' && result) && (
                               <Typography
                                 classes={{ root: classes.controlItem }}
-                              >{texts['SCORE']}:&nbsp;{result[paperQuestion.question.id].scores}</Typography>
+                              >{texts['SCORE']}:&nbsp;{_.get(result[paperQuestion.question.id], 'scores') || 0}</Typography>
                             )
                           }
                           {
