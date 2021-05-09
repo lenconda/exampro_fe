@@ -14,9 +14,9 @@ import Divider from '@material-ui/core/Divider';
 import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles, SvgIconTypeMap } from '@material-ui/core';
-import CalendarCheck from 'mdi-material-ui/CalendarCheck';
-import CalendarClock from 'mdi-material-ui/CalendarClock';
-import TimerSandEmpty from 'mdi-material-ui/TimerSandEmpty';
+import CalendarCheckIcon from 'mdi-material-ui/CalendarCheck';
+import CalendarClockIcon from 'mdi-material-ui/CalendarClock';
+import TimerSandEmptyIcon from 'mdi-material-ui/TimerSandEmpty';
 import clsx from 'clsx';
 import _ from 'lodash';
 import { OverridableComponent } from '@material-ui/core/OverridableComponent';
@@ -95,7 +95,7 @@ const ExamCard: React.FC<ExamCardProps> = ({
 
   const durationPartialInfo = {
     title: examCardTexts['003'],
-    Icon: TimerSandEmpty,
+    Icon: TimerSandEmptyIcon,
   };
 
   useEffect(() => {
@@ -105,12 +105,12 @@ const ExamCard: React.FC<ExamCardProps> = ({
         value: examStartTime
           ? new Date(examStartTime).toLocaleDateString()
           : examCardTexts['006'],
-        Icon: CalendarClock,
+        Icon: CalendarClockIcon,
       },
       endTime: {
         title: examCardTexts['002'],
         value: new Date(examEndTime).toLocaleString(),
-        Icon: CalendarCheck,
+        Icon: CalendarCheckIcon,
       },
     };
     if (examDuration) {

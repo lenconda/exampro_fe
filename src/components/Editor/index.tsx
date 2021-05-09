@@ -27,23 +27,23 @@ import _ from 'lodash';
 import clsx from 'clsx';
 import Box, { BoxProps } from '@material-ui/core/Box';
 import { makeStyles, SvgIconTypeMap } from '@material-ui/core';
-import FormatQuote from '@material-ui/icons/FormatQuote';
-import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
-import FormatListNumbered from '@material-ui/icons/FormatListNumbered';
-import Check from '@material-ui/icons/Check';
+import FormatQuoteIcon from '@material-ui/icons/FormatQuote';
+import FormatListBulletedIcon from '@material-ui/icons/FormatListBulleted';
+import FormatListNumberedIcon from '@material-ui/icons/FormatListNumbered';
+import CheckIcon from '@material-ui/icons/Check';
 import Button from '@material-ui/core/Button';
 import Paper from '@material-ui/core/Paper';
-import Code from '@material-ui/icons/Code';
-import CodeJson from 'mdi-material-ui/CodeJson';
-import StrikethroughS from '@material-ui/icons/StrikethroughS';
-import Link from '@material-ui/icons/Link';
-import Image from '@material-ui/icons/Image';
-import Undo from '@material-ui/icons/Undo';
-import Redo from '@material-ui/icons/Redo';
-import Functions from '@material-ui/icons/Functions';
-import FormatBold from 'mdi-material-ui/FormatBold';
-import FormatItalic from 'mdi-material-ui/FormatItalic';
-import FormatUnderline from 'mdi-material-ui/FormatUnderline';
+import CodeIcon from '@material-ui/icons/Code';
+import CodeJsonIcon from 'mdi-material-ui/CodeJson';
+import StrikethroughSIcon from '@material-ui/icons/StrikethroughS';
+import LinkIcon from '@material-ui/icons/Link';
+import ImageIcon from '@material-ui/icons/Image';
+import UndoIcon from '@material-ui/icons/Undo';
+import RedoIcon from '@material-ui/icons/Redo';
+import FunctionsIcon from '@material-ui/icons/Functions';
+import FormatBoldIcon from 'mdi-material-ui/FormatBold';
+import FormatItalicIcon from 'mdi-material-ui/FormatItalic';
+import FormatUnderlineIcon from 'mdi-material-ui/FormatUnderline';
 import DraftEditor, { composeDecorators } from '@draft-js-plugins/editor';
 import createResizeablePlugin from '@draft-js-plugins/resizeable';
 import createFocusPlugin from '@draft-js-plugins/focus';
@@ -216,7 +216,7 @@ const HeadingSelector: React.FC<ControlsProps> = ({
                   <Box>
                     {
                       isActive && (
-                        <Check color="primary" fontSize="small" />
+                        <CheckIcon color="primary" fontSize="small" />
                       )
                     }
                   </Box>
@@ -244,22 +244,22 @@ const BlockStyleControls: React.FC<ControlsProps> = ({
     {
       label: texts['blockquote'],
       style: 'blockquote',
-      Icon: FormatQuote,
+      Icon: FormatQuoteIcon,
     },
     {
       label: texts['unordered-list-item'],
       style: 'unordered-list-item',
-      Icon: FormatListBulleted,
+      Icon: FormatListBulletedIcon,
     },
     {
       label: texts['ordered-list-item'],
       style: 'ordered-list-item',
-      Icon: FormatListNumbered,
+      Icon: FormatListNumberedIcon,
     },
     {
       label: texts['code-block'],
       style: 'code-block',
-      Icon: Code,
+      Icon: CodeIcon,
     },
   ];
 
@@ -296,11 +296,11 @@ const InlineStyleControls: React.FC<ControlsProps> = ({
 }) => {
   const currentStyle = editorState.getCurrentInlineStyle();
   const INLINE_STYLES = [
-    { label: texts['BOLD'], style: 'BOLD', Icon: FormatBold },
-    { label: texts['ITALIC'], style: 'ITALIC', Icon: FormatItalic },
-    { label: texts['UNDERLINE'], style: 'UNDERLINE', Icon: FormatUnderline },
-    { label: texts['STRIKETHROUGH'], style: 'STRIKETHROUGH', Icon: StrikethroughS },
-    { label: texts['CODE'], style: 'CODE', Icon: CodeJson },
+    { label: texts['BOLD'], style: 'BOLD', Icon: FormatBoldIcon },
+    { label: texts['ITALIC'], style: 'ITALIC', Icon: FormatItalicIcon },
+    { label: texts['UNDERLINE'], style: 'UNDERLINE', Icon: FormatUnderlineIcon },
+    { label: texts['STRIKETHROUGH'], style: 'STRIKETHROUGH', Icon: StrikethroughSIcon },
+    { label: texts['CODE'], style: 'CODE', Icon: CodeJsonIcon },
   ];
   return (
     <>
@@ -565,7 +565,7 @@ const Editor: React.FC<EditorProps> = ({
                 editorState.getUndoStack().toArray().length === 0
                   ? (
                     <IconButton disabled={true}>
-                      <Undo />
+                      <UndoIcon />
                     </IconButton>
                   )
                   : (
@@ -575,7 +575,7 @@ const Editor: React.FC<EditorProps> = ({
                           handleStateChange(EditorState.undo(editorState));
                         }}
                       >
-                        <Undo />
+                        <UndoIcon />
                       </IconButton>
                     </Tooltip>
                   )
@@ -584,7 +584,7 @@ const Editor: React.FC<EditorProps> = ({
                 editorState.getRedoStack().toArray().length === 0
                   ? (
                     <IconButton disabled={true}>
-                      <Redo />
+                      <RedoIcon />
                     </IconButton>
                   )
                   : (
@@ -594,7 +594,7 @@ const Editor: React.FC<EditorProps> = ({
                           handleStateChange(EditorState.redo(editorState));
                         }}
                       >
-                        <Redo />
+                        <RedoIcon />
                       </IconButton>
                     </Tooltip>
                   )
@@ -624,7 +624,7 @@ const Editor: React.FC<EditorProps> = ({
                     setAddLinkAnchor(addLinkButton?.current);
                   }}
                 >
-                  <Link />
+                  <LinkIcon />
                 </IconButton>
               </Tooltip>
               <Tooltip title={editorTexts['UPLOAD_IMAGE']}>
@@ -634,7 +634,7 @@ const Editor: React.FC<EditorProps> = ({
                     setUploadImageAnchor(uploadImageButton?.current);
                   }}
                 >
-                  <Image />
+                  <ImageIcon />
                 </IconButton>
               </Tooltip>
               <Tooltip title={editorTexts['FUNCTIONS']}>
@@ -644,7 +644,7 @@ const Editor: React.FC<EditorProps> = ({
                     setAddMathAnchor(addMathButton?.current);
                   }}
                 >
-                  <Functions />
+                  <FunctionsIcon />
                 </IconButton>
               </Tooltip>
             </Toolbar>

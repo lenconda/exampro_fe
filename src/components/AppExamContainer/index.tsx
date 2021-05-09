@@ -49,10 +49,10 @@ import Menu from '@material-ui/core/Menu';
 import Paper, { PaperProps } from '@material-ui/core/Paper';
 import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
-import NoteTextIcon from 'mdi-material-ui/NoteText';
 import React, { useEffect, useRef, useState } from 'react';
 import { makeStyles, useTheme, useMediaQuery } from '@material-ui/core';
 import EmoticonCryOutlineIcon from 'mdi-material-ui/EmoticonCryOutline';
+import FileClockIcon from 'mdi-material-ui/FileClock';
 import ProgressClockIcon from 'mdi-material-ui/ProgressClock';
 import TextBoxCheckOutlineIcon from 'mdi-material-ui/TextBoxCheckOutline';
 import _ from 'lodash';
@@ -862,7 +862,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                           variant="h5"
                           classes={{ root: classes.examInfoTitle }}
                         >
-                          <NoteTextIcon color="primary" fontSize="large" classes={{ root: classes.examInfoTitleIcon }} />
+                          <FileClockIcon color="primary" fontSize="large" classes={{ root: classes.examInfoTitleIcon }} />
                           {exam.title}
                         </Typography>
                         <Typography classes={{ root: classes.infoItem }}>

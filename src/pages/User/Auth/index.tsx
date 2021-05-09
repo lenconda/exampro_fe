@@ -14,7 +14,9 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import Typography from '@material-ui/core/Typography';
 import { Field, Form as FormikForm, Formik } from 'formik';
 import { TextField } from 'formik-material-ui';
-import { DatabaseCheck, Fingerprint, HeadCheck } from 'mdi-material-ui';
+import DatabaseCheckIcon from 'mdi-material-ui/DatabaseCheck';
+import FingerprintIcon from 'mdi-material-ui/Fingerprint';
+import HeadCheckIcon from 'mdi-material-ui/HeadCheck';
 import { connect } from 'react-redux';
 import { useHistory } from 'react-router';
 import _ from 'lodash';
@@ -39,17 +41,17 @@ const AuthPage: React.FC<AuthPageProps> = (props) => {
           <CssBaseline />
           {
             (!authStatus || authStatus === 'login') && (
-              <Fingerprint fontSize="large" className="icon" />
+              <FingerprintIcon fontSize="large" className="icon" />
             )
           }
           {
             authStatus === 'register' && (
-              <DatabaseCheck fontSize="large" className="icon success" />
+              <DatabaseCheckIcon fontSize="large" className="icon success" />
             )
           }
           {
             authStatus === 'forget_password' && (
-              <HeadCheck fontSize="large" className="icon success" />
+              <HeadCheckIcon fontSize="large" className="icon success" />
             )
           }
           <Typography className="title">

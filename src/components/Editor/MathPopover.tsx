@@ -1,6 +1,6 @@
 import { useDebouncedValue } from '../../utils/hooks';
-import Close from '@material-ui/icons/Close';
-import Done from '@material-ui/icons/Done';
+import CloseIcon from '@material-ui/icons/Close';
+import DoneIcon from '@material-ui/icons/Done';
 import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
 import Popover from '@material-ui/core/Popover';

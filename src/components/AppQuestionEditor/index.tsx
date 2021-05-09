@@ -28,12 +28,12 @@ import Select from '@material-ui/core/Select';
 import TextField from '@material-ui/core/TextField';
 import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
-import PlaylistAdd from '@material-ui/icons/PlaylistAdd';
-import PlaylistAddCheck from '@material-ui/icons/PlaylistAddCheck';
-import DragIndicator from '@material-ui/icons/DragIndicator';
-import Check from '@material-ui/icons/Check';
-import Close from '@material-ui/icons/Close';
-import Delete from '@material-ui/icons/Delete';
+import PlaylistAddIcon from '@material-ui/icons/PlaylistAdd';
+import PlaylistAddCheckIcon from '@material-ui/icons/PlaylistAddCheck';
+import DragIndicatorIcon from '@material-ui/icons/DragIndicator';
+import CheckIcon from '@material-ui/icons/Check';
+import CloseIcon from '@material-ui/icons/Close';
+import DeleteIcon from '@material-ui/icons/Delete';
 import React, { useEffect, useState } from 'react';
 import { lighten, makeStyles } from '@material-ui/core';
 import DraftEditor, { ContentState, EditorState } from 'draft-js';
@@ -633,7 +633,7 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
                                               {
                                                 !showSetAnswer
                                                   ? (
-                                                    <DragIndicator classes={{ root: classes.addQuestionIcon }} />
+                                                    <DragIndicatorIcon classes={{ root: classes.addQuestionIcon }} />
                                                   )
                                                   : generateAnswerSelector(questionType, index, questionChoices)
                                               }
@@ -646,7 +646,7 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
                                                     color="primary"
                                                     label={texts['IS_ANSWER']}
                                                     size="small"
-                                                    icon={<Check />}
+                                                    icon={<CheckIcon />}
                                                   />
                                                 </Box>
                                               )
@@ -663,7 +663,7 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
                                                 classes={{ root: clsx(classes.deleteButton, 'delete-icon-button') }}
                                                 onClick={() => handleDeleteQuestionChoice(index)}
                                               >
-                                                <Delete />
+                                                <DeleteIcon />
                                               </IconButton>
                                             </Tooltip>
                                           </Paper>
@@ -687,7 +687,7 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
                   <Button
                     variant="outlined"
                     disabled={!validateChoiceContent(questionChoices)}
-                    startIcon={<PlaylistAdd />}
+                    startIcon={<PlaylistAddIcon />}
                     classes={{ root: classes.button }}
                     onClick={() => {
                       setQuestionChoices(questionChoices.concat({
@@ -705,7 +705,7 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
                     <Button
                       variant="text"
                       color="primary"
-                      startIcon={<Close />}
+                      startIcon={<CloseIcon />}
                       onClick={() => setShowSetAnswer(false)}
                     >{texts['CLOSE']}</Button>
                   )
@@ -714,7 +714,7 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
                       variant="outlined"
                       classes={{ root: classes.button }}
                       disabled={!validateChoiceCount(questionType, questionChoices)}
-                      startIcon={<PlaylistAddCheck />}
+                      startIcon={<PlaylistAddCheckIcon />}
                       onClick={() => setShowSetAnswer(true)}
                     >{texts['SELECT_ANSWERS']}</Button>
                   )
@@ -754,7 +754,7 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
                             }}
                             onClick={() => handleDeleteQuestionBlankAnswer(index)}
                           >
-                            <Delete />
+                            <DeleteIcon />
                           </IconButton>
                         </Tooltip>
                       </Paper>
@@ -765,7 +765,7 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
               <Button
                 disabled={!validateBlankAnswerContent(questionBlankAnswers)}
                 variant="outlined"
-                startIcon={<PlaylistAdd />}
+                startIcon={<PlaylistAddIcon />}
                 onClick={() => {
                   setQuestionBlankAnswers(questionBlankAnswers.concat(['']));
                 }}

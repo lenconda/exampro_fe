@@ -13,7 +13,8 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import Typography from '@material-ui/core/Typography';
 import { Field, Form as FormikForm, Formik } from 'formik';
 import { TextField } from 'formik-material-ui';
-import { ProgressCheck, ProgressClock } from 'mdi-material-ui';
+import ProgressCheckIcon from 'mdi-material-ui/ProgressCheck';
+import ProgressClockIcon from 'mdi-material-ui/ProgressClock';
 import { connect } from 'react-redux';
 import { useHistory } from 'react-router';
 import _ from 'lodash';
@@ -37,12 +38,12 @@ const CompletePage: React.FC<CompletePageProps> = (props) => {
           <CssBaseline />
           {
             (!authStatus || authStatus === 'pending') && (
-              <ProgressClock fontSize="large" className="icon" />
+              <ProgressClockIcon fontSize="large" className="icon" />
             )
           }
           {
             (authStatus === 'finished') && (
-              <ProgressCheck fontSize="large" className="icon" />
+              <ProgressCheckIcon fontSize="large" className="icon" />
             )
           }
           {

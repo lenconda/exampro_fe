@@ -352,6 +352,10 @@ const AppModel: AppModelType = {
             '007': '最近修改日期',
             '008': '以下试卷将会被删除',
           },
+          '/home/exams/review_list': {
+            '001': '返回',
+            '002': '手动刷新',
+          },
         },
       },
     },

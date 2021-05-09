@@ -9,10 +9,10 @@ import Card from '@material-ui/core/Card';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import Typography from '@material-ui/core/Typography';
-import EmailCheck from 'mdi-material-ui/EmailCheck';
-import EmailRemove from 'mdi-material-ui/EmailRemove';
-import ProgressClock from 'mdi-material-ui/ProgressClock';
-import ShieldAccountVariant from 'mdi-material-ui/ShieldAccountVariant';
+import EmailCheckIcon from 'mdi-material-ui/EmailCheck';
+import EmailRemoveIcon from 'mdi-material-ui/EmailRemove';
+import ProgressClockIcon from 'mdi-material-ui/ProgressClock';
+import ShieldAccountVariantIcon from 'mdi-material-ui/ShieldAccountVariant';
 import { connect } from 'react-redux';
 import { useHistory } from 'react-router';
 import _ from 'lodash';
@@ -34,22 +34,22 @@ const CompletePage: React.FC<CompletePageProps> = (props) => {
           <CssBaseline />
           {
             !authStatus && (
-              <ShieldAccountVariant fontSize="large" className="icon" />
+              <ShieldAccountVariantIcon fontSize="large" className="icon" />
             )
           }
           {
             authStatus === 'pending' && (
-              <ProgressClock fontSize="large" className="icon" />
+              <ProgressClockIcon fontSize="large" className="icon" />
             )
           }
           {
             authStatus === 'succeeded' && (
-              <EmailCheck fontSize="large" className="icon" />
+              <EmailCheckIcon fontSize="large" className="icon" />
             )
           }
           {
             authStatus === 'failed' && (
-              <EmailRemove fontSize="large" color="error" className="icon error" />
+              <EmailRemoveIcon fontSize="large" color="error" className="icon error" />
             )
           }
           {

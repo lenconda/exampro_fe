@@ -1,5 +1,5 @@
 import Card from '@material-ui/core/Card';
-import Backup from '@material-ui/icons/Backup';
+import BackupIcon from '@material-ui/icons/Backup';
 import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
 import Popover from '@material-ui/core/Popover';
@@ -138,7 +138,7 @@ const UploadImagePopover: React.FC<IUploadImagePopoverProps> = ({
                   )
                   : (
                     <>
-                      <Backup classes={{ root: classes.uploadIcon }} />
+                      <BackupIcon classes={{ root: classes.uploadIcon }} />
                       <Typography noWrap={true}>{texts['CLICK_TO_UPLOAD']}</Typography>
                     </>
                   )

@@ -19,8 +19,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { connect } from 'react-redux';
 import { useHistory } from 'react-router';
 import qs from 'qs';
-import Delete from 'mdi-material-ui/Delete';
-import NotePlus from 'mdi-material-ui/NotePlus';
+import DeleteIcon from 'mdi-material-ui/Delete';
+import NotePlusIcon from 'mdi-material-ui/NotePlus';
 import { createStyles, makeStyles, useTheme, useMediaQuery, Theme } from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
@@ -29,8 +29,8 @@ import Tabs from '@material-ui/core/Tabs';
 import TablePagination from '@material-ui/core/TablePagination';
 import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
-import FileDocumentEdit from 'mdi-material-ui/FileDocumentEdit';
-import FileEye from 'mdi-material-ui/FileEye';
+import FileDocumentEditIcon from 'mdi-material-ui/FileDocumentEdit';
+import FileEyeIcon from 'mdi-material-ui/FileEye';
 import './index.less';
 
 export interface ExamPageProps extends Dispatch, AppState {}
@@ -284,7 +284,7 @@ const ExamsPage: React.FC<ExamPageProps> = ({
           >
             <AppSearchBar
               search={defaultSearch}
-              CreateIcon={NotePlus}
+              CreateIcon={NotePlusIcon}
               onSearchChange={(search) => setSearchValue(search)}
               onCreateClick={() => {
                 setExamEditorMode('create');
@@ -378,7 +378,7 @@ const ExamsPage: React.FC<ExamPageProps> = ({
                           })}
                           toolbarButtons={[
                             {
-                              Icon: FileDocumentEdit,
+                              Icon: FileDocumentEditIcon,
                               title: texts['011'],
                               show: selectedExams.length === 1
                                 && ['resource/exam/initiator', 'resource/exam/maintainer'].includes(roleId)
@@ -392,7 +392,7 @@ const ExamsPage: React.FC<ExamPageProps> = ({
                               },
                             },
                             {
-                              Icon: FileEye,
+                              Icon: FileEyeIcon,
                               title: texts['012'],
                               show: selectedExams.length === 1
                                 && selectedExams[0].startTime
@@ -405,7 +405,7 @@ const ExamsPage: React.FC<ExamPageProps> = ({
                               },
                             },
                             {
-                              Icon: Delete,
+                              Icon: DeleteIcon,
                               title: texts['010'],
                               show: roleId === 'resource/exam/initiator',
                               IconButtonProps: {

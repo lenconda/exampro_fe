@@ -7,8 +7,8 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Divider from '@material-ui/core/Divider';
 import Collapse from '@material-ui/core/Collapse';
-import IconExpandLess from '@material-ui/icons/ExpandLess';
-import IconExpandMore from '@material-ui/icons/ExpandMore';
+import IconExpandLessIcon from '@material-ui/icons/ExpandLess';
+import IconExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import * as icons from 'mdi-material-ui';
 import { SvgIconTypeMap, Tooltip, Typography } from '@material-ui/core';
 import { OverridableComponent } from '@material-ui/core/OverridableComponent';
@@ -78,7 +78,7 @@ const AppMenuItem: React.FC<AppMenuItemProps> = ({
       </Tooltip>
       {
         isExpandable && (
-          open ? <IconExpandLess /> : <IconExpandMore />
+          open ? <IconExpandLessIcon /> : <IconExpandMoreIcon />
         )
       }
     </ListItem>
