@@ -155,6 +155,8 @@ const AppModel: AppModelType = {
           'CLOSE': '关闭',
           'CLEAR': '清空',
           'NOT_READY': '操作暂时不被允许',
+          'OPERATIONS': '操作',
+          'REVIEW': '阅卷',
         },
         editor: {
           'header-one': '标题 1',
@@ -356,6 +358,11 @@ const AppModel: AppModelType = {
           '/home/exams/review_list': {
             '001': '返回',
             '002': '手动刷新',
+            '003': '头像',
+            '004': '昵称',
+            '005': '邮箱',
+            '006': '开始时间',
+            '007': '提交时间',
           },
         },
       },

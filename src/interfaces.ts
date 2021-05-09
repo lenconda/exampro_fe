@@ -46,6 +46,8 @@ export interface UserExam {
   id: number;
   confirmed: boolean;
   leftTimes: number;
+  reviewing: boolean;
+  user?: User;
   startTime?: string;
   submitTime?: string;
   createdAt?: string;

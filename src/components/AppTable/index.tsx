@@ -18,7 +18,6 @@ import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import Checkbox from '@material-ui/core/Checkbox';
 import TablePagination, { TablePaginationProps } from '@material-ui/core/TablePagination';
-import Typography from '@material-ui/core/Typography';
 import clsx from 'clsx';
 import _ from 'lodash';
 import { Box } from '@material-ui/core';
@@ -34,6 +33,7 @@ export interface TableSchema {
 export interface AppTableProps extends TableProps {
   schema?: TableSchema[];
   data?: Record<string, any>[];
+  selectable?: boolean;
   TablePaginationProps?: TablePaginationProps;
   loading?: boolean;
   containerMinHeight?: number;
@@ -76,7 +76,7 @@ const renderTableCell = (
   schemaItem: TableSchema,
 ): React.ReactNode => {
   const { key, render } = schemaItem;
-  const columnValue = dataItem[key];
+  const columnValue = _.get(dataItem, key);
   let columnNode;
   if (render && _.isFunction(render)) {
     columnNode = render(dataItem, columnValue);
@@ -91,6 +91,7 @@ const AppTable: React.FC<AppTableComponentProps> = ({
   schema = [],
   data = [],
   loading = false,
+  selectable = true,
   containerMinHeight = 150,
   toolbarButtons = [],
   wrapperClassName = '',
@@ -134,6 +135,7 @@ const AppTable: React.FC<AppTableComponentProps> = ({
   };
 
   const handleRowClick = (index: number) => {
+    if (!selectable) { return }
     if (!selectedItemIndexes.includes(index)) {
       setSelectedItemIndexes(selectedItemIndexes.concat(index));
     } else {
@@ -260,22 +262,26 @@ const AppTable: React.FC<AppTableComponentProps> = ({
                         schema.length > 0 && (
                           <TableHead innerRef={tableHead}>
                             <TableRow>
-                              <TableCell>
-                                <Checkbox
-                                  color="primary"
-                                  indeterminate={
-                                    selectedItemIndexes.length !== 0
-                                && data.length !== 0
-                                && selectedItemIndexes.length < data.length
-                                  }
-                                  checked={
-                                    selectedItemIndexes.length !== 0
-                                && data.length !== 0
-                                && selectedItemIndexes.length === data.length
-                                  }
-                                  onChange={handleHeadCheckboxChange}
-                                />
-                              </TableCell>
+                              {
+                                selectable && (
+                                  <TableCell>
+                                    <Checkbox
+                                      color="primary"
+                                      indeterminate={
+                                        selectedItemIndexes.length !== 0
+                                        && data.length !== 0
+                                        && selectedItemIndexes.length < data.length
+                                      }
+                                      checked={
+                                        selectedItemIndexes.length !== 0
+                                        && data.length !== 0
+                                        && selectedItemIndexes.length === data.length
+                                      }
+                                      onChange={handleHeadCheckboxChange}
+                                    />
+                                  </TableCell>
+                                )
+                              }
                               {
                                 schema.map((schemaItem, index) => (
                                   <TableCell
@@ -303,14 +309,18 @@ const AppTable: React.FC<AppTableComponentProps> = ({
                               }}
                               onClick={() => handleRowClick(index)}
                             >
-                              <TableCell>
-                                <Checkbox
-                                  color="primary"
-                                  checked={selectedItemIndexes.includes(index)}
-                                  onChange={(event) => handleRowCheckboxChange(event, index)}
-                                  onClick={(event) => event.stopPropagation()}
-                                />
-                              </TableCell>
+                              {
+                                selectable && (
+                                  <TableCell>
+                                    <Checkbox
+                                      color="primary"
+                                      checked={selectedItemIndexes.includes(index)}
+                                      onChange={(event) => handleRowCheckboxChange(event, index)}
+                                      onClick={(event) => event.stopPropagation()}
+                                    />
+                                  </TableCell>
+                                )
+                              }
                               {
                                 schema.map((schemaItem, index) => (
                                   <TableCell key={index}>{renderTableCell(dataItem, schemaItem)}</TableCell>
