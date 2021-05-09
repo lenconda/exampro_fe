@@ -26,9 +26,14 @@ import { Route, Redirect, Switch } from 'react-router-dom';
 import { useHistory } from 'react-router';
 import './index.less';
 
+// /home/exams
 const HomeExamsPage = React.lazy(() => import('./Exams'));
+// /home/questions
 const HomeQuestionsPage = React.lazy(() => import('./Questions'));
+// /home/papers
 const HomePapersPage = React.lazy(() => import('./Papers'));
+// /home/exams/review_list/:id
+const HomeExamsReviewListPage = React.lazy(() => import('./Exams/ReviewList'));
 
 const drawerWidth = 240;
 
@@ -173,9 +178,10 @@ const HomePage: React.FC<HomePageProps> = ({
       <main className={clsx(classes.content, 'app-container')}>
         <Suspense fallback={<Fallback />}>
           <Switch>
-            <Route path="/home/exams" component={HomeExamsPage} />
+            <Route path="/home/exams" component={HomeExamsPage} exact={true} />
             <Route path="/home/questions" component={HomeQuestionsPage} />
             <Route path="/home/papers" component={HomePapersPage} />
+            <Route path="/home/exams/review_list/:id" component={HomeExamsReviewListPage} />
             <Redirect from="/home" to="/home/exams" exact={true} />
           </Switch>
         </Suspense>
