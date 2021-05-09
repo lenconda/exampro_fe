@@ -154,6 +154,7 @@ const AppModel: AppModelType = {
           'EDIT': '编辑',
           'CLOSE': '关闭',
           'CLEAR': '清空',
+          'NOT_READY': '操作暂时不被允许',
         },
         editor: {
           'header-one': '标题 1',

@@ -7,8 +7,9 @@ import React from 'react';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Typography from '@material-ui/core/Typography';
 import FileQuestionIcon from 'mdi-material-ui/FileQuestion';
+import SentimentDissatisfiedIcon from '@material-ui/icons/SentimentDissatisfied';
 
-export type AppIndicatorType = 'loading' | 'empty';
+export type AppIndicatorType = 'loading' | 'empty' | 'not_ready';
 export interface AppIndicatorProps {
   type: AppIndicatorType;
 }
@@ -31,6 +32,13 @@ const AppIndicator: React.FC<AppIndicatorComponentProps> = ({
     return (
       <div className="app-loading">
         <CircularProgress classes={{ root: 'app-loading__icon' }} />
+      </div>
+    );
+  } else if (type === 'not_ready') {
+    return (
+      <div className="app-not_ready">
+        <SentimentDissatisfiedIcon classes={{ root: 'app-not_ready__icon' }} />
+        <Typography classes={{ root: 'app-not_ready__text' }}>{systemTexts['NOT_READY']}</Typography>
       </div>
     );
   } else { return <></> }

@@ -74,6 +74,9 @@ export const checkReviewPermission = (exam: ExamResponseData) => {
   if (!exam) {
     return false;
   }
+  if (!exam.userExam) {
+    return false;
+  }
   const { resultTime, startTime } = exam;
   if (!resultTime) {
     return false;
