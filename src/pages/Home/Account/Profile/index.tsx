@@ -7,6 +7,7 @@ import { usePageTexts, useTexts } from '../../../../utils/texts';
 import AppIndicator from '../../../../components/AppIndicator';
 import { getUserProfile } from '../../service';
 import AppAlertManager from '../../../../components/AppAlert/Manager';
+import { uploadImage } from '../../../../service';
 import Avatar from '@material-ui/core/Avatar';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
@@ -65,6 +66,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   const [profile, setProfile] = useState<User>(undefined);
   const [profileLoading, setProfileLoading] = useState<boolean>(false);
   const [updateProfileLoading, setUpdateProfileLoading] = useState<boolean>(false);
+  const [newAvatarFile, setNewAvatarFile] = useState<File>(undefined);
 
   const getUserName = (profile: User) => {
     return profile.name || profile.email.split('@')[0];
@@ -87,6 +89,17 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   };
 
   useEffect(() => {
+    if (newAvatarFile) {
+      uploadImage(newAvatarFile).then((url) => {
+        setProfile({
+          ...profile,
+          avatar: url,
+        });
+      });
+    }
+  }, [newAvatarFile]);
+
+  useEffect(() => {
     fetchUserProfile();
   }, []);
 
@@ -102,7 +115,13 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                   <>
                     <Box className={classes.profileItemWrapper}>
                       <Box className={classes.profileAvatarWrapper}>
-                        <input type="file" accept="image/*" />
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(event) => {
+                            setNewAvatarFile(event.target.files![0]);
+                          }}
+                        />
                         <Avatar
                           alt={getUserName(profile)}
                           src={profile.avatar}

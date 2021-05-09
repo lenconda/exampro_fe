@@ -11,7 +11,7 @@ export const uploadImage = async (image: File) => {
     method: 'POST',
     data: formData,
   });
-  return _.get(data, 'data.data.url');
+  return _.get(data, 'data.data.url') as string;
 };
 
 export const renderKatex = (equation: string): string => {
