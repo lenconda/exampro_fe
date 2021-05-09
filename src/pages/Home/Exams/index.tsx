@@ -19,8 +19,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { connect } from 'react-redux';
 import { useHistory } from 'react-router';
 import qs from 'qs';
-import DeleteIcon from 'mdi-material-ui/Delete';
-import NotePlusIcon from 'mdi-material-ui/NotePlus';
 import { createStyles, makeStyles, useTheme, useMediaQuery, Theme } from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
@@ -29,8 +27,11 @@ import Tabs from '@material-ui/core/Tabs';
 import TablePagination from '@material-ui/core/TablePagination';
 import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
+import DeleteIcon from 'mdi-material-ui/Delete';
 import FileDocumentEditIcon from 'mdi-material-ui/FileDocumentEdit';
 import FileEyeIcon from 'mdi-material-ui/FileEye';
+import NotePlusIcon from 'mdi-material-ui/NotePlus';
+import TextBoxCheckIcon from 'mdi-material-ui/TextBoxCheck';
 import './index.less';
 
 export interface ExamPageProps extends Dispatch, AppState {}
@@ -392,6 +393,19 @@ const ExamsPage: React.FC<ExamPageProps> = ({
                               },
                             },
                             {
+                              Icon: TextBoxCheckIcon,
+                              title: texts['015'],
+                              show: selectedExams.length === 1
+                                && ['resource/exam/reviewer'].includes(roleId)
+                                && Date.parse(selectedExams[0].endTime) < Date.now()
+                                && Date.now() < Date.parse(selectedExams[0].resultTime),
+                              IconButtonProps: {
+                                onClick: () => {
+                                  history.push(`/home/exams/review_list/${selectedExams[0].id}`);
+                                },
+                              },
+                            },
+                            {
                               Icon: FileEyeIcon,
                               title: texts['012'],
                               show: selectedExams.length === 1
@@ -400,7 +414,7 @@ const ExamsPage: React.FC<ExamPageProps> = ({
                                 && Date.now() <= Date.parse(selectedExams[0].endTime)
                                 && roleId === 'resource/exam/invigilator',
                               IconButtonProps: {
-                              // TODO: push to invigilator page
+                                // TODO: push to invigilator page
                                 onClick: () => {},
                               },
                             },

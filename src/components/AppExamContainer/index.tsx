@@ -349,7 +349,6 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
 
   useEffect(() => {
     if (['forbidden', 'submitted', 'not_ready'].indexOf(examState) === -1) {
-      console.log(111, examState);
       fetchExamInfo(examId, action);
     }
     if (examState === 'resulted') {

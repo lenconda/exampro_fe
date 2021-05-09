@@ -70,8 +70,21 @@ const ReviewListPage: React.FC<ReviewListPageProps> = ({
     setExamLoading(true);
     getExamInfo(id, 'review').then((info) => {
       setExam(info);
-    }).finally(() => setExamLoading(false));
+    }).finally(() => {
+      setExamLoading(false);
+    });
   };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const { id } = params;
+      const currentExamId = parseInt(id, 10);
+      if (!queryExamParticipantsLoading && id && _.isNumber(currentExamId)) {
+        refreshQueryExamParticipants();
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [queryExamParticipantsLoading]);
 
   useEffect(() => {
     const { id } = params;
@@ -129,7 +142,7 @@ const ReviewListPage: React.FC<ReviewListPageProps> = ({
                 {
                   reviewing
                     ? (
-                      <Typography variant="body2">{systemTexts['REVIEW']}</Typography>
+                      <Typography variant="body2" color="textSecondary">{systemTexts['REVIEW']}</Typography>
                     )
                     : (
                       <Link
@@ -157,11 +170,12 @@ const ReviewListPage: React.FC<ReviewListPageProps> = ({
             onClick={() => history.go(-1)}
           >{texts['001']}</Button>
           <Button
-            startIcon={<RefreshOutlinedIcon />}
+            startIcon={queryExamParticipantsLoading ? null : <RefreshOutlinedIcon />}
+            disabled={queryExamParticipantsLoading}
             variant="text"
             color="primary"
             onClick={() => refreshQueryExamParticipants()}
-          >{texts['002']}</Button>
+          >{!queryExamParticipantsLoading ? texts['002'] : texts['008']}</Button>
         </Box>
         <Box className={classes.contentWrapper}>
           {
