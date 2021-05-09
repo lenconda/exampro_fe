@@ -157,6 +157,9 @@ const AppModel: AppModelType = {
           'NOT_READY': '操作暂时不被允许',
           'OPERATIONS': '操作',
           'REVIEW': '阅卷',
+          'SAVE': '保存',
+          'SAVING': '保存中...',
+          'SAVED_SUCCESSFULLY': '保存成功',
         },
         editor: {
           'header-one': '标题 1',

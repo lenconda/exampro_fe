@@ -1,3 +1,4 @@
+import { patchUserProfile } from './service';
 import { Dispatch, User } from '../../../../interfaces';
 import { AppState } from '../../../../models/app';
 import { connect } from '../../../../patches/dva';
@@ -5,6 +6,7 @@ import { ConnectState } from '../../../../models';
 import { usePageTexts, useTexts } from '../../../../utils/texts';
 import AppIndicator from '../../../../components/AppIndicator';
 import { getUserProfile } from '../../service';
+import AppAlertManager from '../../../../components/AppAlert/Manager';
 import Avatar from '@material-ui/core/Avatar';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
@@ -23,16 +25,32 @@ const useStyles = makeStyles((theme) => {
       padding: theme.spacing(5),
     },
     profileItemWrapper: {
-      marginBottom: theme.spacing(6),
+      marginBottom: theme.spacing(5),
       maxWidth: 320,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'flex-start',
     },
     profileAvatar: {
+      width: '100%',
+      height: '100%',
+    },
+    profileAvatarWrapper: {
+      position: 'relative',
+      cursor: 'pointer',
       width: 64,
       height: 64,
-      cursor: 'pointer',
+      overflow: 'hidden',
+      '& > input:first-child': {
+        cursor: 'pointer',
+        opacity: 0,
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
+        zIndex: 1,
+      },
     },
   };
 });
@@ -46,6 +64,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   const systemTexts = useTexts(dispatch, 'system');
   const [profile, setProfile] = useState<User>(undefined);
   const [profileLoading, setProfileLoading] = useState<boolean>(false);
+  const [updateProfileLoading, setUpdateProfileLoading] = useState<boolean>(false);
 
   const getUserName = (profile: User) => {
     return profile.name || profile.email.split('@')[0];
@@ -56,6 +75,15 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
     getUserProfile().then((profile) => {
       setProfile(profile);
     }).finally(() => setProfileLoading(false));
+  };
+
+  const updateUserProfile = (profile: Partial<User>) => {
+    setUpdateProfileLoading(true);
+    patchUserProfile(profile).then(() => {
+      AppAlertManager.create(systemTexts['SAVED_SUCCESSFULLY'], {
+        variant: 'success',
+      });
+    }).finally(() => setUpdateProfileLoading(false));
   };
 
   useEffect(() => {
@@ -73,7 +101,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                 ? (
                   <>
                     <Box className={classes.profileItemWrapper}>
-                      <Box>
+                      <Box className={classes.profileAvatarWrapper}>
+                        <input type="file" accept="image/*" />
                         <Avatar
                           alt={getUserName(profile)}
                           src={profile.avatar}
@@ -94,6 +123,14 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                           });
                         }}
                       ></TextField>
+                    </Box>
+                    <Box className={classes.profileItemWrapper}>
+                      <Button
+                        variant="outlined"
+                        color="primary"
+                        disabled={updateProfileLoading}
+                        onClick={() => updateUserProfile(profile)}
+                      >{updateProfileLoading ? systemTexts['SAVING'] : systemTexts['SAVE']}</Button>
                     </Box>
                   </>
                 )
