@@ -34,6 +34,8 @@ const HomeQuestionsPage = React.lazy(() => import('./Questions'));
 const HomePapersPage = React.lazy(() => import('./Papers'));
 // /home/exams/review_list/:id
 const HomeExamsReviewListPage = React.lazy(() => import('./Exams/ReviewList'));
+// /home/account
+const HomeAccountPage = React.lazy(() => import('./Account'));
 
 const drawerWidth = 240;
 
@@ -181,6 +183,7 @@ const HomePage: React.FC<HomePageProps> = ({
             <Route path="/home/exams" component={HomeExamsPage} exact={true} />
             <Route path="/home/questions" component={HomeQuestionsPage} />
             <Route path="/home/papers" component={HomePapersPage} />
+            <Route path="/home/account" component={HomeAccountPage} />
             <Route path="/home/exams/review_list/:id" component={HomeExamsReviewListPage} />
             <Redirect from="/home" to="/home/exams" exact={true} />
           </Switch>

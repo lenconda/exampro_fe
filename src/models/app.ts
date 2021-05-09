@@ -366,6 +366,10 @@ const AppModel: AppModelType = {
             '007': '提交时间',
             '008': '刷新中...',
           },
+          '/home/account/profile': {
+            '001': '更换头像',
+            '002': '昵称/姓名',
+          },
         },
       },
     },
