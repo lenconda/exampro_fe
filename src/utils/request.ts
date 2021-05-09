@@ -70,6 +70,13 @@ export const usePaginationRequest = <T>(
   const [total, setTotal] = useState<number>(0);
   const [refreshCount, setRefreshCount] = useState<number>(0);
   const [previousRefreshCount, setPreviousRefreshCount] = useState<number>(0);
+  const [currentHandler, setCurrentHandler] = useState<Function>(undefined);
+
+  useEffect(() => {
+    if (_.isFunction(handler) && !_.isFunction(currentHandler)) {
+      setCurrentHandler(() => handler);
+    }
+  }, [handler]);
 
   useEffect(() => {
     if (!emptyMode) {
@@ -82,15 +89,15 @@ export const usePaginationRequest = <T>(
     }
     if (lastCursor) {
       setSearchString(qs.stringify({
-        size,
+        size: size || 10,
         search,
         last_cursor: lastCursor,
         ...queries,
       }));
     } else {
       setSearchString(qs.stringify({
-        page,
-        size,
+        page: page || 1,
+        size: size || 10,
         search,
         ...queries,
       }));
@@ -109,9 +116,12 @@ export const usePaginationRequest = <T>(
   }, [result]);
 
   useEffect(() => {
-    if ((previousSearchString !== searchString || previousRefreshCount !== refreshCount) && _.isFunction(handler)) {
+    if (
+      (previousSearchString !== searchString || previousRefreshCount !== refreshCount)
+      && _.isFunction(currentHandler)
+    ) {
       setLoading(true);
-      handler(searchString).then((data) => {
+      currentHandler(searchString).then((data) => {
         if (data) {
           setResult(data);
         }
@@ -123,7 +133,7 @@ export const usePaginationRequest = <T>(
         setPreviousRefreshCount(refreshCount);
       });
     }
-  }, [searchString, previousSearchString, refreshCount]);
+  }, [searchString, previousSearchString, refreshCount, previousRefreshCount, currentHandler]);
 
   const refresh = () => {
     setRefreshCount(refreshCount + 1);

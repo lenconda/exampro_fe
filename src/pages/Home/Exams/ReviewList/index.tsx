@@ -1,4 +1,5 @@
-import { Dispatch, ExamResponseData } from '../../../../interfaces';
+import { queryExamParticipantsWithUserExamRelation } from './service';
+import { Dispatch, ExamResponseData, UserExam } from '../../../../interfaces';
 import { AppState } from '../../../../models/app';
 import { connect } from '../../../../patches/dva';
 import { ConnectState } from '../../../../models';
@@ -6,6 +7,7 @@ import { usePageTexts } from '../../../../utils/texts';
 import { getExamInfo } from '../../../../components/AppExamContainer/service';
 import { checkReviewPermission } from '../../../../utils/exam';
 import AppIndicator from '../../../../components/AppIndicator';
+import { usePaginationRequest } from '../../../../utils/request';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
@@ -34,8 +36,18 @@ const ReviewListPage: React.FC<ReviewListPageProps> = ({
   const classes = useStyles();
   const params = useParams() as Record<string, string>;
   const texts = usePageTexts(dispatch, '/home/exams/review_list');
-  const [examLoading, setExamLoading] = useState<boolean>(false);
+  const [examLoading, setExamLoading] = useState<boolean>(true);
   const [exam, setExam] = useState<ExamResponseData>(undefined);
+  const [
+    examParticipants = [],
+    totalExamParticipants = 0,
+    queryExamParticipantsLoading,
+    page,
+    size,
+    lastCursor,
+    error,
+    refreshQueryExamParticipants,
+  ] = usePaginationRequest<UserExam>(queryExamParticipantsWithUserExamRelation(_.get(exam, 'id')), {});
 
   const fetchExamInfo = (id: number) => {
     setExamLoading(true);
@@ -49,14 +61,10 @@ const ReviewListPage: React.FC<ReviewListPageProps> = ({
     const currentExamId = parseInt(id, 10);
     if (id && _.isNumber(currentExamId)) {
       fetchExamInfo(currentExamId);
+    } else {
+      setExamLoading(false);
     }
   }, []);
-
-  useEffect(() => {
-    if (exam && checkReviewPermission(exam)) {
-      console.log(1);
-    }
-  }, [exam]);
 
   return (
     <div className="app-page app-page-home__exams__review-list">
@@ -75,15 +83,17 @@ const ReviewListPage: React.FC<ReviewListPageProps> = ({
         </Box>
         <Box>
           {
-            checkReviewPermission(exam)
-              ? (
-                <>
-                  <Typography></Typography>
-                </>
-              )
-              : exam
-                ? <AppIndicator type="not_ready" />
-                : <AppIndicator type="empty" />
+            !(examLoading || queryExamParticipantsLoading)
+              ? checkReviewPermission(exam)
+                ? (
+                  <>
+                    <Typography></Typography>
+                  </>
+                )
+                : exam
+                  ? <AppIndicator type="not_ready" />
+                  : <AppIndicator type="empty" />
+              : <AppIndicator type="loading" />
           }
         </Box>
       </div>

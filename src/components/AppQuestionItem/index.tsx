@@ -29,9 +29,9 @@ import Tooltip from '@material-ui/core/Tooltip';
 import CheckIcon from '@material-ui/icons/Check';
 import ArrowDropdownIcon from '@material-ui/icons/ArrowDropDown';
 import ArrowDropUpIcon from '@material-ui/icons/ArrowDropUp';
-import EditIcon from '@material-ui/icons/Edit';
+import EditOutlineIcon from '@material-ui/icons/EditOutlined';
 import FlagIcon from '@material-ui/icons/Flag';
-import DeleteIcon from '@material-ui/icons/Delete';
+import DeleteOutlineIcon from '@material-ui/icons/DeleteOutline';
 import React, { useEffect, useRef, useState } from 'react';
 import { ContentState, EditorState } from 'draft-js';
 import { lighten, makeStyles } from '@material-ui/core';
@@ -508,7 +508,7 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
             (showButtons.indexOf('edit') !== -1 && systemTexts) && (
               <Tooltip title={systemTexts['EDIT'] || ''}>
                 <IconButton onClick={() => setQuestionEditorOpen(true)}>
-                  <EditIcon />
+                  <EditOutlineIcon fontSize="small" />
                 </IconButton>
               </Tooltip>
             )
@@ -529,7 +529,7 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
                     });
                   }}
                 >
-                  <DeleteIcon />
+                  <DeleteOutlineIcon fontSize="small" />
                 </IconButton>
               </Tooltip>
             )
