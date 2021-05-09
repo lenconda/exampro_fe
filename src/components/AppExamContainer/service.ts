@@ -64,3 +64,11 @@ export const putParticipantExamScores = async (
   });
   return;
 };
+
+export const startReviewExam = async (examId: number, participantEmail: string) => {
+  const data = await AppRequestManager.send({
+    url: `/exam/${examId}/review/${participantEmail}`,
+    method: 'POST',
+  });
+  return;
+};

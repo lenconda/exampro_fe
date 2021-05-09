@@ -5,10 +5,10 @@ import { connect } from '../../patches/dva';
 import AppExamContainer from '../../components/AppExamContainer';
 import React, { useEffect, useState } from 'react';
 import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
-import Card from '@material-ui/core/Card';
 import clsx from 'clsx';
 import { useParams } from 'react-router';
 import _ from 'lodash';
+import './index.less';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
   content: {

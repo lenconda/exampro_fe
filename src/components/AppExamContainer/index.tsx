@@ -4,6 +4,7 @@ import {
   getParticipantExamResult,
   putParticipantExamScores,
   startExam,
+  startReviewExam,
   submitParticipantAnswer,
 } from './service';
 import { AppState } from '../../models/app';
@@ -36,6 +37,7 @@ import {
 import { getUserProfile } from '../../service';
 import AppAlertManager from '../AppAlert/Manager';
 import AppUserCard from '../AppUserCard';
+import { usePreviousValue } from '../../utils/hooks';
 import Alert from '@material-ui/lab/Alert';
 import AlertTitle from '@material-ui/lab/AlertTitle';
 import Box from '@material-ui/core/Box';
@@ -249,6 +251,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
   const [examConfirmed, setExamConfirmed] = useState<boolean>(false);
   const [participantAnswerStatus, setParticipantAnswerStatus] = useState<Record<string, QuestionAnswerStatus>>({});
   const [answerStatusAnchor, setAnswerStatusAnchor] = React.useState<null | HTMLButtonElement>(null);
+  const previousExamState = usePreviousValue(examState);
 
   const showCard = () => {
     if (
@@ -345,19 +348,18 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
   };
 
   useEffect(() => {
-    if (['forbidden', 'submitted'].indexOf(examState) === -1) {
+    if (['forbidden', 'submitted', 'not_ready'].indexOf(examState) === -1) {
+      console.log(111, examState);
       fetchExamInfo(examId, action);
     }
     if (examState === 'resulted') {
       fetchParticipantExamResult(examId, participantEmail);
     }
     if (examState === 'reviewing' && participantEmail) {
-      fetchParticipantExamResult(examId, participantEmail);
-    }
-    if (examState === 'reviewing') {
-      if (participantEmail) {
+      startReviewExam(examId, participantEmail).then(() => {
         fetchParticipantInfo(participantEmail);
-      }
+        fetchParticipantExamResult(examId, participantEmail);
+      }).catch(() => setExamState('not_ready'));
     }
   }, [examId, examState, action, participantEmail]);
 
@@ -485,6 +487,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
   }, [timerUnlocked, examState, exam]);
 
   useEffect(() => {
+    if (previousExamState === 'not_ready') { return }
     if (action === 'result') {
       if (examResult && !examResultLoading && exam) {
         if (checkExamParticipantScoresStatus(examResult) && checkResultPermission(exam)) {
@@ -494,10 +497,8 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
         }
       }
     } else if (action === 'review') {
-      if (exam && checkReviewPermission(exam)) {
-        setExamState('reviewing');
-      } else {
-        setExamState('not_ready');
+      if (exam) {
+        setExamState(checkReviewPermission(exam) ? 'reviewing' : 'not_ready');
       }
     } else if (action === 'participate_confirm') {
       setExamState('waiting_for_confirmation');
@@ -509,17 +510,15 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
           }));
         }
         if (checkParticipantQualification(exam)) {
-          setExamState('processing');
+          if (previousExamState !== 'submitted') {
+            setExamState('processing');
+          }
         } else {
           setExamState('forbidden');
         }
       }
-    } else if (action === 'submitted') {
-      setExamState('submitted');
-    } else if (action === 'not_ready') {
-      setExamState('not_ready');
     }
-  }, [exam, action, examResult, examConfirmed]);
+  }, [exam, action, examResult, examConfirmed, previousExamState]);
 
   useEffect(() => {
     const currentParticipantAnswerStatus = Object.keys(participantAnswer).reduce((accumulator, currentQuestionId) => {

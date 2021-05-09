@@ -283,7 +283,7 @@ const AppModel: AppModelType = {
           'CANNOT_START_EXAM_REASONS': '你暂时没有获得进入这场考试的许可，原因可能是：<br />1. 当前时间未处在考试时间范围内<br />2. 你已参加过该考试',
           'NOTES': '考试须知',
           'NOTES_CONTENT': '1. 考试期间禁止离开浏览器页面<br />2. 考试期间请不要刷新浏览器页面',
-          'NOT_READY': '暂时无法执行指定的操作',
+          'NOT_READY': '操作暂时不被允许',
           'NOT_READY_MESSAGE': '你暂未获得该项操作的许可，这是因为当前时间没有处在操作许可的时间范围内。现在，你可以单击「返回主页」按钮回到主页',
           'PROGRESS': '答题进展',
         },
