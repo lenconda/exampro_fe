@@ -10,7 +10,7 @@ import Paper from '@material-ui/core/Paper';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import { Draggable, DraggableProps } from 'react-beautiful-dnd';
-import { Checkbox, makeStyles } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core';
 import DragIndicatorIcon from '@material-ui/icons/DragIndicator';
 import _ from 'lodash';
 import clsx from 'clsx';
@@ -87,23 +87,10 @@ const PaperQuestionItem: React.FC<PaperQuestionItemComponentProps> = ({
               elevation={snapshot.isDragging ? 3 : 0}
             >
               <DragIndicatorIcon classes={{ root: classes.dragIndicator }} />
-              <Checkbox
-                color="primary"
-                checked={selected}
-                onChange={(event) => {
-                  if (event.target.checked) {
-                    if (_.isFunction(onSelect)) {
-                      onSelect();
-                    }
-                  } else {
-                    if (_.isFunction(onCancelSelect)) {
-                      onCancelSelect();
-                    }
-                  }
-                }}
-              />
               <Box className={classes.questionEditorWrapper}>
                 <AppQuestionItem
+                  selectable={true}
+                  selected={selected}
                   elevation={0}
                   variant={snapshot.isDragging ? 'elevation' : 'outlined'}
                   classes={{
@@ -115,6 +102,8 @@ const PaperQuestionItem: React.FC<PaperQuestionItemComponentProps> = ({
                   question={question}
                   questionNumber={questionNumber}
                   showButtons={[]}
+                  onSelectQuestion={onSelect}
+                  onCancelSelectQuestion={onCancelSelect}
                 />
                 <Box className={classes.pointsWrapper}>
                   <Typography>{texts['POINTS']}: </Typography>

@@ -64,11 +64,15 @@ export interface AppQuestionItemProps extends CardProps {
   collapseHeight?: number;
   canCollapse?: boolean;
   answerable?: boolean;
+  selectable?: boolean;
+  selected?: boolean;
   showButtons?: string[];
   participantAnswer?: AppQuestionAnswerType;
   onAnswerChange?(question: AppQuestionMetaData, answer: AppQuestionAnswerType): void;
   onUpdateQuestion?(): void;
   onDeleteQuestion?(): void;
+  onSelectQuestion?(): void;
+  onCancelSelectQuestion?(): void;
 }
 
 export interface AppQuestionItemComponentProps extends AppState, Dispatch, AppQuestionItemProps {}
@@ -163,10 +167,14 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
   question,
   showButtons = ['edit', 'delete'],
   participantAnswer,
+  selectable = false,
+  selected = false,
   dispatch,
   onAnswerChange: onChange,
   onUpdateQuestion,
   onDeleteQuestion,
+  onSelectQuestion,
+  onCancelSelectQuestion,
   ...props
 }) => {
   if (!question) { return null }
@@ -317,6 +325,26 @@ const AppQuestionItem: React.FC<AppQuestionItemComponentProps> = ({
           }
           <Box>
             <Box className={classes.questionTypeWrapper}>
+              {
+                selectable && (
+                  <Checkbox
+                    color="primary"
+                    checked={selected}
+                    onChange={(event) => {
+                      const checked = event.target.checked;
+                      if (checked) {
+                        if (_.isFunction(onSelectQuestion)) {
+                          onSelectQuestion();
+                        }
+                      } else {
+                        if (_.isFunction(onCancelSelectQuestion)) {
+                          onCancelSelectQuestion();
+                        }
+                      }
+                    }}
+                  />
+                )
+              }
               <Chip
                 size="small"
                 label={texts[type.toUpperCase()]}
