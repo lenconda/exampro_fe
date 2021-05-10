@@ -339,8 +339,7 @@ const AppExamEditor: React.FC<AppExamEditorComponentProps> = ({
                   {
                     isSearching && (
                       <Button
-                        variant="contained"
-                        color="inherit"
+                        color="primary"
                         startIcon={<CheckIcon />}
                         onClick={() => {
                           setIsSearching(false);

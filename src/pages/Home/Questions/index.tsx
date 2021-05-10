@@ -225,6 +225,7 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
                           return (
                             <AppQuestionItem
                               key={questionItem.id}
+                              selectable={true}
                               answerable={false}
                               classes={{ root: classes.item }}
                               question={pipeQuestionResponseToMetadata(questionItem)}

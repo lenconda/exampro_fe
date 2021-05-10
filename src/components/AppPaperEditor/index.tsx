@@ -311,8 +311,7 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
                   {
                     isSearching && (
                       <Button
-                        variant="contained"
-                        color="inherit"
+                        color="primary"
                         startIcon={<CheckIcon />}
                         onClick={() => {
                           setIsSearching(false);
