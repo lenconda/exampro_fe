@@ -1,5 +1,5 @@
-import { patchUserProfile } from './service';
-import { Dispatch, User } from '../../../../interfaces';
+import { patchUserPassword, patchUserProfile } from './service';
+import { ChangePasswordState, Dispatch, User } from '../../../../interfaces';
 import { AppState } from '../../../../models/app';
 import { connect } from '../../../../patches/dva';
 import { ConnectState } from '../../../../models';
@@ -12,8 +12,10 @@ import Avatar from '@material-ui/core/Avatar';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
+import Divider from '@material-ui/core/Divider';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
+import ShieldEditOutlineIcon from 'mdi-material-ui/ShieldEditOutline';
 import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 import { makeStyles } from '@material-ui/core';
@@ -21,10 +23,18 @@ import _ from 'lodash';
 
 export interface ProfilePageProps extends Dispatch, AppState {}
 
+const defaultChangePasswordState: ChangePasswordState = {
+  old: '',
+  new: '',
+  confirm: '',
+};
+
 const useStyles = makeStyles((theme) => {
   return {
     profileWrapper: {
       padding: theme.spacing(5),
+      maxHeight: '100%',
+      overflowY: 'scroll',
     },
     profileItemWrapper: {
       marginBottom: theme.spacing(5),
@@ -32,6 +42,9 @@ const useStyles = makeStyles((theme) => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'flex-start',
+      '& > button': {
+        marginRight: theme.spacing(2),
+      },
     },
     profileAvatar: {
       width: '100%',
@@ -57,19 +70,33 @@ const useStyles = makeStyles((theme) => {
   };
 });
 
+const validateChangePasswordState = (currentState: ChangePasswordState) => {
+  const { old, new: newPassword, confirm } = currentState;
+  if (!(old && newPassword && confirm) || newPassword !== confirm) {
+    return false;
+  }
+  return true;
+};
+
 const ProfilePage: React.FC<ProfilePageProps> = ({
   dispatch,
 }) => {
   const history = useHistory();
   const classes = useStyles();
   const texts = usePageTexts(dispatch, '/home/account/profile');
+  const sidebarMenuTexts = useTexts(dispatch, 'sidebarMenu');
   const systemTexts = useTexts(dispatch, 'system');
   const [profile, setProfile] = useState<User>(undefined);
   const [profileLoading, setProfileLoading] = useState<boolean>(false);
   const [updateProfileLoading, setUpdateProfileLoading] = useState<boolean>(false);
   const [newAvatarFile, setNewAvatarFile] = useState<File>(undefined);
+  const [changePasswordState, setChangePasswordState] = useState<ChangePasswordState>(_.clone(defaultChangePasswordState));
+  const [changePasswordLoading, setChangePasswordLoading] = useState<boolean>(false);
 
   const getUserName = (profile: User) => {
+    if (!profile || _.isEmpty(profile)) {
+      return '';
+    }
     return profile.name || profile.email.split('@')[0];
   };
 
@@ -86,7 +113,26 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
       AppAlertManager.create(systemTexts['SAVED_SUCCESSFULLY'], {
         variant: 'success',
       });
-    }).finally(() => setUpdateProfileLoading(false));
+    }).catch(() => {}).finally(() => setUpdateProfileLoading(false));
+  };
+
+  const updateUserPassword = (changePasswordState: ChangePasswordState) => {
+    const { new: newPassword, confirm } = changePasswordState;
+    if (newPassword !== confirm) {
+      AppAlertManager.create(texts['006'], {
+        variant: 'error',
+      });
+      return;
+    }
+    setChangePasswordLoading(true);
+    patchUserPassword(changePasswordState).then(() => {
+      AppAlertManager.create(systemTexts['UPDATED_SUCCESSFULLY'], {
+        variant: 'success',
+      });
+    }).catch(() => {}).finally(() => {
+      setChangePasswordState(_.clone(defaultChangePasswordState));
+      setChangePasswordLoading(false);
+    });
   };
 
   useEffect(() => {
@@ -142,7 +188,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                             name: event.target.value,
                           });
                         }}
-                      ></TextField>
+                      />
                     </Box>
                     <Box className={classes.profileItemWrapper}>
                       <Button
@@ -152,11 +198,80 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                         onClick={() => updateUserProfile(profile)}
                       >{updateProfileLoading ? systemTexts['SAVING'] : systemTexts['SAVE']}</Button>
                     </Box>
+                    <Box className={classes.profileItemWrapper}>
+                      <TextField
+                        variant="outlined"
+                        value={changePasswordState.old}
+                        type="password"
+                        label={texts['003']}
+                        fullWidth={true}
+                        onChange={(event) => {
+                          setChangePasswordState({
+                            ...changePasswordState,
+                            old: event.target.value,
+                          });
+                        }}
+                      />
+                    </Box>
+                    <Box className={classes.profileItemWrapper}>
+                      <TextField
+                        variant="outlined"
+                        value={changePasswordState.new}
+                        type="password"
+                        label={texts['004']}
+                        fullWidth={true}
+                        onChange={(event) => {
+                          setChangePasswordState({
+                            ...changePasswordState,
+                            new: event.target.value,
+                          });
+                        }}
+                      />
+                    </Box>
+                    <Box className={classes.profileItemWrapper}>
+                      <TextField
+                        variant="outlined"
+                        value={changePasswordState.confirm}
+                        type="password"
+                        label={texts['005']}
+                        fullWidth={true}
+                        onChange={(event) => {
+                          setChangePasswordState({
+                            ...changePasswordState,
+                            confirm: event.target.value,
+                          });
+                        }}
+                      />
+                    </Box>
+                    <Box className={classes.profileItemWrapper}>
+                      <Button
+                        color="primary"
+                        variant="outlined"
+                        disabled={!validateChangePasswordState(changePasswordState) || changePasswordLoading}
+                        onClick={() => updateUserPassword(changePasswordState)}
+                      >{changePasswordLoading ? systemTexts['UPDATING'] : systemTexts['UPDATE']}</Button>
+                      <Button
+                        onClick={() => {
+                          setChangePasswordState(_.clone(defaultChangePasswordState));
+                        }}
+                      >{systemTexts['RESET']}</Button>
+                    </Box>
+                    <Divider variant="fullWidth" />
+                    <Box className={classes.profileItemWrapper} />
+                    <Box className={classes.profileItemWrapper}>
+                      <Button
+                        variant="outlined"
+                        color="primary"
+                        startIcon={<ShieldEditOutlineIcon />}
+                        onClick={() => {
+                          history.push('/home/account/change_email');
+                        }}
+                      >{sidebarMenuTexts['ACCOUNT_SETTINGS/CHANGE_EMAIL']}</Button>
+                    </Box>
                   </>
                 )
                 : <AppIndicator type="empty" />
           }
-
         </Card>
       </div>
     </div>

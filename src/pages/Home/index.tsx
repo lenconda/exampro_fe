@@ -131,7 +131,6 @@ const HomePage: React.FC<HomePageProps> = ({
             <Divider />
             <MenuItem>{dropdownTexts['001']}</MenuItem>
             <MenuItem>{dropdownTexts['002']}</MenuItem>
-            <MenuItem>{dropdownTexts['003']}</MenuItem>
             <Divider />
             <MenuItem
               onClick={() => {
@@ -142,7 +141,7 @@ const HomePage: React.FC<HomePageProps> = ({
                   }
                 });
               }}
-            >{dropdownTexts['004']}</MenuItem>
+            >{dropdownTexts['003']}</MenuItem>
           </Dropdown>
         </Toolbar>
       </AppBar>

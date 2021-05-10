@@ -85,12 +85,12 @@ const AppModel: AppModelType = {
           ERR_NOT_PARTICIPANT: '你不是本场考试的考生',
           ERR_DUPLICATED_CONFIRMATION_PROHIBITED: '无法重复确认已确认的考试',
           ERR_PASSWORD_NOT_NULL: '无法设置已设置密码的账户的密码',
+          ERR_OLD_PASSWORD_MISMATCHED: '旧密码不正确',
         },
         avatarDropdown: {
           '001': '个人资料',
-          '002': '更新密码',
-          '003': '更新邮箱',
-          '004': '登出',
+          '002': '更新邮箱',
+          '003': '登出',
         },
         sidebarMenu: {
           'EXAMS': '考试',
@@ -160,6 +160,10 @@ const AppModel: AppModelType = {
           'SAVE': '保存',
           'SAVING': '保存中...',
           'SAVED_SUCCESSFULLY': '保存成功',
+          'UPDATE': '更新',
+          'UPDATING': '更新中',
+          'UPDATED_SUCCESSFULLY': '更新成功',
+          'RESET': '重置',
         },
         editor: {
           'header-one': '标题 1',
@@ -372,6 +376,10 @@ const AppModel: AppModelType = {
           '/home/account/profile': {
             '001': '更换头像',
             '002': '昵称/姓名',
+            '003': '旧密码',
+            '004': '新密码',
+            '005': '确认密码',
+            '006': '两次输入密码不一致',
           },
         },
       },

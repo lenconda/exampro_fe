@@ -186,3 +186,9 @@ export interface ExamResultMetadata {
 export type ExamResultRequestData = Record<string, number>;
 
 export type ExamStatus = 'PREPARING' | 'IN_PROGRESS' | 'FINISHED' | 'RESULTED';
+
+export interface ChangePasswordState {
+  old: string;
+  new: string;
+  confirm: string;
+}

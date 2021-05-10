@@ -1,4 +1,4 @@
-import AppRequestManager from './Manager';
+import AppRequestManager, { AppRequestConfig } from './Manager';
 import createAxiosInstance from '../../utils/http';
 import { connect } from '../../patches/dva';
 import { ConnectState } from '../../models';
@@ -11,6 +11,9 @@ import { AxiosRequestConfig } from 'axios';
 import React, { useEffect } from 'react';
 
 export interface AppRequestContainerProps extends AppState, Dispatch {}
+export type AppRequestHandlerConfig = AxiosRequestConfig & AppRequestConfig & {
+  cb: Function;
+};
 
 const Container: React.FC<AppRequestContainerProps> = (props) => {
   const history = useHistory();
@@ -18,11 +21,14 @@ const Container: React.FC<AppRequestContainerProps> = (props) => {
   const http = createAxiosInstance(errorTexts, history);
 
   useEffect(() => {
-    const handler = (config: AxiosRequestConfig & { cb: Function }) => {
-      http
-        .request(_.omit(config, ['cb']))
-        .then((res) => config.cb(res))
-        .catch((error) => config.cb(null, error));
+    const handler = (config: AppRequestHandlerConfig) => {
+      const { cb, handleError, ...currentConfig } = config;
+      if (_.isFunction(cb)) {
+        http(handleError)
+          .request(currentConfig)
+          .then((res) => cb(res))
+          .catch((error) => cb(null, error));
+      }
     };
     AppRequestManager.addChangeListener(handler);
     return () => {
