@@ -122,7 +122,15 @@ const AuthPage: React.FC<AuthPageProps> = (props) => {
                 }}
               >
                 {({ submitForm, isSubmitting }) => (
-                  <Form className="app-form app-page-auth__card__form">
+                  <Form
+                    className="app-form app-page-auth__card__form"
+                    onKeyDown={(e) => {
+                      if (e && e.key && e.key === 'Enter' && ['login', 'register'].indexOf(authStatus) !== -1) {
+                        console.log(authStatus);
+                        submitForm();
+                      }
+                    }}
+                  >
                     <Field
                       component={TextField}
                       name="email"

@@ -108,7 +108,14 @@ const CompletePage: React.FC<CompletePageProps> = (props) => {
                 }}
               >
                 {({ submitForm, isSubmitting }) => (
-                  <Form className="app-form app-page-complete__card__form">
+                  <Form
+                    className="app-form app-page-complete__card__form"
+                    onKeyDown={(e) => {
+                      if (e && e.key && e.key === 'Enter') {
+                        submitForm();
+                      }
+                    }}
+                  >
                     {
                       type === 'registration' && (
                         <Field
