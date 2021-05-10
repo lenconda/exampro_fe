@@ -1,9 +1,9 @@
-import { deleteQuestions, queryQuestions } from './service';
+import { deleteQuestions, queryAllPapers, queryQuestions } from './service';
 import { ConnectState } from '../../../models';
 import { AppState } from '../../../models/app';
 import { connect } from '../../../patches/dva';
 import { usePageTexts, useTexts } from '../../../utils/texts';
-import { Dispatch, QuestionCategory, QuestionResponseData } from '../../../interfaces';
+import { Dispatch, PaperResponseData, QuestionCategory, QuestionResponseData } from '../../../interfaces';
 import AppQuestionEditor from '../../../components/AppQuestionEditor';
 import { getAllCategoriesWithoutPagination } from '../../../components/AppQuestionEditor/service';
 import AppQuestionItem from '../../../components/AppQuestionItem';
@@ -14,6 +14,7 @@ import { pipeQuestionResponseToMetadata } from '../../../utils/pipes';
 import AppDialogManager from '../../../components/AppDialog/Manager';
 import AppSearchBar from '../../../components/AppSearchBar';
 import AppIndicator from '../../../components/AppIndicator';
+import AppPaperEditor from '../../../components/AppPaperEditor';
 import Badge from '@material-ui/core/Badge';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
@@ -22,6 +23,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import TablePagination from '@material-ui/core/TablePagination';
+import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import AddCommentIcon from '@material-ui/icons/AddComment';
 import FilterMenuOutlineIcon from 'mdi-material-ui/FilterMenuOutline';
@@ -83,6 +85,16 @@ const useStyles = makeStyles((theme) => {
     deleteButton: {
       color: theme.palette.error.main,
     },
+    addQuestionMenu: {
+      width: 320,
+    },
+    addQuestionMenuSearchWrapper: {
+      padding: theme.spacing(2),
+    },
+    addQuestionMenuItemsWrapper: {
+      maxHeight: 360,
+      overflowY: 'scroll',
+    },
   };
 });
 
@@ -110,10 +122,32 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
     refreshQueryQuestions,
   ] = usePaginationRequest<QuestionResponseData>(queryQuestions, { categories: selectedCategoriesString });
   const [categories = [], getCategoriesLoading] = useRequest<QuestionCategory[]>(getAllCategoriesWithoutPagination, []);
-  const [filterMenuOpen, setFilterMenuOpen] = useState<boolean>(false);
   const [filterMenuAnchor, setFilterMenuAnchor] = useState<HTMLElement>(null);
   const [createQuestionOpen, setCreateQuestionOpen] = useState<boolean>(false);
   const [selectedQuestions, setSelectedQuestions] = useState<QuestionResponseData[]>([]);
+  const [addQuestionMenuAnchor, setAddQuestionMenuAnchor] = useState<HTMLElement>(null);
+  const [paperSearchValue, setPaperSearchValue] = useState<string>('');
+  const debouncedPaperSearchValue = useDebouncedValue(paperSearchValue);
+  const [papersLoading, setPapersLoading] = useState<boolean>(false);
+  const [papers, setPapers] = useState<PaperResponseData[]>([]);
+  const [paperEditorOpen, setPaperEditorOpen] = useState<boolean>(false);
+  const [currentSelectedPaper, setCurrentSelectedPaper] = useState<PaperResponseData>(undefined);
+
+  const fetchQueriedPapers = (search: string) => {
+    setPapersLoading(true);
+    queryAllPapers(search).then((papers) => setPapers(papers)).finally(() => setPapersLoading(false));
+  };
+
+  const clearSelection = () => {
+    setPaperEditorOpen(false);
+    setCurrentSelectedPaper(undefined);
+    setSelectedQuestions([]);
+    setAddQuestionMenuAnchor(null);
+  };
+
+  useEffect(() => {
+    fetchQueriedPapers(debouncedPaperSearchValue);
+  }, [debouncedPaperSearchValue]);
 
   useEffect(() => {
     if (debouncedSearch !== undefined) {
@@ -131,8 +165,7 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
           CreateIcon={AddCommentIcon}
           leftComponent={
             <IconButton
-              ref={(ref) => setFilterMenuAnchor(ref)}
-              onClick={() => setFilterMenuOpen(true)}
+              onClick={(event) => setFilterMenuAnchor(event.target as HTMLElement)}
             >
               {
                 (selectedCategoriesString && selectedCategoriesString.split(',').length > 0)
@@ -159,10 +192,10 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
         />
         <Box className={classes.itemsWrapper}>
           <Menu
-            open={filterMenuOpen}
+            open={Boolean(filterMenuAnchor)}
             anchorEl={filterMenuAnchor}
             classes={{ paper: classes.filterMenu }}
-            onClose={() => setFilterMenuOpen(false)}
+            onClose={() => setFilterMenuAnchor(null)}
           >
             <Typography
               variant="subtitle2"
@@ -241,7 +274,50 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
                               color="primary"
                               variant="outlined"
                               startIcon={<PlaylistPlusIcon />}
+                              onClick={(event) => setAddQuestionMenuAnchor(event.target as HTMLElement)}
                             >{pageTexts['004']} ({selectedQuestions.length})</Button>
+                            <Menu
+                              open={Boolean(addQuestionMenuAnchor)}
+                              anchorEl={addQuestionMenuAnchor}
+                              classes={{ paper: classes.addQuestionMenu }}
+                              onClose={() => setAddQuestionMenuAnchor(null)}
+                            >
+                              <Box className={classes.addQuestionMenuSearchWrapper}>
+                                <TextField
+                                  variant="standard"
+                                  label={pageTexts['006']}
+                                  fullWidth={true}
+                                  onChange={(event) => setPaperSearchValue(event.target.value)}
+                                />
+                              </Box>
+                              {
+                                debouncedPaperSearchValue && (
+                                  <Box className={classes.addQuestionMenuItemsWrapper}>
+                                    {
+                                      papersLoading
+                                        ? <AppIndicator type="loading" />
+                                        : (
+                                          papers.length === 0
+                                            ? <AppIndicator type="empty" />
+                                            : papers.map((paper) => {
+                                              return (
+                                                <div
+                                                  key={paper.id}
+                                                  onClick={() => {
+                                                    setCurrentSelectedPaper(paper);
+                                                    setPaperEditorOpen(true);
+                                                  }}
+                                                >
+                                                  <MenuItem>{paper.title}</MenuItem>
+                                                </div>
+                                              );
+                                            })
+                                        )
+                                    }
+                                  </Box>
+                                )
+                              }
+                            </Menu>
                             <Button
                               classes={{ root: classes.deleteButton }}
                               onClick={() => {
@@ -313,6 +389,15 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
           }
         </Box>
       </div>
+      <AppPaperEditor
+        paper={currentSelectedPaper}
+        mode="edit"
+        selectedIndex={1}
+        open={paperEditorOpen && Boolean(currentSelectedPaper)}
+        initialQuestions={selectedQuestions}
+        onSubmitPaper={clearSelection}
+        onClose={clearSelection}
+      />
     </div>
   );
 };

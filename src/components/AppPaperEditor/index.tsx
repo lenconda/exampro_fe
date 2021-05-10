@@ -49,6 +49,8 @@ import _ from 'lodash';
 export interface AppPaperEditorProps extends DialogProps {
   mode?: 'create' | 'edit';
   paper?: PaperResponseData;
+  selectedIndex?: number;
+  initialQuestions?: QuestionResponseData[];
   onSubmitPaper?(): void;
 }
 
@@ -102,6 +104,8 @@ const useStyles = makeStyles((theme) => {
 const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
   paper,
   mode = 'create',
+  selectedIndex = 0,
+  initialQuestions = [],
   dispatch,
   onClose,
   onSubmitPaper,
@@ -118,7 +122,7 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
   const systemTexts = useTexts(dispatch, 'system');
   const searchBarTexts = useTexts(dispatch, 'searchBar');
   const [submitting, setSubmitting] = useState<boolean>(false);
-  const [selectedTabIndex, setSelectedTabIndex] = useState<number>(0);
+  const [selectedTabIndex, setSelectedTabIndex] = useState<number>(selectedIndex);
 
   const [currentPaperQuestions, setCurrentPaperQuestions] = useState<PaperQuestionResponseData[]>([]);
   const [currentMaintainers, setCurrentMaintainers] = useState<User[]>([]);
@@ -272,6 +276,21 @@ const AppPaperEditor: React.FC<AppPaperEditorComponentProps> = ({
     setSearchContent('');
     setSelectedPaperQuestions([]);
   }, [selectedTabIndex]);
+
+  useEffect(() => {
+    const paperQuestionsToBeConcat: PaperQuestionResponseData[] = [];
+    if (initialQuestions.length > 0) {
+      for (const question of initialQuestions) {
+        const currentPaperQuestionIndex = paperQuestions.findIndex((paperQuestion) => paperQuestion.question.id === question.id);
+        if (currentPaperQuestionIndex === -1) {
+          paperQuestionsToBeConcat.push(createPaperQuestion(question, 0));
+        }
+      }
+    }
+    if (paperQuestionsToBeConcat.length > 0) {
+      setPaperQuestions([...paperQuestions, ...paperQuestionsToBeConcat]);
+    }
+  }, [initialQuestions, paperQuestions]);
 
   return (
     <>

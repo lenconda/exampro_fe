@@ -10,6 +10,7 @@ export type UsePaginationRequestReturnType<T> = [T[], number, boolean, number, n
 export const useRequest = <T>(
   handler: (...args: any) => Promise<T>,
   args?: any[],
+  onlyOnce: boolean = true,
 ): UseRequestReturnType<T> => {
   const [result, setResult] = useState<T>(undefined);
   const [error, setError] = useState<Error>(undefined);
@@ -17,9 +18,12 @@ export const useRequest = <T>(
   const [flag, setFlag] = useState<boolean>(false);
   const [refreshCount, setRefreshCount] = useState<number>(0);
 
-  const check = (flag: boolean, handler?: Function, args?: any[]) => {
-    if (!_.isFunction(handler) || flag) {
+  const check = (flag: boolean, handler?: Function, args?: any[], onlyOnce?: boolean) => {
+    if (!_.isFunction(handler)) {
       return false;
+    }
+    if (flag) {
+      return !onlyOnce;
     }
     if (!args || !_.isArray(args)) {
       return true;
@@ -33,7 +37,7 @@ export const useRequest = <T>(
   };
 
   useEffect(() => {
-    if (check(flag, handler, args)) {
+    if (check(flag, handler, args, onlyOnce)) {
       setFlag(true);
       const currentArgs = args || [];
       setLoading(true);
