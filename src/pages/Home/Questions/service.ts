@@ -8,3 +8,12 @@ export const queryQuestions = async (search: string) => {
 
   return _.get(data, 'data.data');
 };
+
+export const deleteQuestions = async (questionIds: number[]) => {
+  const data = await AppRequestManager.send({
+    url: '/question',
+    data: { questions: questionIds },
+    method: 'DELETE',
+  });
+  return _.get(data, 'data.data');
+};
