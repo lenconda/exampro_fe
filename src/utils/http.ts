@@ -47,9 +47,10 @@ const createAxiosInstance = (errorsMap: Record<string, string>, history: History
       const statusCode = error.response.status || _.get(error, 'response.data.statusCode');
       const errorCode = _.get(error, 'response.data.message') || _.get(error, 'response.data.error');
 
-      if (statusCode === 401) {
+      if (statusCode === 401 || errorCode === 'ERR_ACCOUNT_NOT_FOUND') {
         const { pathname } = history.location;
         const redirect = encodeRedirectPathname(history.location);
+        localStorage.removeItem('token');
         if (pathname !== '/user/auth') {
           history.push({
             pathname: '/user/auth',
