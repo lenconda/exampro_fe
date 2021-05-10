@@ -164,6 +164,7 @@ const AppModel: AppModelType = {
           'UPDATING': '更新中',
           'UPDATED_SUCCESSFULLY': '更新成功',
           'RESET': '重置',
+          'LOGOUT': '登出',
         },
         editor: {
           'header-one': '标题 1',
@@ -380,6 +381,11 @@ const AppModel: AppModelType = {
             '004': '新密码',
             '005': '确认密码',
             '006': '两次输入密码不一致',
+          },
+          '/home/account/change_email': {
+            '001': '新邮箱',
+            '002': '新的邮箱地址已设置',
+            '003': '你的新邮箱地址已被成功设置，你的登录状态已被解除，将在5秒内退回至认证页面。你现在也可以通过单击下方的「登出」按钮执行这一步骤。此外，你的新邮箱还会接收一封新邮件用于验证，请尽快操作',
           },
         },
       },

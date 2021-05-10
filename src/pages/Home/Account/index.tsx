@@ -11,12 +11,15 @@ export interface AccountPageProps extends Dispatch, AppState {}
 
 // /home/account/profile
 const HomeAccountProfilePage = React.lazy(() => import('./Profile'));
+// /home/account/change_email
+const HomeAccountChangeEmailPage = React.lazy(() => import('./ChangeEmail'));
 
 const AccountPage: React.FC<AccountPageProps> = () => {
   return (
     <Suspense fallback={<Fallback />}>
       <Switch>
         <Route path="/home/account/profile" component={HomeAccountProfilePage} />
+        <Route path="/home/account/change_email" component={HomeAccountChangeEmailPage} />
         <Redirect from="/home/account" to="/home/account/profile" exact={true} />
       </Switch>
     </Suspense>
