@@ -25,6 +25,7 @@ import { ConnectState } from '../../models';
 import AppIndicator from '../AppIndicator';
 import { useTexts } from '../../utils/texts';
 import AppPaperContainer from '../AppPaperContainer';
+import AppDialogManager from '../../components/AppDialog/Manager';
 import { getQuestionAnswerStatus } from '../../utils/question';
 import { pushSearch, useLocationQuery } from '../../utils/history';
 import {
@@ -693,7 +694,13 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                             variant="contained"
                             disabled={submitAnswerLoading}
                             fullWidth={mediaUpMd}
-                            onClick={() => submitAnswer(exam.id, participantAnswer)}
+                            onClick={() => {
+                              AppDialogManager.confirm(texts['SURE_TO_SUBMIT'], {
+                                onConfirm: () => {
+                                  submitAnswer(exam.id, participantAnswer);
+                                },
+                              });
+                            }}
                           >{texts['SUBMIT']}</Button>
                         </CardContent>
                       )
