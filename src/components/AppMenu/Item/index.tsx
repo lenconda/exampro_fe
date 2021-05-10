@@ -10,20 +10,30 @@ import Collapse from '@material-ui/core/Collapse';
 import IconExpandLessIcon from '@material-ui/icons/ExpandLess';
 import IconExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import * as icons from 'mdi-material-ui';
-import { SvgIconTypeMap, Tooltip, Typography } from '@material-ui/core';
+import { makeStyles, SvgIconTypeMap, Tooltip, Typography } from '@material-ui/core';
 import { OverridableComponent } from '@material-ui/core/OverridableComponent';
 import { useHistory } from 'react-router';
 import './index.less';
+import clsx from 'clsx';
 
 export interface AppMenuItemProps {
   item: SidebarMenuItem;
   prefix?: string;
 }
 
+const useStyles = makeStyles((theme) => {
+  return {
+    appMenuItem: (props: Record<string, any>) => ({
+      paddingLeft: theme.spacing(2) + ((props.level || 1) - 1) * theme.spacing(1),
+    }),
+  };
+});
+
 const AppMenuItem: React.FC<AppMenuItemProps> = ({
   item,
   prefix = '',
 }) => {
+  const classes = useStyles({ level: prefix.split('/').length });
   const { items = [], title = '', icon, pathname: itemPathname } = item;
   const isExpandable = items && items.length > 0;
   const history = useHistory();
@@ -50,41 +60,7 @@ const AppMenuItem: React.FC<AppMenuItemProps> = ({
     setOpen(!open);
   };
 
-  const MenuItemRoot = (
-    <ListItem
-      button={true}
-      onClick={handleClick}
-      classes={{
-        root: `app-menu__item${isActive ? ' active' : ''}`,
-      }}
-    >
-      {
-        !!Icon && (
-          <ListItemIcon>
-            <Icon className="app-menu__item__icon" />
-          </ListItemIcon>
-        )
-      }
-      <Tooltip title={title}>
-        <ListItemText
-          primary={
-            <Typography
-              noWrap={true}
-              classes={{ root: 'app-menu__item__text' }}
-            >{title}</Typography>
-          }
-          inset={!Icon}
-        />
-      </Tooltip>
-      {
-        isExpandable && (
-          open ? <IconExpandLessIcon /> : <IconExpandMoreIcon />
-        )
-      }
-    </ListItem>
-  );
-
-  const MenuItemChildren = isExpandable ? (
+  const menuItemChildren = isExpandable ? (
     <Collapse in={open} timeout="auto" unmountOnExit>
       <Divider />
       <List classes={{ root: 'app-menu__children' }}>
@@ -103,8 +79,40 @@ const AppMenuItem: React.FC<AppMenuItemProps> = ({
 
   return (
     <>
-      {MenuItemRoot}
-      {MenuItemChildren}
+      <ListItem
+        button={true}
+        onClick={handleClick}
+        classes={{
+          root: clsx('app-menu__item', {
+            'active': isActive,
+          }, classes.appMenuItem),
+        }}
+      >
+        {
+          !!Icon && (
+            <ListItemIcon>
+              <Icon className="app-menu__item__icon" />
+            </ListItemIcon>
+          )
+        }
+        <Tooltip title={title}>
+          <ListItemText
+            primary={
+              <Typography
+                noWrap={true}
+                classes={{ root: 'app-menu__item__text' }}
+              >{title}</Typography>
+            }
+            inset={!Icon}
+          />
+        </Tooltip>
+        {
+          isExpandable && (
+            open ? <IconExpandLessIcon /> : <IconExpandMoreIcon />
+          )
+        }
+      </ListItem>
+      {menuItemChildren}
     </>
   );
 };
