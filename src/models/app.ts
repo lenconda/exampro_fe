@@ -98,7 +98,7 @@ const AppModel: AppModelType = {
           'QUESTIONS': '试题',
           'ADMIN': '管理员',
           'ADMIN/ROLE_MANAGE': '角色配置',
-          'ADMIN/MENU_MANAGE': '菜单管理',
+          'ADMIN/MENU_MANAGE': '菜单配置',
           'ACCOUNT_SETTINGS': '账户',
           'ACCOUNT_SETTINGS/PROFILE': '个人资料',
           'ACCOUNT_SETTINGS/CHANGE_EMAIL': '更新邮箱',
