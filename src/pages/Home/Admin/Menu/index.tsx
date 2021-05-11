@@ -5,15 +5,18 @@ import { connect } from '../../../../patches/dva';
 import { ConnectState } from '../../../../models';
 import { usePageTexts } from '../../../../utils/texts';
 import AppIndicator from '../../../../components/AppIndicator';
+import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
 import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
-import { makeStyles } from '@material-ui/core';
+import { lighten, makeStyles } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import MenuItem from '@material-ui/core/MenuItem';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import * as icons from 'mdi-material-ui';
+import LinkPlusIcon from 'mdi-material-ui/LinkPlus';
 import _ from 'lodash';
 import clsx from 'clsx';
 import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautiful-dnd';
@@ -28,7 +31,7 @@ const useStyles = makeStyles((theme) => {
       overflowY: 'scroll',
     },
     menuWrapper: {
-      padding: theme.spacing(2),
+      padding: 0,
       overflowX: 'scroll',
     },
     container: {
@@ -45,6 +48,9 @@ const useStyles = makeStyles((theme) => {
         marginRight: theme.spacing(2),
       },
     },
+    menuTreeItemSelected: {
+      backgroundColor: lighten(theme.palette.primary.main, 0.85),
+    },
   };
 });
 
@@ -54,14 +60,15 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   const history = useHistory();
   const classes = useStyles();
   const texts = usePageTexts(dispatch, '/home/admin/menu');
-  const [menuTree, setMenuTree] = useState<MenuTreeItemMetadata[]>([]);
-  const [menuTreeLoading, setMenuTreeLoading] = useState<boolean>(false);
+  const [menuTreeItems, setMenuTreeItems] = useState<MenuTreeItemMetadata[]>([]);
+  const [menuTreeItemsLoading, setMenuTreeItemsLoading] = useState<boolean>(false);
+  const [selectedMenuTreeItem, setSelectedMenuTreeItem] = useState<MenuTreeItemMetadata>(undefined);
 
   const fetchFlattenedMenuTree = () => {
-    setMenuTreeLoading(true);
+    setMenuTreeItemsLoading(true);
     getFlattenedMenuTree().then((menuTree) => {
-      setMenuTree(menuTree);
-    }).finally(() => setMenuTreeLoading(false));
+      setMenuTreeItems(menuTree);
+    }).finally(() => setMenuTreeItemsLoading(false));
   };
 
   const reorderMenuTreeItems = (
@@ -80,8 +87,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
     if (!destination || !source) {
       return;
     }
-    const currentMenuTree = reorderMenuTreeItems(Array.from(menuTree), source.index, destination.index);
-    setMenuTree(currentMenuTree.map((treeNode, index) => {
+    const currentMenuTree = reorderMenuTreeItems(Array.from(menuTreeItems), source.index, destination.index);
+    setMenuTreeItems(currentMenuTree.map((treeNode, index) => {
       return {
         ...treeNode,
         order: index + 1,
@@ -93,6 +100,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
     fetchFlattenedMenuTree();
   }, []);
 
+  useEffect(() => {
+    if (menuTreeItems && !selectedMenuTreeItem) {
+      setSelectedMenuTreeItem(menuTreeItems[0]);
+    }
+  }, [selectedMenuTreeItem, menuTreeItems]);
+
   return (
     <div className="app-page app-page-admin__menu">
       <Grid
@@ -101,9 +114,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
         classes={{ container: clsx('app-grid-container', classes.container) }}
       >
         {
-          menuTreeLoading
+          menuTreeItemsLoading
             ? <AppIndicator type="loading" />
-            : menuTree && menuTree.length === 0
+            : menuTreeItems && menuTreeItems.length === 0
               ? <AppIndicator type="empty" />
               : (
                 <>
@@ -116,6 +129,14 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                     xl={4}
                   >
                     <Card classes={{ root: clsx(classes.sectionWrapper, classes.menuWrapper) }}>
+                      <CardContent>
+                        <Button
+                          startIcon={<LinkPlusIcon />}
+                          color="primary"
+                          variant="contained"
+                          size="small"
+                        >{texts['001']}</Button>
+                      </CardContent>
                       <DragDropContext onDragEnd={handleDragEnd}>
                         <Droppable droppableId="menu-tree">
                           {
@@ -123,7 +144,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                               return (
                                 <div ref={provided.innerRef}>
                                   {
-                                    menuTree.map((treeItem, index) => {
+                                    menuTreeItems.map((treeItem, index) => {
                                       const Icon = icons[treeItem.icon];
                                       return (
                                         <Draggable key={index} index={index + 1} draggableId={index.toString()}>
@@ -135,9 +156,16 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                                                   {...provided.draggableProps}
                                                   {...provided.dragHandleProps}
                                                   elevation={snapshot.isDragging ? 9 : 0}
+                                                  onClick={() => {
+                                                    setSelectedMenuTreeItem(treeItem);
+                                                  }}
                                                 >
                                                   <MenuItem
-                                                    classes={{ root: classes.menuTreeItem }}
+                                                    classes={{
+                                                      root: clsx(classes.menuTreeItem, {
+                                                        [classes.menuTreeItemSelected]: selectedMenuTreeItem.id === treeItem.id,
+                                                      }),
+                                                    }}
                                                     style={{
                                                       paddingLeft: 16 + 16 * treeItem.level,
                                                     }}
