@@ -167,6 +167,7 @@ const AppModel: AppModelType = {
           'UPDATED_SUCCESSFULLY': '更新成功',
           'RESET': '重置',
           'LOGOUT': '登出',
+          'FORBIDDEN': '没有权限',
         },
         editor: {
           'header-one': '标题 1',

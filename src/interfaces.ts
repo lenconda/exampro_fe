@@ -6,6 +6,7 @@ export interface User {
   description?: string;
   avatar?: string;
   name?: string;
+  roles?: RoleResponseData[];
   verifying?: boolean;
   createdAt?: string;
   updatedAt?: string;
