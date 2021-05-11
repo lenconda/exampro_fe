@@ -43,6 +43,13 @@ const AppMenuItem: React.FC<AppMenuItemProps> = ({
   const [pathname, setPathname] = useState<string>('');
   const [isActive, setIsActive] = useState<boolean>(false);
 
+  const handleClick = () => {
+    if (items.length === 0) {
+      history.push(pathname);
+    }
+    setOpen(!open);
+  };
+
   useEffect(() => {
     setIcon(icons[icon]);
   }, [icon]);
@@ -53,15 +60,21 @@ const AppMenuItem: React.FC<AppMenuItemProps> = ({
     setIsActive(currentPathname === locationPathname);
   }, [itemPathname, locationPathname]);
 
-  const handleClick = () => {
-    if (items.length === 0) {
-      history.push(pathname);
+  useEffect(() => {
+    if (items.length > 0) {
+      const isMatchChildMenu = items.findIndex((currentMenuItem) => {
+        const { pathname: currentMenuRelativePathname } = currentMenuItem;
+        const currentMenuPathname = `${prefix}${itemPathname}${currentMenuRelativePathname}`;
+        return currentMenuPathname === locationPathname;
+      });
+      if (isMatchChildMenu !== -1) {
+        setOpen(true);
+      }
     }
-    setOpen(!open);
-  };
+  }, [items, locationPathname]);
 
   const menuItemChildren = isExpandable ? (
-    <Collapse in={open} timeout="auto" unmountOnExit>
+    <Collapse in={open} timeout="auto" unmountOnExit={true}>
       <Divider />
       <List classes={{ root: 'app-menu__children' }}>
         {
