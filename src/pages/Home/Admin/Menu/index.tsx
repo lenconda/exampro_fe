@@ -3,13 +3,12 @@ import { Dispatch, MenuTreeItemMetadata } from '../../../../interfaces';
 import { AppState } from '../../../../models/app';
 import { connect } from '../../../../patches/dva';
 import { ConnectState } from '../../../../models';
-import { usePageTexts } from '../../../../utils/texts';
+import { usePageTexts, useTexts } from '../../../../utils/texts';
 import AppIndicator from '../../../../components/AppIndicator';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import React, { useEffect, useState } from 'react';
-import { useHistory } from 'react-router';
 import { lighten, makeStyles } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -51,15 +50,20 @@ const useStyles = makeStyles((theme) => {
     menuTreeItemSelected: {
       backgroundColor: lighten(theme.palette.primary.main, 0.85),
     },
+    menuButtonsWrapper: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
   };
 });
 
 const ProfilePage: React.FC<ProfilePageProps> = ({
   dispatch,
 }) => {
-  const history = useHistory();
   const classes = useStyles();
   const texts = usePageTexts(dispatch, '/home/admin/menu');
+  const systemTexts = useTexts(dispatch, 'system');
   const [menuTreeItems, setMenuTreeItems] = useState<MenuTreeItemMetadata[]>([]);
   const [menuTreeItemsLoading, setMenuTreeItemsLoading] = useState<boolean>(false);
   const [selectedMenuTreeItem, setSelectedMenuTreeItem] = useState<MenuTreeItemMetadata>(undefined);
@@ -129,13 +133,17 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                     xl={4}
                   >
                     <Card classes={{ root: clsx(classes.sectionWrapper, classes.menuWrapper) }}>
-                      <CardContent>
+                      <CardContent classes={{ root: classes.menuButtonsWrapper }}>
                         <Button
                           startIcon={<LinkPlusIcon />}
                           color="primary"
                           variant="contained"
                           size="small"
                         >{texts['001']}</Button>
+                        <Button
+                          variant="outlined"
+                          size="small"
+                        >{systemTexts['SAVE']}</Button>
                       </CardContent>
                       <DragDropContext onDragEnd={handleDragEnd}>
                         <Droppable droppableId="menu-tree">
