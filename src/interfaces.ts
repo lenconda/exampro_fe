@@ -193,3 +193,29 @@ export interface ChangePasswordState {
   new: string;
   confirm: string;
 }
+
+export interface MenuItemResponseData {
+  id: number;
+  title: string;
+  icon: string;
+  pathname: string;
+  show: boolean;
+  order: number;
+  parentMenu?: MenuItemResponseData;
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string;
+}
+
+export type MenuItemMetadata = Omit<MenuItemResponseData & {
+  children?: MenuItemMetadata[];
+}, 'parentMenu'>;
+
+export interface MenuItemRequestData {
+  title: string;
+  pathname: string;
+  roles: string;
+  order: number;
+  parent?: number;
+  icon?: string;
+}

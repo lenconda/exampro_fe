@@ -1,6 +1,8 @@
 import {
   AppQuestionAnswerType,
   AppQuestionMetaData,
+  MenuItemMetadata,
+  MenuItemResponseData,
   QuestionAnswer,
   QuestionAnswerResponseData,
   QuestionCategory,
@@ -106,4 +108,35 @@ export const pipeQuestionAnswerMetadataToRequest = (
   }
 
   return questionAnswerRequestData;
+};
+
+export const pipeMenuItemResponseToMetadata = (item: MenuItemResponseData): MenuItemMetadata => {
+  return {
+    ..._.omit(item, ['parentMenu']),
+    children: [],
+  };
+};
+
+export const pipeMenusResponseToTree = (menuItems: MenuItemResponseData[]): MenuItemMetadata[] => {
+  const currentMenuItemResponseDataItems = Array.from(menuItems);
+  const currentMenuItemMetadataItems = Array.from(menuItems).map(pipeMenuItemResponseToMetadata) as MenuItemMetadata[];
+  const menuIdIndexMap = {};
+  const topLevelMenuIds: number[] = [];
+  for (const [index, currentMenuItem] of currentMenuItemResponseDataItems.entries()) {
+    menuIdIndexMap[currentMenuItem.id] = index;
+    if (!currentMenuItem.parentMenu) {
+      topLevelMenuIds.push(currentMenuItem.id);
+    }
+  }
+  for (const currentMenuItem of currentMenuItemResponseDataItems) {
+    if (currentMenuItem.parentMenu) {
+      const currentParentMenuItemMetadata = currentMenuItemMetadataItems[menuIdIndexMap[currentMenuItem.parentMenu.id]];
+      const currentMenuItemMetadata = currentMenuItemMetadataItems[menuIdIndexMap[currentMenuItem.id]];
+      if (currentParentMenuItemMetadata && currentMenuItemMetadata) {
+        currentParentMenuItemMetadata.children.push(currentMenuItemMetadata);
+      }
+    }
+  }
+  const result = currentMenuItemMetadataItems.filter((item) => topLevelMenuIds.indexOf(item.id) !== -1);
+  return result;
 };
