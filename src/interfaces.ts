@@ -219,3 +219,7 @@ export interface MenuItemRequestData {
   parent?: number;
   icon?: string;
 }
+
+export type MenuTreeItemMetadata = Omit<MenuItemMetadata, 'children'> & {
+  level: number;
+};

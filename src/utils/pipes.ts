@@ -3,6 +3,7 @@ import {
   AppQuestionMetaData,
   MenuItemMetadata,
   MenuItemResponseData,
+  MenuTreeItemMetadata,
   QuestionAnswer,
   QuestionAnswerResponseData,
   QuestionCategory,
@@ -138,5 +139,28 @@ export const pipeMenusResponseToTree = (menuItems: MenuItemResponseData[]): Menu
     }
   }
   const result = currentMenuItemMetadataItems.filter((item) => topLevelMenuIds.indexOf(item.id) !== -1);
+  return result;
+};
+
+export const pipeMenusResponseToFlattenedTree = (menuItems: MenuItemMetadata[]): MenuTreeItemMetadata[] => {
+  const currentMenuTree = Array.from(menuItems);
+  const getFlappedTree = (
+    currentLevelTreeNodes: MenuItemMetadata[],
+    level: number,
+    currentResult: MenuTreeItemMetadata[],
+  ): MenuTreeItemMetadata[] => {
+    let result = Array.from(currentResult);
+    for (const currentLevelTreeNode of currentLevelTreeNodes) {
+      result.push({
+        ..._.omit(currentLevelTreeNode, ['children']),
+        level,
+      });
+      if (_.isArray(currentLevelTreeNode.children) && currentLevelTreeNode.children.length > 0) {
+        result = getFlappedTree(currentLevelTreeNode.children, level + 1, result);
+      }
+    }
+    return result;
+  };
+  const result = getFlappedTree(currentMenuTree, 0, []);
   return result;
 };

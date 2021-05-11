@@ -1,22 +1,22 @@
-import { getMenuTree } from './service';
-import { Dispatch, MenuItemMetadata } from '../../../../interfaces';
+import { getFlattenedMenuTree } from './service';
+import { Dispatch, MenuTreeItemMetadata } from '../../../../interfaces';
 import { AppState } from '../../../../models/app';
 import { connect } from '../../../../patches/dva';
 import { ConnectState } from '../../../../models';
 import { usePageTexts } from '../../../../utils/texts';
-import { useRequest } from '../../../../utils/request';
 import AppIndicator from '../../../../components/AppIndicator';
 import Card from '@material-ui/core/Card';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 import { makeStyles } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import MenuItem from '@material-ui/core/MenuItem';
+import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import * as icons from 'mdi-material-ui';
 import _ from 'lodash';
 import clsx from 'clsx';
-import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
+import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautiful-dnd';
 
 export interface ProfilePageProps extends Dispatch, AppState {}
 
@@ -54,7 +54,44 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   const history = useHistory();
   const classes = useStyles();
   const texts = usePageTexts(dispatch, '/home/admin/menu');
-  const [menuTree = [], menuTreeLoading, error, refresh] = useRequest<MenuItemMetadata[]>(getMenuTree, []);
+  const [menuTree, setMenuTree] = useState<MenuTreeItemMetadata[]>([]);
+  const [menuTreeLoading, setMenuTreeLoading] = useState<boolean>(false);
+
+  const fetchFlattenedMenuTree = () => {
+    setMenuTreeLoading(true);
+    getFlattenedMenuTree().then((menuTree) => {
+      setMenuTree(menuTree);
+    }).finally(() => setMenuTreeLoading(false));
+  };
+
+  const reorderMenuTreeItems = (
+    list: MenuTreeItemMetadata[],
+    startIndex: number,
+    endIndex: number,
+  ): MenuTreeItemMetadata[] => {
+    const result = Array.from(list);
+    const [removed] = result.splice(startIndex - 1, 1);
+    result.splice(endIndex - 1, 0, removed);
+    return result;
+  };
+
+  const handleDragEnd = (result: DropResult) => {
+    const { source, destination } = result;
+    if (!destination || !source) {
+      return;
+    }
+    const currentMenuTree = reorderMenuTreeItems(Array.from(menuTree), source.index, destination.index);
+    setMenuTree(currentMenuTree.map((treeNode, index) => {
+      return {
+        ...treeNode,
+        order: index + 1,
+      };
+    }));
+  };
+
+  useEffect(() => {
+    fetchFlattenedMenuTree();
+  }, []);
 
   return (
     <div className="app-page app-page-admin__menu">
@@ -74,12 +111,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                     item={true}
                     xs={12}
                     sm={12}
-                    md={5}
-                    lg={4}
-                    xl={3}
+                    md={6}
+                    lg={5}
+                    xl={4}
                   >
                     <Card classes={{ root: clsx(classes.sectionWrapper, classes.menuWrapper) }}>
-                      <DragDropContext onDragEnd={() => {}}>
+                      <DragDropContext onDragEnd={handleDragEnd}>
                         <Droppable droppableId="menu-tree">
                           {
                             (provided) => {
@@ -93,18 +130,24 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                                           {
                                             (provided, snapshot) => {
                                               return (
-                                                <div
+                                                <Paper
                                                   ref={provided.innerRef}
                                                   {...provided.draggableProps}
                                                   {...provided.dragHandleProps}
+                                                  elevation={snapshot.isDragging ? 9 : 0}
                                                 >
-                                                  <MenuItem classes={{ root: classes.menuTreeItem }}>
+                                                  <MenuItem
+                                                    classes={{ root: classes.menuTreeItem }}
+                                                    style={{
+                                                      paddingLeft: 16 + 16 * treeItem.level,
+                                                    }}
+                                                  >
                                                     {
                                                       Icon && <Icon fontSize="small" />
                                                     }
                                                     <Typography noWrap={true}>{treeItem.pathname}</Typography>
                                                   </MenuItem>
-                                                </div>
+                                                </Paper>
                                               );
                                             }
                                           }
@@ -125,9 +168,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                     item={true}
                     xs={12}
                     sm={12}
-                    md={7}
-                    lg={8}
-                    xl={9}
+                    md={6}
+                    lg={7}
+                    xl={8}
                   >
                     <Card classes={{ root: classes.sectionWrapper }}>
                     </Card>

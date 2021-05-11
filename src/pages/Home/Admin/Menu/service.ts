@@ -1,6 +1,6 @@
 import AppRequestManager from '../../../../components/AppRequest/Manager';
 import { MenuItemResponseData } from '../../../../interfaces';
-import { pipeMenusResponseToTree } from '../../../../utils/pipes';
+import { pipeMenusResponseToFlattenedTree, pipeMenusResponseToTree } from '../../../../utils/pipes';
 import _ from 'lodash';
 
 export const getAllMenus = async () => {
@@ -13,4 +13,8 @@ export const getAllMenus = async () => {
 export const getMenuTree = async () => {
   const menuItems = await getAllMenus();
   return pipeMenusResponseToTree(menuItems);
+};
+
+export const getFlattenedMenuTree = async () => {
+  return pipeMenusResponseToFlattenedTree(await getMenuTree());
 };
