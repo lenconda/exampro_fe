@@ -214,9 +214,9 @@ export type MenuItemMetadata = Omit<MenuItemResponseData & {
 export interface MenuItemRequestData {
   title: string;
   pathname: string;
-  order: number;
+  icon: string;
+  order?: number;
   parent?: number;
-  icon?: string;
 }
 
 export type MenuTreeItemMetadata = Omit<MenuItemMetadata, 'children'> & {

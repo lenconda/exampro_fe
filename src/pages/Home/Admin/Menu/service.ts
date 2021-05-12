@@ -31,6 +31,7 @@ export const createMenu = async (menuItemData: MenuItemRequestData) => {
     url: '/admin/menu',
     method: 'POST',
     data: menuItemData,
+    handleError: false,
   });
   return;
 };

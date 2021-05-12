@@ -1,5 +1,5 @@
-import { batchUpdateMenuItems, getFlattenedMenuTree } from './service';
-import { Dispatch, MenuTreeItemMetadata } from '../../../../interfaces';
+import { batchUpdateMenuItems, createMenu, getFlattenedMenuTree } from './service';
+import { Dispatch, MenuItemRequestData, MenuTreeItemMetadata } from '../../../../interfaces';
 import { AppState } from '../../../../models/app';
 import { connect } from '../../../../patches/dva';
 import { ConnectState } from '../../../../models';
@@ -10,9 +10,16 @@ import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import React, { useEffect, useState } from 'react';
 import { lighten, makeStyles } from '@material-ui/core';
+import Box from '@material-ui/core/Box';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/CardActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogTitle from '@material-ui/core/DialogTitle';
 import Grid from '@material-ui/core/Grid';
 import MenuItem from '@material-ui/core/MenuItem';
 import Paper from '@material-ui/core/Paper';
+import SvgIcon from '@material-ui/core/SvgIcon';
+import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import * as icons from 'mdi-material-ui';
 import LinkPlusIcon from 'mdi-material-ui/LinkPlus';
@@ -21,6 +28,12 @@ import clsx from 'clsx';
 import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautiful-dnd';
 
 export interface ProfilePageProps extends Dispatch, AppState {}
+
+const defaultCreateMenuRequestData: MenuItemRequestData = {
+  title: '',
+  pathname: '',
+  icon: '',
+};
 
 const useStyles = makeStyles((theme) => {
   return {
@@ -55,6 +68,21 @@ const useStyles = makeStyles((theme) => {
       alignItems: 'center',
       justifyContent: 'space-between',
     },
+    createMenuInfoItemWrapper: {
+      marginBottom: theme.spacing(3),
+      display: 'flex',
+      alignItems: 'stretch',
+    },
+    createMenuInfoIconWrapper: {
+      height: '100%',
+      padding: theme.spacing(2),
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      border: '1px solid transparent',
+      borderColor: theme.palette.grey[400],
+      marginLeft: theme.spacing(3),
+    },
   };
 });
 
@@ -68,6 +96,23 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   const [menuTreeItemsLoading, setMenuTreeItemsLoading] = useState<boolean>(false);
   const [selectedMenuTreeItem, setSelectedMenuTreeItem] = useState<MenuTreeItemMetadata>(undefined);
   const [updateMenuTreeItemsLoading, setUpdateMenuTreeItemsLoading] = useState<boolean>(false);
+  const [createMenuItemOpen, setCreateMenuItemOpen] = useState<boolean>(false);
+  const [createMenuData, setCreateMenuData] = useState<MenuItemRequestData>(_.clone(defaultCreateMenuRequestData));
+  const [createMenuLoading, setCreateMenuLoading] = useState<boolean>(false);
+
+  const validateCreateMenuData = (data: MenuItemRequestData) => {
+    for (const key of Object.keys(data)) {
+      if (!data[key]) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const closeCreateMenuDialog = () => {
+    setCreateMenuItemOpen(false);
+    setCreateMenuData(_.clone(defaultCreateMenuRequestData));
+  };
 
   const fetchFlattenedMenuTree = () => {
     setMenuTreeItemsLoading(true);
@@ -79,6 +124,14 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   const updateMenuItems = (menuTreeItems: MenuTreeItemMetadata[]) => {
     setUpdateMenuTreeItemsLoading(true);
     batchUpdateMenuItems(menuTreeItems).finally(() => setUpdateMenuTreeItemsLoading(false));
+  };
+
+  const createNewMenuItem = (createMenuData: MenuItemRequestData) => {
+    setCreateMenuLoading(true);
+    createMenu({ ...createMenuData, order: menuTreeItems.length + 1 }).then(() => {
+      closeCreateMenuDialog();
+      fetchFlattenedMenuTree();
+    }).catch(() => {}).finally(() => setCreateMenuLoading(false));
   };
 
   const reorderMenuTreeItems = (
@@ -145,6 +198,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                           color="primary"
                           variant="contained"
                           size="small"
+                          onClick={() => setCreateMenuItemOpen(true)}
                         >{texts['001']}</Button>
                         <Button
                           variant="outlined"
@@ -179,7 +233,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                                                   <MenuItem
                                                     classes={{
                                                       root: clsx(classes.menuTreeItem, {
-                                                        [classes.menuTreeItemSelected]: selectedMenuTreeItem.id === treeItem.id,
+                                                        [classes.menuTreeItemSelected]: selectedMenuTreeItem && selectedMenuTreeItem.id === treeItem.id,
                                                       }),
                                                     }}
                                                     style={{
@@ -217,12 +271,88 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                     xl={8}
                   >
                     <Card classes={{ root: classes.sectionWrapper }}>
+                      {
+                        !selectedMenuTreeItem
+                          ? <Typography style={{ textAlign: 'center' }}>{texts['002']}</Typography>
+                          : (<></>)
+                      }
                     </Card>
                   </Grid>
                 </>
               )
         }
       </Grid>
+      <Dialog
+        open={createMenuItemOpen}
+        scroll="paper"
+        maxWidth="sm"
+        fullWidth={true}
+      >
+        <DialogTitle>{texts['003']}</DialogTitle>
+        <DialogContent>
+          <Box className={classes.createMenuInfoItemWrapper}>
+            <TextField
+              variant="outlined"
+              fullWidth={true}
+              label={texts['004']}
+              value={createMenuData.title}
+              onChange={(event) => {
+                setCreateMenuData({
+                  ...createMenuData,
+                  title: event.target.value,
+                });
+              }}
+            />
+          </Box>
+          <Box className={classes.createMenuInfoItemWrapper}>
+            <TextField
+              variant="outlined"
+              fullWidth={true}
+              label={texts['005']}
+              value={createMenuData.icon}
+              onChange={(event) => {
+                setCreateMenuData({
+                  ...createMenuData,
+                  icon: event.target.value,
+                });
+              }}
+            />
+            {
+              icons[createMenuData.icon] && (
+                <Box className={classes.createMenuInfoIconWrapper}>
+                  <SvgIcon component={icons[createMenuData.icon]} />
+                </Box>
+              )
+            }
+          </Box>
+          <Box className={classes.createMenuInfoItemWrapper}>
+            <TextField
+              variant="outlined"
+              fullWidth={true}
+              label={texts['006']}
+              value={createMenuData.pathname}
+              onChange={(event) => {
+                setCreateMenuData({
+                  ...createMenuData,
+                  pathname: event.target.value,
+                });
+              }}
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions style={{ justifyContent: 'flex-end' }}>
+          <Button
+            color="primary"
+            disabled={createMenuLoading}
+            onClick={closeCreateMenuDialog}
+          >{systemTexts['CANCEL']}</Button>
+          <Button
+            color="primary"
+            disabled={!validateCreateMenuData(createMenuData) || createMenuLoading}
+            onClick={() => createNewMenuItem(createMenuData)}
+          >{systemTexts['SUBMIT']}</Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };
