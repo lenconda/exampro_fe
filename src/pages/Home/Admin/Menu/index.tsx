@@ -1,5 +1,5 @@
 import { batchUpdateMenuItems, createMenu, getFlattenedMenuTree } from './service';
-import { Dispatch, MenuItemRequestData, MenuTreeItemMetadata } from '../../../../interfaces';
+import { Dispatch, MenuItemRequestData, MenuTreeItemMetadata, User } from '../../../../interfaces';
 import { AppState } from '../../../../models/app';
 import { connect } from '../../../../patches/dva';
 import { ConnectState } from '../../../../models';
@@ -19,6 +19,8 @@ import Grid from '@material-ui/core/Grid';
 import MenuItem from '@material-ui/core/MenuItem';
 import Paper from '@material-ui/core/Paper';
 import SvgIcon from '@material-ui/core/SvgIcon';
+import Tab from '@material-ui/core/Tab';
+import Tabs from '@material-ui/core/Tabs';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import * as icons from 'mdi-material-ui';
@@ -34,11 +36,12 @@ const defaultCreateMenuRequestData: MenuItemRequestData = {
   pathname: '',
   icon: '',
 };
+const menuInfoTabs = ['BASIC', 'ROLES'];
 
 const useStyles = makeStyles((theme) => {
   return {
     sectionWrapper: {
-      padding: theme.spacing(5),
+      padding: theme.spacing(2),
       maxHeight: '100%',
       overflowY: 'scroll',
     },
@@ -83,6 +86,9 @@ const useStyles = makeStyles((theme) => {
       borderColor: theme.palette.grey[400],
       marginLeft: theme.spacing(3),
     },
+    tabsWrapper: {
+      marginBottom: theme.spacing(3),
+    },
   };
 });
 
@@ -94,11 +100,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   const systemTexts = useTexts(dispatch, 'system');
   const [menuTreeItems, setMenuTreeItems] = useState<MenuTreeItemMetadata[]>([]);
   const [menuTreeItemsLoading, setMenuTreeItemsLoading] = useState<boolean>(false);
-  const [selectedMenuTreeItem, setSelectedMenuTreeItem] = useState<MenuTreeItemMetadata>(undefined);
+  const [selectedMenuTreeItemIndex, setSelectedMenuTreeItemIndex] = useState<number>(undefined);
   const [updateMenuTreeItemsLoading, setUpdateMenuTreeItemsLoading] = useState<boolean>(false);
   const [createMenuItemOpen, setCreateMenuItemOpen] = useState<boolean>(false);
   const [createMenuData, setCreateMenuData] = useState<MenuItemRequestData>(_.clone(defaultCreateMenuRequestData));
   const [createMenuLoading, setCreateMenuLoading] = useState<boolean>(false);
+  const [selectedTabIndex, setSelectedTabIndex] = useState<number>(0);
 
   const validateCreateMenuData = (data: MenuItemRequestData) => {
     for (const key of Object.keys(data)) {
@@ -150,7 +157,18 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
     if (!destination || !source) {
       return;
     }
+    const selectedMenuItem = menuTreeItems[selectedMenuTreeItemIndex];
     const currentMenuTree = reorderMenuTreeItems(Array.from(menuTreeItems), source.index, destination.index);
+    if (selectedMenuItem) {
+      const newSelectedMenuItemIndex = currentMenuTree.findIndex((currentTreeNode) => {
+        return currentTreeNode.id === selectedMenuItem.id;
+      });
+      if (newSelectedMenuItemIndex !== -1) {
+        setSelectedMenuTreeItemIndex(newSelectedMenuItemIndex);
+      } else {
+        setSelectedMenuTreeItemIndex(undefined);
+      }
+    }
     setMenuTreeItems(currentMenuTree.map((treeNode, index) => {
       return {
         ...treeNode,
@@ -164,10 +182,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   }, []);
 
   useEffect(() => {
-    if (menuTreeItems && !selectedMenuTreeItem) {
-      setSelectedMenuTreeItem(menuTreeItems[0]);
+    if (menuTreeItems && !_.isNumber(selectedMenuTreeItemIndex)) {
+      setSelectedMenuTreeItemIndex(0);
     }
-  }, [selectedMenuTreeItem, menuTreeItems]);
+  }, [selectedMenuTreeItemIndex, menuTreeItems]);
 
   return (
     <div className="app-page app-page-admin__menu">
@@ -227,13 +245,15 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                                                   {...provided.dragHandleProps}
                                                   elevation={snapshot.isDragging ? 9 : 0}
                                                   onClick={() => {
-                                                    setSelectedMenuTreeItem(treeItem);
+                                                    setSelectedMenuTreeItemIndex(index);
                                                   }}
                                                 >
                                                   <MenuItem
                                                     classes={{
                                                       root: clsx(classes.menuTreeItem, {
-                                                        [classes.menuTreeItemSelected]: selectedMenuTreeItem && selectedMenuTreeItem.id === treeItem.id,
+                                                        [classes.menuTreeItemSelected]: _.isNumber(selectedMenuTreeItemIndex)
+                                                          && menuTreeItems[selectedMenuTreeItemIndex]
+                                                          && menuTreeItems[selectedMenuTreeItemIndex].id === treeItem.id,
                                                       }),
                                                     }}
                                                     style={{
@@ -272,9 +292,78 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                   >
                     <Card classes={{ root: classes.sectionWrapper }}>
                       {
-                        !selectedMenuTreeItem
+                        (!_.isNumber(selectedMenuTreeItemIndex) && menuTreeItems[selectedMenuTreeItemIndex])
                           ? <Typography style={{ textAlign: 'center' }}>{texts['002']}</Typography>
-                          : (<></>)
+                          : (
+                            <>
+                              <Tabs
+                                value={selectedTabIndex}
+                                indicatorColor="primary"
+                                textColor="primary"
+                                centered={true}
+                                variant="scrollable"
+                                classes={{ root: classes.tabsWrapper }}
+                                onChange={(event, newIndex) => setSelectedTabIndex(newIndex)}
+                              >
+                                {
+                                  menuInfoTabs.map((tabName, index) => {
+                                    return (
+                                      <Tab key={index} label={texts[tabName]} />
+                                    );
+                                  })
+                                }
+                              </Tabs>
+                              {
+                                menuInfoTabs[selectedTabIndex] === 'BASIC' && (
+                                  <Box>
+                                    <Box className={classes.createMenuInfoItemWrapper}>
+                                      <Typography>{texts['004']}:&nbsp;{menuTreeItems[selectedMenuTreeItemIndex].title}</Typography>
+                                    </Box>
+                                    <Box className={classes.createMenuInfoItemWrapper}>
+                                      <TextField
+                                        variant="outlined"
+                                        fullWidth={true}
+                                        label={texts['005']}
+                                        value={menuTreeItems[selectedMenuTreeItemIndex].icon}
+                                        onChange={(event) => {
+                                          setMenuTreeItems(menuTreeItems.map((treeItem, index) => {
+                                            if (index === selectedMenuTreeItemIndex) {
+                                              return {
+                                                ...treeItem,
+                                                icon: event.target.value,
+                                              };
+                                            } else {
+                                              return treeItem;
+                                            }
+                                          }));
+                                        }}
+                                      />
+                                    </Box>
+                                    <Box className={classes.createMenuInfoItemWrapper}>
+                                      <TextField
+                                        variant="outlined"
+                                        fullWidth={true}
+                                        label={texts['006']}
+                                        value={menuTreeItems[selectedMenuTreeItemIndex].pathname}
+                                        onChange={(event) => {
+                                          setMenuTreeItems(menuTreeItems.map((treeItem, index) => {
+                                            if (index === selectedMenuTreeItemIndex) {
+                                              return {
+                                                ...treeItem,
+                                                pathname: event.target.value,
+                                              };
+                                            } else {
+                                              return treeItem;
+                                            }
+                                          }));
+                                        }}
+                                      />
+                                    </Box>
+                                  </Box>
+                                )
+                              }
+                            </>
+                          )
                       }
                     </Card>
                   </Grid>
