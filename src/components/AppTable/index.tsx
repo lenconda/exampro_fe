@@ -15,7 +15,7 @@ import TableCell, { TableCellProps } from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-import Paper from '@material-ui/core/Paper';
+import Paper, { PaperProps } from '@material-ui/core/Paper';
 import Checkbox from '@material-ui/core/Checkbox';
 import TablePagination, { TablePaginationProps } from '@material-ui/core/TablePagination';
 import clsx from 'clsx';
@@ -34,12 +34,13 @@ export interface AppTableProps extends TableProps {
   schema?: TableSchema[];
   data?: Record<string, any>[];
   selectable?: boolean;
-  TablePaginationProps?: TablePaginationProps;
   loading?: boolean;
   containerMinHeight?: number;
   toolbarButtons?: ToolbarButton[];
   wrapperClassName?: string;
   collapseHeight?: number;
+  TablePaginationProps?: TablePaginationProps;
+  PaperProps?: PaperProps;
   onSelectionChange?: (items: any[]) => void;
 }
 
@@ -105,6 +106,7 @@ const AppTable: React.FC<AppTableComponentProps> = ({
     rowsPerPage: 10,
     onChangePage: () => {},
   },
+  PaperProps = {},
   ...props
 }) => {
   const classes = useStyles();
@@ -234,7 +236,7 @@ const AppTable: React.FC<AppTableComponentProps> = ({
             )
             : (
               <div className={clsx(classes.wrapper)} ref={tableWrapper}>
-                <Paper ref={tablePaper}>
+                <Paper ref={tablePaper} {...PaperProps}>
                   {
                     selectedItemIndexes.length > 0 && (
                       <AppTableToolbar

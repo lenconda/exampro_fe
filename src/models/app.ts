@@ -168,6 +168,8 @@ const AppModel: AppModelType = {
           'RESET': '重置',
           'LOGOUT': '登出',
           'FORBIDDEN': '没有权限',
+          'GRANT': '授权新的角色',
+          'REVOKE': '解除授权',
         },
         editor: {
           'header-one': '标题 1',

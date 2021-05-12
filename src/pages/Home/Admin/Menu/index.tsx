@@ -286,7 +286,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                     },
                   });
                 }}
-              >{systemTexts['DELETE']}</Button>
+              >{systemTexts['REVOKE']}</Button>
             );
           },
         },
@@ -524,12 +524,20 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                               {
                                 menuInfoTabs[selectedTabIndex] === 'ROLES' && (
                                   <>
+                                    <Box className={classes.createMenuInfoItemWrapper}>
+                                      <Button
+                                        variant="outlined"
+                                      >{systemTexts['GRANT']}</Button>
+                                    </Box>
                                     <AppTable
                                       schema={schema}
                                       data={menuRoles.items || []}
                                       loading={queryMenuRolesLoading}
                                       selectable={false}
-                                      collapseHeight={130}
+                                      collapseHeight={180}
+                                      PaperProps={{
+                                        elevation: 0,
+                                      }}
                                       TablePaginationProps={{
                                         count: menuRoles.total,
                                         page: (menuRolePagination.page || 1) - 1,
