@@ -1,5 +1,6 @@
 import { useLocationQuery } from './history';
 import { PaginationResponse } from '../interfaces';
+import AppRequestManager from '../components/AppRequest/Manager';
 import _ from 'lodash';
 import qs from 'qs';
 import { useEffect, useState } from 'react';
@@ -153,4 +154,23 @@ export const usePaginationRequest = <T>(
     error,
     refresh,
   ];
+};
+
+export const requestWithQueries = async <T>(url: string, queries: Record<string, any>): Promise<PaginationResponse<T>> => {
+  const [originalPathname, originalSearch = ''] = url.split('?');
+  if (!originalPathname) {
+    return {
+      items: [],
+      total: 0,
+    };
+  }
+  const originalQueries = qs.parse(originalSearch);
+  const currentQueries = {
+    ...originalQueries,
+    ...queries,
+  };
+  const data = await AppRequestManager.send({
+    url: `${originalPathname}?${qs.stringify(currentQueries)}`,
+  });
+  return _.get(data, 'data.data');
 };

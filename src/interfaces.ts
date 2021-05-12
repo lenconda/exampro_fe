@@ -1,4 +1,5 @@
 import { ContentState } from 'draft-js';
+import React from 'react';
 import { Dispatch as ReduxDispatch, AnyAction } from 'redux';
 
 export interface User {
@@ -42,6 +43,19 @@ export interface PaginationResponse<T = any> {
   items: T[];
   total: number;
 }
+
+export interface PaginationData {
+  page?: number;
+  size?: number;
+  lastCursor?: React.ReactText;
+  order?: 'asc' | 'desc';
+}
+
+export interface PaginationSearchData extends PaginationData {
+  search?: string;
+}
+
+export type CustomPaginationData<T extends Record<string, any> = {}> = PaginationSearchData & T;
 
 export interface UserExam {
   id: number;
@@ -226,4 +240,12 @@ export type MenuTreeItemMetadata = Omit<MenuItemMetadata, 'children'> & {
 export interface MenuTreeItemLevelPermission {
   left: boolean;
   right: boolean;
+}
+
+export interface MenuRoleResponseData {
+  menu: MenuItemResponseData[];
+  role: RoleResponseData[];
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string;
 }

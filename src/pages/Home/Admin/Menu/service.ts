@@ -1,7 +1,9 @@
+import { MenuRolePaginationData } from '.';
 import AppRequestManager from '../../../../components/AppRequest/Manager';
 import {
   MenuItemRequestData,
   MenuItemResponseData,
+  MenuRoleResponseData,
   MenuTreeItemLevelPermission,
   MenuTreeItemMetadata,
 } from '../../../../interfaces';
@@ -9,6 +11,7 @@ import {
   pipeMenusResponseToFlattenedTree,
   pipeMenusResponseToTree,
 } from '../../../../utils/pipes';
+import { requestWithQueries } from '../../../../utils/request';
 import _ from 'lodash';
 
 export const getAllMenus = async () => {
@@ -72,6 +75,11 @@ export const deleteMenuItems = async (menuItemId: number) => {
     method: 'DELETE',
   });
   return;
+};
+
+export const queryMenuRoles = async (menuId: number, queries: MenuRolePaginationData) => {
+  const data = await requestWithQueries<MenuRoleResponseData>(`/admin/menu/${menuId}/role`, queries);
+  return data;
 };
 
 export const getMoveLevelDirectionPermission = (

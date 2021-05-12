@@ -4,12 +4,16 @@ import {
   deleteMenuItems,
   getFlattenedMenuTree,
   getMoveLevelDirectionPermission,
+  queryMenuRoles,
 } from './service';
 import {
+  CustomPaginationData,
   Dispatch,
   MenuItemRequestData,
+  MenuRoleResponseData,
   MenuTreeItemLevelPermission,
   MenuTreeItemMetadata,
+  PaginationResponse,
 } from '../../../../interfaces';
 import { AppState } from '../../../../models/app';
 import { connect } from '../../../../patches/dva';
@@ -44,6 +48,7 @@ import clsx from 'clsx';
 import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautiful-dnd';
 
 export interface ProfilePageProps extends Dispatch, AppState {}
+export type MenuRolePaginationData = CustomPaginationData;
 
 const defaultCreateMenuRequestData: MenuItemRequestData = {
   title: '',
@@ -51,6 +56,10 @@ const defaultCreateMenuRequestData: MenuItemRequestData = {
   icon: '',
 };
 const menuInfoTabs = ['BASIC', 'ROLES'];
+const defaultMenuRolePaginationData: MenuRolePaginationData = {
+  page: 1,
+  size: 10,
+};
 
 const useStyles = makeStyles((theme) => {
   return {
@@ -131,6 +140,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
     right: false,
   });
   const [deleteMenuItemLoading, setDeleteMenuItemLoading] = useState<boolean>(false);
+  const [menuRolePagination, setMenuRolePagination] = useState<MenuRolePaginationData>(_.clone(defaultMenuRolePaginationData));
+  const [queryMenuRolesLoading, setQueryMenuRolesLoading] = useState<boolean>(false);
+  const [menuRoles, setMenuRoles] = useState<PaginationResponse<MenuRoleResponseData>>({
+    items: [],
+    total: 0,
+  });
 
   const validateCreateMenuData = (data: MenuItemRequestData) => {
     for (const key of Object.keys(data)) {
@@ -224,6 +239,13 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
     }).finally(() => setDeleteMenuItemLoading(false));
   };
 
+  const handleQueryMenuRoles = (pagination: MenuRolePaginationData, id: number) => {
+    setQueryMenuRolesLoading(true);
+    queryMenuRoles(id, pagination).then((data) => {
+      setMenuRoles(data);
+    }).finally(() => setQueryMenuRolesLoading(false));
+  };
+
   useEffect(() => {
     fetchFlattenedMenuTree();
   }, []);
@@ -239,6 +261,13 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
       setSelectedMenuTreeItemMovePermission(getMoveLevelDirectionPermission(menuTreeItems, selectedMenuTreeItemIndex));
     }
   }, [menuTreeItems, selectedMenuTreeItemIndex]);
+
+  useEffect(() => {
+    const selectedMenuTreeItem = menuTreeItems[selectedMenuTreeItemIndex];
+    if (selectedMenuTreeItem) {
+      handleQueryMenuRoles(menuRolePagination, selectedMenuTreeItem.id);
+    }
+  }, [menuRolePagination, selectedMenuTreeItemIndex, menuTreeItems]);
 
   return (
     <div className="app-page app-page-admin__menu">
