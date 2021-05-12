@@ -1,10 +1,22 @@
-import { batchUpdateMenuItems, createMenu, getFlattenedMenuTree } from './service';
-import { Dispatch, MenuItemRequestData, MenuTreeItemMetadata, User } from '../../../../interfaces';
+import {
+  batchUpdateMenuItems,
+  createMenu,
+  deleteMenuItems,
+  getFlattenedMenuTree,
+  getMoveLevelDirectionPermission,
+} from './service';
+import {
+  Dispatch,
+  MenuItemRequestData,
+  MenuTreeItemLevelPermission,
+  MenuTreeItemMetadata,
+} from '../../../../interfaces';
 import { AppState } from '../../../../models/app';
 import { connect } from '../../../../patches/dva';
 import { ConnectState } from '../../../../models';
 import { usePageTexts, useTexts } from '../../../../utils/texts';
 import AppIndicator from '../../../../components/AppIndicator';
+import AppDialogManager from '../../../../components/AppDialog/Manager';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -24,6 +36,8 @@ import Tabs from '@material-ui/core/Tabs';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import * as icons from 'mdi-material-ui';
+import ArrowCollapseLeftIcon from 'mdi-material-ui/ArrowCollapseLeft';
+import ArrowCollapseRightIcon from 'mdi-material-ui/ArrowCollapseRight';
 import LinkPlusIcon from 'mdi-material-ui/LinkPlus';
 import _ from 'lodash';
 import clsx from 'clsx';
@@ -75,6 +89,9 @@ const useStyles = makeStyles((theme) => {
       marginBottom: theme.spacing(3),
       display: 'flex',
       alignItems: 'stretch',
+      '& > button': {
+        marginRight: theme.spacing(1),
+      },
     },
     createMenuInfoIconWrapper: {
       height: '100%',
@@ -88,6 +105,9 @@ const useStyles = makeStyles((theme) => {
     },
     tabsWrapper: {
       marginBottom: theme.spacing(3),
+    },
+    deleteButton: {
+      color: theme.palette.error.main,
     },
   };
 });
@@ -106,6 +126,11 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   const [createMenuData, setCreateMenuData] = useState<MenuItemRequestData>(_.clone(defaultCreateMenuRequestData));
   const [createMenuLoading, setCreateMenuLoading] = useState<boolean>(false);
   const [selectedTabIndex, setSelectedTabIndex] = useState<number>(0);
+  const [selectedMenuTreeItemMovePermission, setSelectedMenuTreeItemMovePermission] = useState<MenuTreeItemLevelPermission>({
+    left: false,
+    right: false,
+  });
+  const [deleteMenuItemLoading, setDeleteMenuItemLoading] = useState<boolean>(false);
 
   const validateCreateMenuData = (data: MenuItemRequestData) => {
     for (const key of Object.keys(data)) {
@@ -177,6 +202,28 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
     }));
   };
 
+  const handleMoveLevel = (direction: 'left' | 'right') => {
+    if (selectedMenuTreeItemMovePermission[direction]) {
+      setMenuTreeItems(menuTreeItems.map((item, index) => {
+        if (index === selectedMenuTreeItemIndex) {
+          return {
+            ...item,
+            level: direction === 'left' ? item.level - 1 : item.level + 1,
+          };
+        }
+        return item;
+      }));
+    }
+  };
+
+  const handleDeleteMenuItem = (menuId: number) => {
+    setDeleteMenuItemLoading(true);
+    deleteMenuItems(menuId).then(() => {
+      fetchFlattenedMenuTree();
+      setSelectedMenuTreeItemIndex(0);
+    }).finally(() => setDeleteMenuItemLoading(false));
+  };
+
   useEffect(() => {
     fetchFlattenedMenuTree();
   }, []);
@@ -186,6 +233,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
       setSelectedMenuTreeItemIndex(0);
     }
   }, [selectedMenuTreeItemIndex, menuTreeItems]);
+
+  useEffect(() => {
+    if (_.isNumber(selectedMenuTreeItemIndex) && menuTreeItems) {
+      setSelectedMenuTreeItemMovePermission(getMoveLevelDirectionPermission(menuTreeItems, selectedMenuTreeItemIndex));
+    }
+  }, [menuTreeItems, selectedMenuTreeItemIndex]);
 
   return (
     <div className="app-page app-page-admin__menu">
@@ -300,7 +353,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                                 value={selectedTabIndex}
                                 indicatorColor="primary"
                                 textColor="primary"
-                                centered={true}
                                 variant="scrollable"
                                 classes={{ root: classes.tabsWrapper }}
                                 onChange={(event, newIndex) => setSelectedTabIndex(newIndex)}
@@ -316,6 +368,22 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                               {
                                 menuInfoTabs[selectedTabIndex] === 'BASIC' && (
                                   <Box>
+                                    <Box className={classes.createMenuInfoItemWrapper}>
+                                      <Button
+                                        variant="outlined"
+                                        size="small"
+                                        startIcon={<ArrowCollapseLeftIcon fontSize="small" />}
+                                        disabled={!selectedMenuTreeItemMovePermission.left}
+                                        onClick={() => handleMoveLevel('left')}
+                                      >{texts['MOVE_LEFT']}</Button>
+                                      <Button
+                                        variant="outlined"
+                                        size="small"
+                                        startIcon={<ArrowCollapseRightIcon fontSize="small" />}
+                                        disabled={!selectedMenuTreeItemMovePermission.right}
+                                        onClick={() => handleMoveLevel('right')}
+                                      >{texts['MOVE_RIGHT']}</Button>
+                                    </Box>
                                     <Box className={classes.createMenuInfoItemWrapper}>
                                       <Typography>{texts['004']}:&nbsp;{menuTreeItems[selectedMenuTreeItemIndex].title}</Typography>
                                     </Box>
@@ -358,6 +426,20 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                                           }));
                                         }}
                                       />
+                                    </Box>
+                                    <Box className={classes.createMenuInfoItemWrapper}>
+                                      <Button
+                                        classes={{ root: classes.deleteButton }}
+                                        variant="outlined"
+                                        disabled={deleteMenuItemLoading}
+                                        onClick={() => {
+                                          AppDialogManager.confirm(texts['007'], {
+                                            onConfirm: () => {
+                                              handleDeleteMenuItem(_.get(menuTreeItems[selectedMenuTreeItemIndex], 'id'));
+                                            },
+                                          });
+                                        }}
+                                      >{systemTexts['DELETE']}</Button>
                                     </Box>
                                   </Box>
                                 )

@@ -222,3 +222,8 @@ export interface MenuItemRequestData {
 export type MenuTreeItemMetadata = Omit<MenuItemMetadata, 'children'> & {
   level: number;
 };
+
+export interface MenuTreeItemLevelPermission {
+  left: boolean;
+  right: boolean;
+}

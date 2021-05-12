@@ -2,6 +2,7 @@ import AppRequestManager from '../../../../components/AppRequest/Manager';
 import {
   MenuItemRequestData,
   MenuItemResponseData,
+  MenuTreeItemLevelPermission,
   MenuTreeItemMetadata,
 } from '../../../../interfaces';
 import {
@@ -63,4 +64,48 @@ export const batchUpdateMenuItems = async (menuItems: MenuTreeItemMetadata[]) =>
   if (requests.length) {
     await Promise.all(requests);
   }
+};
+
+export const deleteMenuItems = async (menuItemId: number) => {
+  await AppRequestManager.send({
+    url: `/admin/menu/${menuItemId}`,
+    method: 'DELETE',
+  });
+  return;
+};
+
+export const getMoveLevelDirectionPermission = (
+  menuTreeItems: MenuTreeItemMetadata[],
+  currentMenuTreeItemIndex: number,
+): MenuTreeItemLevelPermission => {
+  const currentTreeItems = Array.from(menuTreeItems);
+  const currentTreeItem = currentTreeItems[currentMenuTreeItemIndex];
+  const result: MenuTreeItemLevelPermission = {
+    left: false,
+    right: false,
+  };
+  if (!currentTreeItem) {
+    return result;
+  }
+  const { level: currentLevel } = currentTreeItem;
+  const previousTreeItem = currentTreeItems[currentMenuTreeItemIndex - 1];
+  if (!previousTreeItem) {
+    if (currentLevel > 0) {
+      result.left = true;
+      result.right = false;
+    } else {
+      return result;
+    }
+  } else {
+    const { level: previousLevel } = previousTreeItem;
+    result.left = currentLevel !== 0;
+    if (previousLevel === currentLevel) {
+      result.right = true;
+    } else if (previousLevel > currentLevel) {
+      result.right = true;
+    } else if (previousLevel < currentLevel) {
+      result.right = false;
+    }
+  }
+  return result;
 };
