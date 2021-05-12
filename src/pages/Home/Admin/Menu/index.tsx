@@ -2,6 +2,7 @@ import {
   batchUpdateMenuItems,
   createMenu,
   deleteMenuItems,
+  deleteMenuRoles,
   getFlattenedMenuTree,
   getMoveLevelDirectionPermission,
   queryMenuRoles,
@@ -21,10 +22,11 @@ import { ConnectState } from '../../../../models';
 import { usePageTexts, useTexts } from '../../../../utils/texts';
 import AppIndicator from '../../../../components/AppIndicator';
 import AppDialogManager from '../../../../components/AppDialog/Manager';
+import AppTable, { TableSchema } from '../../../../components/AppTable';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { lighten, makeStyles } from '@material-ui/core';
 import Box from '@material-ui/core/Box';
 import Dialog from '@material-ui/core/Dialog';
@@ -146,6 +148,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
     items: [],
     total: 0,
   });
+  const [schema, setSchema] = useState<TableSchema[]>([]);
+  const menuRoleCardRef = useRef<HTMLElement>(undefined);
 
   const validateCreateMenuData = (data: MenuItemRequestData) => {
     for (const key of Object.keys(data)) {
@@ -245,6 +249,50 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
       setMenuRoles(data);
     }).finally(() => setQueryMenuRolesLoading(false));
   };
+
+  useEffect(() => {
+    if (!_.isEmpty(systemTexts) && !_.isEmpty(texts)) {
+      setSchema([
+        {
+          title: texts['008'],
+          key: 'id',
+          render: (row, value) => {
+            return _.get(row, 'role.id');
+          },
+        },
+        {
+          title: texts['009'],
+          key: 'createdAt',
+          minWidth: 160,
+          render: (row, value) => new Date(value).toLocaleString(),
+        },
+        {
+          title: systemTexts['OPERATIONS'],
+          key: 'id',
+          render: (row) => {
+            return (
+              <Button
+                size="small"
+                color="primary"
+                onClick={() => {
+                  AppDialogManager.confirm(texts['010'], {
+                    onConfirm: () => {
+                      const menuItemId = _.get(menuTreeItems[selectedMenuTreeItemIndex], 'id');
+                      if (_.isNumber(menuItemId)) {
+                        deleteMenuRoles([menuItemId], [_.get(row, 'role.id')]).then(() => {
+                          handleQueryMenuRoles(menuRolePagination, menuItemId);
+                        });
+                      }
+                    },
+                  });
+                }}
+              >{systemTexts['DELETE']}</Button>
+            );
+          },
+        },
+      ]);
+    }
+  }, [texts, systemTexts, menuTreeItems, selectedMenuTreeItemIndex]);
 
   useEffect(() => {
     fetchFlattenedMenuTree();
@@ -372,7 +420,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                     lg={7}
                     xl={8}
                   >
-                    <Card classes={{ root: classes.sectionWrapper }}>
+                    <Card classes={{ root: classes.sectionWrapper }} ref={menuRoleCardRef}>
                       {
                         (!_.isNumber(selectedMenuTreeItemIndex) && menuTreeItems[selectedMenuTreeItemIndex])
                           ? <Typography style={{ textAlign: 'center' }}>{texts['002']}</Typography>
@@ -471,6 +519,37 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                                       >{systemTexts['DELETE']}</Button>
                                     </Box>
                                   </Box>
+                                )
+                              }
+                              {
+                                menuInfoTabs[selectedTabIndex] === 'ROLES' && (
+                                  <>
+                                    <AppTable
+                                      schema={schema}
+                                      data={menuRoles.items || []}
+                                      loading={queryMenuRolesLoading}
+                                      selectable={false}
+                                      collapseHeight={130}
+                                      TablePaginationProps={{
+                                        count: menuRoles.total,
+                                        page: (menuRolePagination.page || 1) - 1,
+                                        rowsPerPage: menuRolePagination.size || 10,
+                                        onChangePage: (event, newPageNumber) => {
+                                          setMenuRolePagination({
+                                            ...menuRolePagination,
+                                            page: newPageNumber + 1,
+                                          });
+                                        },
+                                        onChangeRowsPerPage: (event) => {
+                                          setMenuRolePagination({
+                                            ...menuRolePagination,
+                                            size: parseInt(event.target.value, 10),
+                                            page: 1,
+                                          });
+                                        },
+                                      }}
+                                    />
+                                  </>
                                 )
                               }
                             </>

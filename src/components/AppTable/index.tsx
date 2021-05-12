@@ -39,6 +39,7 @@ export interface AppTableProps extends TableProps {
   containerMinHeight?: number;
   toolbarButtons?: ToolbarButton[];
   wrapperClassName?: string;
+  collapseHeight?: number;
   onSelectionChange?: (items: any[]) => void;
 }
 
@@ -92,6 +93,7 @@ const AppTable: React.FC<AppTableComponentProps> = ({
   data = [],
   loading = false,
   selectable = true,
+  collapseHeight = 83,
   containerMinHeight = 150,
   toolbarButtons = [],
   wrapperClassName = '',
@@ -198,7 +200,7 @@ const AppTable: React.FC<AppTableComponentProps> = ({
         - tablePagination.current.clientHeight
         - tableHead.current.clientHeight
         - (tableToolBar.current ? tableToolBar.current.clientHeight : 0)
-        - 83;
+        - collapseHeight;
       if (newTableContainerMaxHeight > containerMinHeight) {
         setTableContainerMaxHeight(newTableContainerMaxHeight);
       } else {
