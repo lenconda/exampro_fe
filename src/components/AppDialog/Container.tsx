@@ -69,7 +69,7 @@ const Container: React.FC<AppDialogContainerProps> = ({
             <Dialog
               key={index}
               open={open}
-              {...props}
+              {..._.omit(props, ['onConfirm'])}
               onClose={(event, reason) => {
                 if (reason === 'escapeKeyDown') {
                   return false;
