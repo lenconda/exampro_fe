@@ -214,7 +214,6 @@ export type MenuItemMetadata = Omit<MenuItemResponseData & {
 export interface MenuItemRequestData {
   title: string;
   pathname: string;
-  roles: string;
   order: number;
   parent?: number;
   icon?: string;

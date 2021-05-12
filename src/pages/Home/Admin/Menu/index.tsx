@@ -1,4 +1,4 @@
-import { getFlattenedMenuTree } from './service';
+import { batchUpdateMenuItems, getFlattenedMenuTree } from './service';
 import { Dispatch, MenuTreeItemMetadata } from '../../../../interfaces';
 import { AppState } from '../../../../models/app';
 import { connect } from '../../../../patches/dva';
@@ -67,12 +67,18 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   const [menuTreeItems, setMenuTreeItems] = useState<MenuTreeItemMetadata[]>([]);
   const [menuTreeItemsLoading, setMenuTreeItemsLoading] = useState<boolean>(false);
   const [selectedMenuTreeItem, setSelectedMenuTreeItem] = useState<MenuTreeItemMetadata>(undefined);
+  const [updateMenuTreeItemsLoading, setUpdateMenuTreeItemsLoading] = useState<boolean>(false);
 
   const fetchFlattenedMenuTree = () => {
     setMenuTreeItemsLoading(true);
     getFlattenedMenuTree().then((menuTree) => {
       setMenuTreeItems(menuTree);
     }).finally(() => setMenuTreeItemsLoading(false));
+  };
+
+  const updateMenuItems = (menuTreeItems: MenuTreeItemMetadata[]) => {
+    setUpdateMenuTreeItemsLoading(true);
+    batchUpdateMenuItems(menuTreeItems).finally(() => setUpdateMenuTreeItemsLoading(false));
   };
 
   const reorderMenuTreeItems = (
@@ -143,7 +149,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                         <Button
                           variant="outlined"
                           size="small"
-                        >{systemTexts['SAVE']}</Button>
+                          disabled={updateMenuTreeItemsLoading}
+                          onClick={() => updateMenuItems(menuTreeItems)}
+                        >{updateMenuTreeItemsLoading ? systemTexts['SAVING'] : systemTexts['SAVE']}</Button>
                       </CardContent>
                       <DragDropContext onDragEnd={handleDragEnd}>
                         <Droppable droppableId="menu-tree">
