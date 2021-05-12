@@ -131,6 +131,7 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
   const [papersLoading, setPapersLoading] = useState<boolean>(false);
   const [papers, setPapers] = useState<PaperResponseData[]>([]);
   const [paperEditorOpen, setPaperEditorOpen] = useState<boolean>(false);
+  const [paperEditorMode, setPaperEditorMode] = useState<'create' | 'edit'>('create');
   const [currentSelectedPaper, setCurrentSelectedPaper] = useState<PaperResponseData>(undefined);
 
   const fetchQueriedPapers = (search: string) => {
@@ -305,6 +306,7 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
                                                   key={paper.id}
                                                   onClick={() => {
                                                     setCurrentSelectedPaper(paper);
+                                                    setPaperEditorMode('edit');
                                                     setPaperEditorOpen(true);
                                                   }}
                                                 >
@@ -318,6 +320,14 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
                                 )
                               }
                             </Menu>
+                            <Button
+                              color="primary"
+                              variant="outlined"
+                              onClick={() => {
+                                setPaperEditorMode('create');
+                                setPaperEditorOpen(true);
+                              }}
+                            >{pageTexts['007']}</Button>
                             <Button
                               classes={{ root: classes.deleteButton }}
                               onClick={() => {
@@ -395,10 +405,10 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
         </Box>
       </div>
       <AppPaperEditor
-        paper={currentSelectedPaper}
-        mode="edit"
+        paper={paperEditorMode === 'edit' ? currentSelectedPaper : null}
+        mode={paperEditorMode}
         selectedIndex={1}
-        open={paperEditorOpen && Boolean(currentSelectedPaper)}
+        open={paperEditorOpen && (paperEditorMode === 'edit' ? Boolean(currentSelectedPaper) : true)}
         initialQuestions={selectedQuestions}
         onSubmitPaper={clearSelection}
         onClose={clearSelection}

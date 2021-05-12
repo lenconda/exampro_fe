@@ -360,6 +360,7 @@ const AppModel: AppModelType = {
             '004': '添加到试卷...',
             '005': '将要删除所有所选的试题',
             '006': '查询试卷',
+            '007': '组卷...',
           },
           '/home/papers': {
             'resource/paper/owner,resource/paper/maintainer': '全部',
