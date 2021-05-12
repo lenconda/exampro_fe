@@ -353,6 +353,11 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
                               onSelectQuestion={() => {
                                 setSelectedQuestions([...selectedQuestions, questionItem]);
                               }}
+                              onCancelSelectQuestion={() => {
+                                setSelectedQuestions(selectedQuestions.filter((currentSelectedQuestion) => {
+                                  return currentSelectedQuestion.id !== questionItem.id;
+                                }));
+                              }}
                             />
                           );
                         })
