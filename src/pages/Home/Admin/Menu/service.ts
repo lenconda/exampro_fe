@@ -94,6 +94,18 @@ export const deleteMenuRoles = async (menuIds: number[], roleIds: string[]) => {
   return data;
 };
 
+export const grantMenuRole = async (menuIds: number[], roleIds: string[]) => {
+  const data = await AppRequestManager.send({
+    url: '/admin/role/menu',
+    method: 'POST',
+    data: {
+      menus: menuIds,
+      roles: roleIds,
+    },
+  });
+  return data;
+};
+
 export const getMoveLevelDirectionPermission = (
   menuTreeItems: MenuTreeItemMetadata[],
   currentMenuTreeItemIndex: number,

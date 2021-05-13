@@ -5,6 +5,7 @@ import {
   deleteMenuRoles,
   getFlattenedMenuTree,
   getMoveLevelDirectionPermission,
+  grantMenuRole,
   queryMenuRoles,
 } from './service';
 import {
@@ -23,6 +24,7 @@ import { usePageTexts, useTexts } from '../../../../utils/texts';
 import AppIndicator from '../../../../components/AppIndicator';
 import AppDialogManager from '../../../../components/AppDialog/Manager';
 import AppTable, { TableSchema } from '../../../../components/AppTable';
+import RoleSelector from '../components/RoleSelector';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -120,6 +122,9 @@ const useStyles = makeStyles((theme) => {
     deleteButton: {
       color: theme.palette.error.main,
     },
+    menuRolesTableContainer: {
+      padding: 0,
+    },
   };
 });
 
@@ -150,6 +155,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   });
   const [schema, setSchema] = useState<TableSchema[]>([]);
   const menuRoleCardRef = useRef<HTMLElement>(undefined);
+  const [roleSelectorOpen, setRoleSelectorOpen] = useState<boolean>(false);
+  const [grantMenuRolesLoading, setGrantMenuRolesLoading] = useState<boolean>(false);
 
   const validateCreateMenuData = (data: MenuItemRequestData) => {
     for (const key of Object.keys(data)) {
@@ -248,6 +255,17 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
     queryMenuRoles(id, pagination).then((data) => {
       setMenuRoles(data);
     }).finally(() => setQueryMenuRolesLoading(false));
+  };
+
+  const handleGrantMenuRoles = (menuId: number, roleIds: string[]) => {
+    if (_.isNumber(menuId) && roleIds.length > 0) {
+      setGrantMenuRolesLoading(true);
+      grantMenuRole([menuId], roleIds).finally(() => {
+        setRoleSelectorOpen(false);
+        setGrantMenuRolesLoading(false);
+        handleQueryMenuRoles(menuRolePagination, _.get(menuTreeItems[selectedMenuTreeItemIndex], 'id'));
+      });
+    }
   };
 
   useEffect(() => {
@@ -527,14 +545,16 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                                     <Box className={classes.createMenuInfoItemWrapper}>
                                       <Button
                                         variant="outlined"
+                                        onClick={() => setRoleSelectorOpen(true)}
                                       >{systemTexts['GRANT']}</Button>
                                     </Box>
                                     <AppTable
                                       schema={schema}
                                       data={menuRoles.items || []}
                                       loading={queryMenuRolesLoading}
+                                      containerClassName={classes.menuRolesTableContainer}
                                       selectable={false}
-                                      collapseHeight={180}
+                                      collapseHeight={185}
                                       PaperProps={{
                                         elevation: 0,
                                       }}
@@ -640,6 +660,16 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
           >{systemTexts['SUBMIT']}</Button>
         </DialogActions>
       </Dialog>
+      <RoleSelector
+        open={roleSelectorOpen}
+        submitting={grantMenuRolesLoading}
+        onCancel={() => {
+          setRoleSelectorOpen(false);
+        }}
+        onSelectRoles={(roleIds) => {
+          handleGrantMenuRoles(_.get(menuTreeItems[selectedMenuTreeItemIndex], 'id'), roleIds);
+        }}
+      />
     </div>
   );
 };

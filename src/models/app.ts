@@ -29,6 +29,7 @@ export interface I18N {
     dateTimePicker?: Record<string, string>;
     paperContainer?: Record<string, string>;
     examContainer?: Record<string, string>;
+    roleSelector?: Record<string, string>;
   };
 }
 
@@ -168,7 +169,7 @@ const AppModel: AppModelType = {
           'RESET': '重置',
           'LOGOUT': '登出',
           'FORBIDDEN': '没有权限',
-          'GRANT': '授权新的角色',
+          'GRANT': '授权角色',
           'REVOKE': '解除授权',
         },
         editor: {
@@ -300,6 +301,10 @@ const AppModel: AppModelType = {
           'NOT_READY_MESSAGE': '你暂未获得该项操作的许可，这是因为当前时间没有处在操作许可的时间范围内。现在，你可以单击「返回主页」按钮回到主页',
           'PROGRESS': '答题进展',
           'SURE_TO_SUBMIT': '确定要提交考试答案吗？',
+        },
+        roleSelector: {
+          'TITLE': '选择一个或多个角色',
+          'SELECT_ROLES': '选择角色',
         },
         ui: {
           '/user/auth': {

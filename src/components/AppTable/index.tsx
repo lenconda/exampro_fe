@@ -38,6 +38,7 @@ export interface AppTableProps extends TableProps {
   containerMinHeight?: number;
   toolbarButtons?: ToolbarButton[];
   wrapperClassName?: string;
+  containerClassName?: string;
   collapseHeight?: number;
   TablePaginationProps?: TablePaginationProps;
   PaperProps?: PaperProps;
@@ -98,6 +99,7 @@ const AppTable: React.FC<AppTableComponentProps> = ({
   containerMinHeight = 150,
   toolbarButtons = [],
   wrapperClassName = '',
+  containerClassName = '',
   dispatch,
   onSelectionChange,
   TablePaginationProps = {
@@ -235,7 +237,7 @@ const AppTable: React.FC<AppTableComponentProps> = ({
               <AppIndicator type="empty" />
             )
             : (
-              <div className={clsx(classes.wrapper)} ref={tableWrapper}>
+              <div className={clsx(classes.wrapper, containerClassName)} ref={tableWrapper}>
                 <Paper ref={tablePaper} {...PaperProps}>
                   {
                     selectedItemIndexes.length > 0 && (
