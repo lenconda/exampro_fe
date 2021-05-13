@@ -20,12 +20,13 @@ import AppDialogManager from '../../../../components/AppDialog/Manager';
 import AppTable, { TableSchema } from '../../../../components/AppTable';
 import RoleSelector from '../components/RoleSelector';
 import AppUserCard from '../../../../components/AppUserCard';
-import Avatar from '@material-ui/core/Avatar';
-import Button from '@material-ui/core/Button';
-import Card from '@material-ui/core/Card';
 import React, { useEffect, useState } from 'react';
 import { lighten, makeStyles } from '@material-ui/core';
+import Avatar from '@material-ui/core/Avatar';
 import Box from '@material-ui/core/Box';
+import Button from '@material-ui/core/Button';
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
 import Grid from '@material-ui/core/Grid';
 import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
@@ -51,9 +52,10 @@ const defaultUsersPaginationData: UserPaginationData = {
 const useStyles = makeStyles((theme) => {
   return {
     sectionWrapper: {
-      padding: theme.spacing(2),
       maxHeight: '100%',
-      overflowY: 'scroll',
+      display: 'flex',
+      flexDirection: 'column',
+      flexWrap: 'nowrap',
     },
     usersWrapper: {
       padding: 0,
@@ -212,7 +214,6 @@ const UserPage: React.FC<UserPageProps> = ({
         spacing={3}
         classes={{ container: clsx('app-grid-container', classes.container) }}
       >
-
         <>
           <Grid
             item={true}
@@ -228,23 +229,25 @@ const UserPage: React.FC<UserPageProps> = ({
                 : usersData && usersData.items.length === 0
                   ? <AppIndicator type="empty" />
                   : (
-                    <Card classes={{ root: clsx(classes.sectionWrapper, classes.usersWrapper) }}>
-                      {
-                        usersData.items.map((item) => {
-                          return (
-                            <AppUserCard
-                              key={item.email}
-                              user={item}
-                              classes={{
-                                root: clsx(classes.userItem, {
-                                  [classes.userItemSelected]: selectedUser && selectedUser.email === item.email,
-                                }),
-                              }}
-                              onClick={() => setSelectedUser(item)}
-                            />
-                          );
-                        })
-                      }
+                    <Card classes={{ root: clsx(classes.sectionWrapper) }}>
+                      <Box className={classes.usersWrapper}>
+                        {
+                          usersData.items.map((item) => {
+                            return (
+                              <AppUserCard
+                                key={item.email}
+                                user={item}
+                                classes={{
+                                  root: clsx(classes.userItem, {
+                                    [classes.userItemSelected]: selectedUser && selectedUser.email === item.email,
+                                  }),
+                                }}
+                                onClick={() => setSelectedUser(item)}
+                              />
+                            );
+                          })
+                        }
+                      </Box>
                       <TablePagination
                         component="div"
                         count={usersData.total}
@@ -281,90 +284,92 @@ const UserPage: React.FC<UserPageProps> = ({
             lg={7}
             xl={8}
           >
-            <Card classes={{ root: classes.sectionWrapper }}>
-              {
-                !selectedUser
-                  ? <Typography style={{ textAlign: 'center' }}>{texts['002']}</Typography>
-                  : (
-                    <>
-                      <Tabs
-                        value={selectedTabIndex}
-                        indicatorColor="primary"
-                        textColor="primary"
-                        variant="scrollable"
-                        classes={{ root: classes.tabsWrapper }}
-                        onChange={(event, newIndex) => setSelectedTabIndex(newIndex)}
-                      >
+            <Card>
+              <CardContent>
+                {
+                  !selectedUser
+                    ? <Typography style={{ textAlign: 'center' }}>{texts['002']}</Typography>
+                    : (
+                      <>
+                        <Tabs
+                          value={selectedTabIndex}
+                          indicatorColor="primary"
+                          textColor="primary"
+                          variant="scrollable"
+                          classes={{ root: classes.tabsWrapper }}
+                          onChange={(event, newIndex) => setSelectedTabIndex(newIndex)}
+                        >
+                          {
+                            tabs.map((tabName, index) => {
+                              return (
+                                <Tab key={index} label={texts[tabName]} />
+                              );
+                            })
+                          }
+                        </Tabs>
                         {
-                          tabs.map((tabName, index) => {
-                            return (
-                              <Tab key={index} label={texts[tabName]} />
-                            );
-                          })
+                          tabs[selectedTabIndex] === 'BASIC' && (
+                            <Box>
+                              <Box className={classes.infoItemWrapper}>
+                                <Avatar src={selectedUser.avatar} />
+                              </Box>
+                              <Box className={classes.infoItemWrapper}>
+                                <Typography>{texts['006']}:&nbsp;{selectedUser.email}</Typography>
+                              </Box>
+                              <Box className={classes.infoItemWrapper}>
+                                <Typography>{texts['007']}:&nbsp;{selectedUser.name || selectedUser.email.split('@')[0]}</Typography>
+                              </Box>
+                              <Box className={classes.infoItemWrapper}>
+                                <Typography>{texts['008']}:&nbsp;{new Date(selectedUser.createdAt).toLocaleString()}</Typography>
+                              </Box>
+                            </Box>
+                          )
                         }
-                      </Tabs>
-                      {
-                        tabs[selectedTabIndex] === 'BASIC' && (
-                          <Box>
-                            <Box className={classes.infoItemWrapper}>
-                              <Avatar src={selectedUser.avatar} />
-                            </Box>
-                            <Box className={classes.infoItemWrapper}>
-                              <Typography>{texts['006']}:&nbsp;{selectedUser.email}</Typography>
-                            </Box>
-                            <Box className={classes.infoItemWrapper}>
-                              <Typography>{texts['007']}:&nbsp;{selectedUser.name || selectedUser.email.split('@')[0]}</Typography>
-                            </Box>
-                            <Box className={classes.infoItemWrapper}>
-                              <Typography>{texts['008']}:&nbsp;{new Date(selectedUser.createdAt).toLocaleString()}</Typography>
-                            </Box>
-                          </Box>
-                        )
-                      }
-                      {
-                        tabs[selectedTabIndex] === 'ROLES' && (
-                          <>
-                            <Box className={classes.infoItemWrapper}>
-                              <Button
-                                variant="outlined"
-                                onClick={() => setRoleSelectorOpen(true)}
-                              >{systemTexts['GRANT']}</Button>
-                            </Box>
-                            <AppTable
-                              schema={schema}
-                              data={userRolesData.items || []}
-                              loading={userRolesLoading}
-                              containerClassName={classes.tableContainer}
-                              selectable={false}
-                              collapseHeight={185}
-                              PaperProps={{
-                                elevation: 0,
-                              }}
-                              TablePaginationProps={{
-                                count: userRolesData.total,
-                                page: (userRolesPagination.page || 1) - 1,
-                                rowsPerPage: userRolesPagination.size || 10,
-                                onChangePage: (event, newPageNumber) => {
-                                  setUserRolesPagination({
-                                    ...userRolesPagination,
-                                    page: newPageNumber + 1,
-                                  });
-                                },
-                                onChangeRowsPerPage: (event) => {
-                                  setUserRolesPagination({
-                                    ...userRolesPagination,
-                                    size: parseInt(event.target.value, 10),
-                                    page: 1,
-                                  });
-                                },
-                              }}
-                            />
-                          </>
-                        )
-                      }
-                    </>
-                  )
-              }
+                        {
+                          tabs[selectedTabIndex] === 'ROLES' && (
+                            <>
+                              <Box className={classes.infoItemWrapper}>
+                                <Button
+                                  variant="outlined"
+                                  onClick={() => setRoleSelectorOpen(true)}
+                                >{systemTexts['GRANT']}</Button>
+                              </Box>
+                              <AppTable
+                                schema={schema}
+                                data={userRolesData.items || []}
+                                loading={userRolesLoading}
+                                containerClassName={classes.tableContainer}
+                                selectable={false}
+                                collapseHeight={185}
+                                PaperProps={{
+                                  elevation: 0,
+                                }}
+                                TablePaginationProps={{
+                                  count: userRolesData.total,
+                                  page: (userRolesPagination.page || 1) - 1,
+                                  rowsPerPage: userRolesPagination.size || 10,
+                                  onChangePage: (event, newPageNumber) => {
+                                    setUserRolesPagination({
+                                      ...userRolesPagination,
+                                      page: newPageNumber + 1,
+                                    });
+                                  },
+                                  onChangeRowsPerPage: (event) => {
+                                    setUserRolesPagination({
+                                      ...userRolesPagination,
+                                      size: parseInt(event.target.value, 10),
+                                      page: 1,
+                                    });
+                                  },
+                                }}
+                              />
+                            </>
+                          )
+                        }
+                      </>
+                    )
+                }
+              </CardContent>
             </Card>
           </Grid>
         </>

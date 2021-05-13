@@ -435,6 +435,10 @@ const AppModel: AppModelType = {
             'BASIC': '基础信息',
             'ROLES': '角色配置',
           },
+          '/home/admin/role': {
+            '001': '所有角色',
+            '002': '添加子角色',
+          },
         },
       },
     },

@@ -264,3 +264,13 @@ export interface UserRequestData {
   password: string;
   roles?: string[];
 }
+
+export interface RoleTreeItemResponseData {
+  id: string;
+  originalId: string;
+  description?: string;
+  children?: RoleTreeItemResponseData[];
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string;
+}

@@ -10,6 +10,8 @@ import {
   QuestionChoice,
   QuestionResponseData,
   QuestionType,
+  RoleResponseData,
+  RoleTreeItemResponseData,
 } from '../interfaces';
 import DraftUtils, { ContentState, EditorState } from 'draft-js';
 import _ from 'lodash';
@@ -163,4 +165,56 @@ export const pipeMenusResponseToFlattenedTree = (menuItems: MenuItemMetadata[]):
   };
   const result = getFlappedTree(currentMenuTree, 0, []);
   return result;
+};
+
+export const pipeRolesListToTree = (list: RoleResponseData[]): RoleTreeItemResponseData[] => {
+  const roleObject = {};
+  for (const role of list) {
+    const { description, createdAt, updatedAt, id } = role;
+    const segments = id.split('/');
+    for (let i = 0; i < segments.length; i += 1) {
+      _.set(roleObject, `${segments.slice(0, i + 1).join('.')}.metadata`, {
+        createdAt,
+        updatedAt,
+        ...(i === segments.length - 1 ? { description } : {}),
+        originalId: segments.slice(0, i + 1).join('/'),
+      });
+    }
+    _.set(roleObject, `${role.id.split('/').join('.')}.isLeaf`, true);
+  }
+  const traverse = (raw: Record<string, any>): RoleTreeItemResponseData[] => {
+    const result = Object.keys(raw)
+      .filter((key) => key !== 'metadata' && key !== 'isLeaf')
+      .map((key) => {
+        const value = raw[key];
+        if (value.isLeaf) {
+          return { id: key, children: [], ...value.metadata };
+        } else {
+          return { id: key, children: traverse(value), ...value.metadata };
+        }
+      });
+    return result || [];
+  };
+  return traverse(roleObject);
+};
+
+export const pipeRolesTreeToList = (tree: RoleTreeItemResponseData[]): RoleResponseData[] => {
+  const traverse = (
+    currentList: RoleTreeItemResponseData[],
+    result: RoleResponseData[],
+  ): RoleResponseData[] => {
+    let currentResult = Array.from(result);
+    for (const item of currentList) {
+      const { originalId, id, children = [], ...metadata } = item;
+      currentResult.push({
+        ..._.omit(metadata, ['children']),
+        id: originalId,
+      } as RoleResponseData);
+      if (children.length > 0) {
+        currentResult = traverse(children, currentResult);
+      }
+    }
+    return currentResult;
+  };
+  return traverse(tree, []);
 };

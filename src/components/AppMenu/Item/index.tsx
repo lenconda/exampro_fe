@@ -10,7 +10,13 @@ import Collapse from '@material-ui/core/Collapse';
 import IconExpandLessIcon from '@material-ui/icons/ExpandLess';
 import IconExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import * as icons from 'mdi-material-ui';
-import { makeStyles, SvgIconTypeMap, Tooltip, Typography } from '@material-ui/core';
+import {
+  lighten,
+  makeStyles,
+  SvgIconTypeMap,
+  Tooltip,
+  Typography,
+} from '@material-ui/core';
 import { OverridableComponent } from '@material-ui/core/OverridableComponent';
 import { useHistory } from 'react-router';
 import './index.less';
@@ -26,6 +32,9 @@ const useStyles = makeStyles((theme) => {
     appMenuItem: (props: Record<string, any>) => ({
       paddingLeft: theme.spacing(2) + ((props.level || 1) - 1) * theme.spacing(1),
     }),
+    appMenuItemActive: {
+      backgroundColor: lighten(theme.palette.primary.main, 0.85),
+    },
   };
 });
 
@@ -97,7 +106,7 @@ const AppMenuItem: React.FC<AppMenuItemProps> = ({
         onClick={handleClick}
         classes={{
           root: clsx('app-menu__item', {
-            'active': isActive,
+            [classes.appMenuItemActive]: isActive,
           }, classes.appMenuItem),
         }}
       >
