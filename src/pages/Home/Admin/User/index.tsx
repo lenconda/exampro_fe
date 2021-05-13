@@ -19,7 +19,6 @@ import AppUserCard from '../../../../components/AppUserCard';
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
 import React, { useEffect, useState } from 'react';
 import { lighten, makeStyles } from '@material-ui/core';
 import Box from '@material-ui/core/Box';
@@ -28,7 +27,6 @@ import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
 import TablePagination from '@material-ui/core/TablePagination';
 import Typography from '@material-ui/core/Typography';
-import AccountPlusOutlineIcon from 'mdi-material-ui/AccountPlusOutline';
 import _ from 'lodash';
 import clsx from 'clsx';
 
