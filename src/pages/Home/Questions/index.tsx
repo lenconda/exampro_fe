@@ -33,6 +33,7 @@ import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 import { lighten, makeStyles } from '@material-ui/core';
 import clsx from 'clsx';
+import './index.less';
 
 export interface QuestionPageProps extends AppState, ConnectState, Dispatch {}
 
@@ -47,6 +48,7 @@ const useStyles = makeStyles((theme) => {
     },
     itemsWrapper: {
       padding: theme.spacing(2),
+      overflowY: 'scroll',
     },
     item: {
       marginBottom: theme.spacing(2),
@@ -95,6 +97,10 @@ const useStyles = makeStyles((theme) => {
       maxHeight: 360,
       overflowY: 'scroll',
     },
+    container: {
+      display: 'flex',
+      flexDirection: 'column',
+    },
   };
 });
 
@@ -103,7 +109,6 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
 }) => {
   const classes = useStyles();
   const history = useHistory();
-  const editorTexts = useTexts(dispatch, 'editor');
   const tableTexts = useTexts(dispatch, 'table');
   const systemTexts = useTexts(dispatch, 'system');
   const pageTexts = usePageTexts(dispatch, '/home/questions');
@@ -160,7 +165,7 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
 
   return (
     <div className="app-page app-page-home__questions">
-      <div className="app-grid-container">
+      <div className={clsx('app-grid-container', classes.container)}>
         <AppSearchBar
           search={search}
           CreateIcon={AddCommentIcon}
@@ -182,80 +187,7 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
           onSearchChange={(search) => setInputSearch(search)}
           onCreateClick={() => setCreateQuestionOpen(true)}
         />
-        <AppQuestionEditor
-          mode="create"
-          open={createQuestionOpen}
-          onSubmitQuestion={() => {
-            setCreateQuestionOpen(false);
-            refreshQueryQuestions();
-          }}
-          onClose={() => setCreateQuestionOpen(false)}
-        />
         <Box className={classes.itemsWrapper}>
-          <Menu
-            open={Boolean(filterMenuAnchor)}
-            anchorEl={filterMenuAnchor}
-            classes={{ paper: classes.filterMenu }}
-            onClose={() => setFilterMenuAnchor(null)}
-          >
-            <Typography
-              variant="subtitle2"
-              classes={{ root: classes.filterMenuTitle }}
-            >
-              {pageTexts['003']}
-              {
-                getCategoriesLoading && (
-                  <CircularProgress size={15} />
-                )
-              }
-            </Typography>
-            <Box className={classes.categoriesWrapper}>
-              {
-                categories.length === 0
-                  ? (
-                    <Box className={classes.categoriesMenuEmptyWrapper}>
-                      <Typography color="textSecondary">{systemTexts['EMPTY']}</Typography>
-                    </Box>
-                  )
-                  : categories.map((category, index) => {
-                    return (
-                      <Box
-                        key={index}
-                        onClick={() => {
-                          const selectedCategories = selectedCategoriesString
-                            ? selectedCategoriesString.split(',').map((value) => parseInt(value, 10))
-                            : [];
-                          let newSelectedCategories = [];
-                          if (selectedCategories.indexOf(category.id) !== -1) {
-                            newSelectedCategories = selectedCategories.filter((value) => value !== category.id);
-                          } else {
-                            newSelectedCategories = selectedCategories.concat(category.id);
-                          }
-                          history.push(pushSearch(history, {
-                            categories: newSelectedCategories.join(','),
-                          }));
-                        }}
-                      >
-                        <MenuItem
-                          classes={{
-                            root: clsx({
-                              [classes.selectedCategoryItem]: selectedCategoriesString.split(',').indexOf(category.id.toString()) !== -1,
-                            }),
-                          }}
-                        >
-                          <Checkbox
-                            color="primary"
-                            checked={selectedCategoriesString.split(',').indexOf(category.id.toString()) !== -1}
-                            onChange={(event) => event.preventDefault()}
-                          />
-                          {category.name}
-                        </MenuItem>
-                      </Box>
-                    );
-                  })
-              }
-            </Box>
-          </Menu>
           {
             queryQuestionsLoading
               ? (
@@ -267,142 +199,143 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
                     <AppIndicator type="empty" />
                   )
                   : (
-                    <>
-                      {
-                        selectedQuestions.length > 0 && (
-                          <Box className={classes.buttonsWrapper}>
-                            <Button
-                              color="primary"
-                              variant="outlined"
-                              startIcon={<PlaylistPlusIcon />}
-                              onClick={(event) => setAddQuestionMenuAnchor(event.target as HTMLElement)}
-                            >{pageTexts['004']} ({selectedQuestions.length})</Button>
-                            <Menu
-                              open={Boolean(addQuestionMenuAnchor)}
-                              anchorEl={addQuestionMenuAnchor}
-                              classes={{ paper: classes.addQuestionMenu }}
-                              onClose={() => setAddQuestionMenuAnchor(null)}
-                            >
-                              <Box className={classes.addQuestionMenuSearchWrapper}>
-                                <TextField
-                                  variant="standard"
-                                  label={pageTexts['006']}
-                                  fullWidth={true}
-                                  onChange={(event) => setPaperSearchValue(event.target.value)}
-                                />
-                              </Box>
-                              {
-                                debouncedPaperSearchValue && (
-                                  <Box className={classes.addQuestionMenuItemsWrapper}>
-                                    {
-                                      papersLoading
-                                        ? <AppIndicator type="loading" />
-                                        : (
-                                          papers.length === 0
-                                            ? <AppIndicator type="empty" />
-                                            : papers.map((paper) => {
-                                              return (
-                                                <div
-                                                  key={paper.id}
-                                                  onClick={() => {
-                                                    setCurrentSelectedPaper(paper);
-                                                    setPaperEditorMode('edit');
-                                                    setPaperEditorOpen(true);
-                                                  }}
-                                                >
-                                                  <MenuItem>{paper.title}</MenuItem>
-                                                </div>
-                                              );
-                                            })
-                                        )
-                                    }
-                                  </Box>
-                                )
-                              }
-                            </Menu>
-                            <Button
-                              color="primary"
-                              variant="outlined"
-                              onClick={() => {
-                                setPaperEditorMode('create');
-                                setPaperEditorOpen(true);
-                              }}
-                            >{pageTexts['007']}</Button>
-                            <Button
-                              classes={{ root: classes.deleteButton }}
-                              onClick={() => {
-                                AppDialogManager.confirm(pageTexts['005'], {
-                                  onConfirm: () => {
-                                    deleteQuestions(selectedQuestions.map((question) => question.id)).finally(() => {
-                                      setSelectedQuestions([]);
-                                      refreshQueryQuestions();
-                                    });
-                                  },
-                                });
-                              }}
-                            >{systemTexts['DELETE']} ({selectedQuestions.length})</Button>
-                          </Box>
-                        )
-                      }
-                      {
-                        questionItems.map((questionItem, index) => {
-                          return (
-                            <AppQuestionItem
-                              key={questionItem.id}
-                              selectable={true}
-                              answerable={false}
-                              selected={selectedQuestions.findIndex((question) => questionItem.id === question.id) !== -1}
-                              classes={{ root: classes.item }}
-                              question={pipeQuestionResponseToMetadata(questionItem)}
-                              onUpdateQuestion={() => {
-                                refreshQueryQuestions();
-                              }}
-                              onDeleteQuestion={() => {
-                                refreshQueryQuestions();
-                              }}
-                              onSelectQuestion={() => {
-                                setSelectedQuestions([...selectedQuestions, questionItem]);
-                              }}
-                              onCancelSelectQuestion={() => {
-                                setSelectedQuestions(selectedQuestions.filter((currentSelectedQuestion) => {
-                                  return currentSelectedQuestion.id !== questionItem.id;
-                                }));
-                              }}
-                            />
-                          );
-                        })
-                      }
-                      <TablePagination
-                        component={Box}
-                        page={page - 1}
-                        rowsPerPage={size}
-                        count={totalQuestions}
-                        rowsPerPageOptions={[5, 10, 20, 50]}
-                        labelRowsPerPage={tableTexts['001']}
-                        backIconButtonText={tableTexts['002']}
-                        nextIconButtonText={tableTexts['003']}
-                        labelDisplayedRows={({ from, to, count }) => `${count} ${tableTexts['004']} ${from}-${to}`}
-                        onChangePage={(event, newPageNumber) => {
-                          history.push({
-                            search: pushSearch(history, {
-                              page: newPageNumber + 1,
-                            }),
-                          });
-                        }}
-                        onChangeRowsPerPage={(event) => {
-                          history.push({
-                            search: pushSearch(history, {
-                              size: event.target.value,
-                              page: 1,
-                            }),
-                          });
-                        }}
-                      />
-                    </>
+                    questionItems.map((questionItem, index) => {
+                      return (
+                        <AppQuestionItem
+                          key={questionItem.id}
+                          selectable={true}
+                          answerable={false}
+                          selected={selectedQuestions.findIndex((question) => questionItem.id === question.id) !== -1}
+                          classes={{ root: classes.item }}
+                          question={pipeQuestionResponseToMetadata(questionItem)}
+                          onUpdateQuestion={() => {
+                            refreshQueryQuestions();
+                          }}
+                          onDeleteQuestion={() => {
+                            refreshQueryQuestions();
+                          }}
+                          onSelectQuestion={() => {
+                            setSelectedQuestions([...selectedQuestions, questionItem]);
+                          }}
+                          onCancelSelectQuestion={() => {
+                            setSelectedQuestions(selectedQuestions.filter((currentSelectedQuestion) => {
+                              return currentSelectedQuestion.id !== questionItem.id;
+                            }));
+                          }}
+                        />
+                      );
+                    })
                   )
               )
           }
         </Box>
+        {
+          selectedQuestions.length > 0 && (
+            <Box className={classes.buttonsWrapper}>
+              <Button
+                color="primary"
+                variant="outlined"
+                startIcon={<PlaylistPlusIcon />}
+                onClick={(event) => setAddQuestionMenuAnchor(event.target as HTMLElement)}
+              >{pageTexts['004']} ({selectedQuestions.length})</Button>
+              <Menu
+                open={Boolean(addQuestionMenuAnchor)}
+                anchorEl={addQuestionMenuAnchor}
+                classes={{ paper: classes.addQuestionMenu }}
+                onClose={() => setAddQuestionMenuAnchor(null)}
+              >
+                <Box className={classes.addQuestionMenuSearchWrapper}>
+                  <TextField
+                    variant="standard"
+                    label={pageTexts['006']}
+                    fullWidth={true}
+                    onChange={(event) => setPaperSearchValue(event.target.value)}
+                  />
+                </Box>
+                {
+                  debouncedPaperSearchValue && (
+                    <Box className={classes.addQuestionMenuItemsWrapper}>
+                      {
+                        papersLoading
+                          ? <AppIndicator type="loading" />
+                          : (
+                            papers.length === 0
+                              ? <AppIndicator type="empty" />
+                              : papers.map((paper) => {
+                                return (
+                                  <div
+                                    key={paper.id}
+                                    onClick={() => {
+                                      setCurrentSelectedPaper(paper);
+                                      setPaperEditorMode('edit');
+                                      setPaperEditorOpen(true);
+                                    }}
+                                  >
+                                    <MenuItem>{paper.title}</MenuItem>
+                                  </div>
+                                );
+                              })
+                          )
+                      }
+                    </Box>
+                  )
+                }
+              </Menu>
+              <Button
+                color="primary"
+                variant="outlined"
+                onClick={() => {
+                  setPaperEditorMode('create');
+                  setPaperEditorOpen(true);
+                }}
+              >{pageTexts['007']}</Button>
+              <Button
+                classes={{ root: classes.deleteButton }}
+                onClick={() => {
+                  AppDialogManager.confirm(pageTexts['005'], {
+                    onConfirm: () => {
+                      deleteQuestions(selectedQuestions.map((question) => question.id)).finally(() => {
+                        setSelectedQuestions([]);
+                        refreshQueryQuestions();
+                      });
+                    },
+                  });
+                }}
+              >{systemTexts['DELETE']} ({selectedQuestions.length})</Button>
+            </Box>
+          )
+        }
+        {
+          questionItems.length > 0 && (
+            <TablePagination
+              style={{ overflow: 'initial' }}
+              component={Box}
+              page={page - 1}
+              rowsPerPage={size}
+              count={totalQuestions}
+              rowsPerPageOptions={[5, 10, 20, 50]}
+              labelRowsPerPage={tableTexts['001']}
+              backIconButtonText={tableTexts['002']}
+              nextIconButtonText={tableTexts['003']}
+              labelDisplayedRows={({ from, to, count }) => `${count} ${tableTexts['004']} ${from}-${to}`}
+              onChangePage={(event, newPageNumber) => {
+                history.push({
+                  search: pushSearch(history, {
+                    page: newPageNumber + 1,
+                  }),
+                });
+              }}
+              onChangeRowsPerPage={(event) => {
+                history.push({
+                  search: pushSearch(history, {
+                    size: event.target.value,
+                    page: 1,
+                  }),
+                });
+              }}
+            />
+          )
+        }
       </div>
       <AppPaperEditor
         paper={paperEditorMode === 'edit' ? currentSelectedPaper : null}
@@ -413,6 +346,79 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
         onSubmitPaper={clearSelection}
         onClose={clearSelection}
       />
+      <AppQuestionEditor
+        mode="create"
+        open={createQuestionOpen}
+        onSubmitQuestion={() => {
+          setCreateQuestionOpen(false);
+          refreshQueryQuestions();
+        }}
+        onClose={() => setCreateQuestionOpen(false)}
+      />
+      <Menu
+        open={Boolean(filterMenuAnchor)}
+        anchorEl={filterMenuAnchor}
+        classes={{ paper: classes.filterMenu }}
+        onClose={() => setFilterMenuAnchor(null)}
+      >
+        <Typography
+          variant="subtitle2"
+          classes={{ root: classes.filterMenuTitle }}
+        >
+          {pageTexts['003']}
+          {
+            getCategoriesLoading && (
+              <CircularProgress size={15} />
+            )
+          }
+        </Typography>
+        <Box className={classes.categoriesWrapper}>
+          {
+            categories.length === 0
+              ? (
+                <Box className={classes.categoriesMenuEmptyWrapper}>
+                  <Typography color="textSecondary">{systemTexts['EMPTY']}</Typography>
+                </Box>
+              )
+              : categories.map((category, index) => {
+                return (
+                  <Box
+                    key={index}
+                    onClick={() => {
+                      const selectedCategories = selectedCategoriesString
+                        ? selectedCategoriesString.split(',').map((value) => parseInt(value, 10))
+                        : [];
+                      let newSelectedCategories = [];
+                      if (selectedCategories.indexOf(category.id) !== -1) {
+                        newSelectedCategories = selectedCategories.filter((value) => value !== category.id);
+                      } else {
+                        newSelectedCategories = selectedCategories.concat(category.id);
+                      }
+                      history.push(pushSearch(history, {
+                        categories: newSelectedCategories.join(','),
+                      }));
+                    }}
+                  >
+                    <MenuItem
+                      classes={{
+                        root: clsx({
+                          [classes.selectedCategoryItem]: selectedCategoriesString.split(',').indexOf(category.id.toString()) !== -1,
+                        }),
+                      }}
+                    >
+                      <Checkbox
+                        color="primary"
+                        checked={selectedCategoriesString.split(',').indexOf(category.id.toString()) !== -1}
+                        onChange={(event) => event.preventDefault()}
+                      />
+                      {category.name}
+                    </MenuItem>
+                  </Box>
+                );
+              })
+          }
+        </Box>
+      </Menu>
     </div>
   );
 };
