@@ -30,6 +30,7 @@ export interface I18N {
     paperContainer?: Record<string, string>;
     examContainer?: Record<string, string>;
     roleSelector?: Record<string, string>;
+    roleAutocomplete?: Record<string, string>;
   };
 }
 
@@ -305,6 +306,8 @@ const AppModel: AppModelType = {
         },
         roleSelector: {
           'TITLE': '选择一个或多个角色',
+        },
+        roleAutocomplete: {
           'SELECT_ROLES': '选择角色',
         },
         ui: {

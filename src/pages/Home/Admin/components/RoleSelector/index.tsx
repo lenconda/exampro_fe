@@ -1,17 +1,15 @@
-import { getRoles } from './service';
 import { connect } from '../../../../../patches/dva';
 import { ConnectState } from '../../../../../models';
 import { AppState } from '../../../../../models/app';
 import { Dispatch, RoleResponseData } from '../../../../../interfaces';
 import { useTexts } from '../../../../../utils/texts';
-import AutoComplete from '@material-ui/lab/Autocomplete';
+import RoleAutocomplete from '../RoleAutocomplete';
 import Button from '@material-ui/core/Button';
 import Dialog, { DialogProps } from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import TextField from '@material-ui/core/TextField';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import _ from 'lodash';
 
 export interface RoleSelectorProps extends DialogProps {
@@ -30,18 +28,7 @@ const RoleSelector: React.FC<RoleSelectorComponentProps> = ({
 }) => {
   const texts = useTexts(dispatch, 'roleSelector');
   const systemTexts = useTexts(dispatch, 'system');
-  const [roles, setRoles] = useState<RoleResponseData[]>([]);
-  const [rolesLoading, setRolesLoading] = useState<boolean>(false);
   const [selectedRoles, setSelectedRoles] = useState<(RoleResponseData | string)[]>([]);
-
-  const handleGetRoles = () => {
-    setRolesLoading(true);
-    getRoles().then((roles) => setRoles(roles)).finally(() => setRolesLoading(true));
-  };
-
-  useEffect(() => {
-    handleGetRoles();
-  }, []);
 
   return (
     <Dialog
@@ -51,35 +38,10 @@ const RoleSelector: React.FC<RoleSelectorComponentProps> = ({
     >
       <DialogTitle>{texts['TITLE']}</DialogTitle>
       <DialogContent>
-        <AutoComplete
-          id="select-roles"
-          multiple={true}
-          filterSelectedOptions={true}
-          limitTags={5}
-          value={selectedRoles}
-          loading={rolesLoading}
-          options={roles}
-          loadingText={systemTexts['LOADING']}
-          getOptionSelected={(option, value) => {
-            if (typeof option === 'string' && typeof value === 'string') {
-              return option === value;
-            } else {
-              return (option as RoleResponseData).id === (value as RoleResponseData).id;
-            }
-          }}
-          getOptionLabel={(role) => (typeof role === 'string' ? role : role.id)}
-          renderInput={(autoCompleteProps) => {
-            return (
-              <TextField
-                {...autoCompleteProps}
-                fullWidth={true}
-                variant="outlined"
-                label={texts['SELECT_ROLES']}
-              />
-            );
-          }}
-          onChange={(event, data) => {
-            setSelectedRoles(data);
+        <RoleAutocomplete
+          selectedRoles={selectedRoles}
+          onRolesChange={(roles) => {
+            setSelectedRoles(roles);
           }}
         />
       </DialogContent>
