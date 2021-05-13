@@ -51,7 +51,7 @@ import _ from 'lodash';
 import clsx from 'clsx';
 import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautiful-dnd';
 
-export interface ProfilePageProps extends Dispatch, AppState {}
+export interface MenuPageProps extends Dispatch, AppState {}
 export type MenuRolePaginationData = CustomPaginationData;
 
 const defaultCreateMenuRequestData: MenuItemRequestData = {
@@ -128,7 +128,7 @@ const useStyles = makeStyles((theme) => {
   };
 });
 
-const ProfilePage: React.FC<ProfilePageProps> = ({
+const MenuPage: React.FC<MenuPageProps> = ({
   dispatch,
 }) => {
   const classes = useStyles();
@@ -674,4 +674,4 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   );
 };
 
-export default connect(({ app }: ConnectState) => app)(ProfilePage);
+export default connect(({ app }: ConnectState) => app)(MenuPage);

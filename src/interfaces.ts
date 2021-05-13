@@ -243,8 +243,16 @@ export interface MenuTreeItemLevelPermission {
 }
 
 export interface MenuRoleResponseData {
-  menu: MenuItemResponseData[];
-  role: RoleResponseData[];
+  menu: MenuItemResponseData;
+  role: RoleResponseData;
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string;
+}
+
+export interface UserRoleResponseData {
+  user: User;
+  role: RoleResponseData;
   createdAt?: string;
   updatedAt?: string;
   deletedAt?: string;

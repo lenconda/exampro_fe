@@ -18,6 +18,8 @@ const permissionMap = {
 
 // /home/admin/menu
 const HomeAdminMenuPage = React.lazy(() => import('./Menu'));
+// /home/admin/user
+const HomeUserMenuPage = React.lazy(() => import('./User'));
 
 const AccountPage: React.FC<AccountPageProps> = () => {
   const history = useHistory();
@@ -62,6 +64,7 @@ const AccountPage: React.FC<AccountPageProps> = () => {
     <Suspense fallback={<Fallback />}>
       <Switch>
         <Route path="/home/admin/menu" component={HomeAdminMenuPage} />
+        <Route path="/home/admin/user" component={HomeUserMenuPage} />
       </Switch>
     </Suspense>
   );
