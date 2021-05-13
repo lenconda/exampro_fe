@@ -171,7 +171,7 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
           CreateIcon={AddCommentIcon}
           leftComponent={
             <IconButton
-              onClick={(event) => setFilterMenuAnchor(event.target as HTMLElement)}
+              onClick={(event) => setFilterMenuAnchor(event.currentTarget as HTMLElement)}
             >
               {
                 (selectedCategoriesString && selectedCategoriesString.split(',').length > 0)
