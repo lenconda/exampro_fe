@@ -51,6 +51,7 @@ const RoleSelector: React.FC<RoleSelectorComponentProps> = ({
           color="primary"
           disabled={submitting}
           onClick={() => {
+            setSelectedRoles([]);
             if (_.isFunction(onCancel)) {
               onCancel();
             }
@@ -61,6 +62,7 @@ const RoleSelector: React.FC<RoleSelectorComponentProps> = ({
           color="primary"
           disabled={submitting}
           onClick={() => {
+            setSelectedRoles([]);
             if (_.isFunction(onSelectRoles)) {
               onSelectRoles(selectedRoles.map((role) => {
                 if (typeof role === 'string') {
