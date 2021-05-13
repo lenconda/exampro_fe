@@ -34,6 +34,9 @@ const useStyles = makeStyles((theme) => {
     }),
     appMenuItemActive: {
       backgroundColor: lighten(theme.palette.primary.main, 0.85),
+      '&:hover': {
+        backgroundColor: lighten(theme.palette.primary.main, 0.85),
+      },
     },
   };
 });

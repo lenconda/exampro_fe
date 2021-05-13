@@ -100,6 +100,9 @@ const useStyles = makeStyles((theme) => {
     },
     menuTreeItemSelected: {
       backgroundColor: lighten(theme.palette.primary.main, 0.85),
+      '&:hover': {
+        backgroundColor: lighten(theme.palette.primary.main, 0.85),
+      },
     },
     menuButtonsWrapper: {
       display: 'flex',
@@ -409,8 +412,8 @@ const MenuPage: React.FC<MenuPageProps> = ({
                                                       classes={{
                                                         root: clsx(classes.menuTreeItem, {
                                                           [classes.menuTreeItemSelected]: _.isNumber(selectedMenuTreeItemIndex)
-                                                          && menuTreeItems[selectedMenuTreeItemIndex]
-                                                          && menuTreeItems[selectedMenuTreeItemIndex].id === treeItem.id,
+                                                            && menuTreeItems[selectedMenuTreeItemIndex]
+                                                            && menuTreeItems[selectedMenuTreeItemIndex].id === treeItem.id,
                                                         }),
                                                       }}
                                                       style={{
