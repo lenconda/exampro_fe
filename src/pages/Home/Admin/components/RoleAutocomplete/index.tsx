@@ -5,18 +5,20 @@ import { AppState } from '../../../../../models/app';
 import { Dispatch, RoleResponseData } from '../../../../../interfaces';
 import { useTexts } from '../../../../../utils/texts';
 import AutoComplete, { AutocompleteProps } from '@material-ui/lab/Autocomplete';
-import TextField from '@material-ui/core/TextField';
+import TextField, { TextFieldProps } from '@material-ui/core/TextField';
 import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
 
 export interface RoleAutocomplete extends Omit<AutocompleteProps<RoleResponseData, true, false, true>, 'renderInput' | 'options'> {
   selectedRoles?: (RoleResponseData | string)[];
-  onRolesChange?(roleIds: (RoleResponseData | string)[]);
+  TextFieldProps?: TextFieldProps;
+  onRolesChange?(roleIds: string[]): void;
 }
 export interface RoleAutocompleteComponentProps extends AppState, Dispatch, RoleAutocomplete {}
 
 const RoleAutocomplete: React.FC<RoleAutocompleteComponentProps> = ({
   selectedRoles = [],
+  TextFieldProps = {},
   onRolesChange,
   dispatch,
   ...props
@@ -40,17 +42,16 @@ const RoleAutocomplete: React.FC<RoleAutocompleteComponentProps> = ({
       id="select-roles"
       multiple={true}
       filterSelectedOptions={true}
+      fullWidth={true}
       limitTags={5}
       value={selectedRoles}
       loading={rolesLoading}
       options={roles}
       loadingText={systemTexts['LOADING']}
       getOptionSelected={(option, value) => {
-        if (typeof option === 'string' && typeof value === 'string') {
-          return option === value;
-        } else {
-          return (option as RoleResponseData).id === (value as RoleResponseData).id;
-        }
+        const optionId = typeof option === 'string' ? option : (option as RoleResponseData).id;
+        const valueId = typeof value === 'string' ? value : (value as RoleResponseData).id;
+        return optionId === valueId;
       }}
       getOptionLabel={(role) => (typeof role === 'string' ? role : role.id)}
       renderInput={(autoCompleteProps) => {
@@ -60,15 +61,22 @@ const RoleAutocomplete: React.FC<RoleAutocompleteComponentProps> = ({
             fullWidth={true}
             variant="outlined"
             label={texts['SELECT_ROLES']}
+            {...TextFieldProps}
           />
         );
       }}
       onChange={(event, data) => {
         if (_.isFunction(onRolesChange)) {
-          onRolesChange(data);
+          onRolesChange((data || []).map((item) => {
+            if (typeof item === 'string') {
+              return item;
+            } else {
+              return (item as RoleResponseData).id;
+            }
+          }));
         }
       }}
-      {...props}
+      {...(props || {})}
     />
   );
 };
