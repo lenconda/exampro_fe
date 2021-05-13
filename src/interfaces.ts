@@ -229,6 +229,7 @@ export interface MenuItemRequestData {
   title: string;
   pathname: string;
   icon: string;
+  roles?: string[];
   order?: number;
   parent?: number;
 }

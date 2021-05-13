@@ -25,6 +25,7 @@ import AppIndicator from '../../../../components/AppIndicator';
 import AppDialogManager from '../../../../components/AppDialog/Manager';
 import AppTable, { TableSchema } from '../../../../components/AppTable';
 import RoleSelector from '../components/RoleSelector';
+import RoleAutocomplete from '../components/RoleAutocomplete';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -642,6 +643,18 @@ const MenuPage: React.FC<MenuPageProps> = ({
                 setCreateMenuData({
                   ...createMenuData,
                   pathname: event.target.value,
+                });
+              }}
+            />
+          </Box>
+          <Box className={classes.createMenuInfoItemWrapper}>
+            <RoleAutocomplete
+              fullWidth={true}
+              selectedRoles={createMenuData.roles}
+              onRolesChange={(roles) => {
+                setCreateMenuData({
+                  ...createMenuData,
+                  roles,
                 });
               }}
             />
