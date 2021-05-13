@@ -342,21 +342,21 @@ const MenuPage: React.FC<MenuPageProps> = ({
         spacing={3}
         classes={{ container: clsx('app-grid-container', classes.container) }}
       >
-        {
-          menuTreeItemsLoading
-            ? <AppIndicator type="loading" />
-            : menuTreeItems && menuTreeItems.length === 0
-              ? <AppIndicator type="empty" />
-              : (
-                <>
-                  <Grid
-                    item={true}
-                    xs={12}
-                    sm={12}
-                    md={6}
-                    lg={5}
-                    xl={4}
-                  >
+        <>
+          <Grid
+            item={true}
+            xs={12}
+            sm={12}
+            md={6}
+            lg={5}
+            xl={4}
+          >
+            {
+              menuTreeItemsLoading
+                ? <AppIndicator type="loading" />
+                : menuTreeItems && menuTreeItems.length === 0
+                  ? <AppIndicator type="empty" />
+                  : (
                     <Card classes={{ root: clsx(classes.sectionWrapper, classes.menuWrapper) }}>
                       <CardContent classes={{ root: classes.menuButtonsWrapper }}>
                         <Button
@@ -429,165 +429,165 @@ const MenuPage: React.FC<MenuPageProps> = ({
                         </Droppable>
                       </DragDropContext>
                     </Card>
-                  </Grid>
-                  <Grid
-                    item={true}
-                    xs={12}
-                    sm={12}
-                    md={6}
-                    lg={7}
-                    xl={8}
-                  >
-                    <Card classes={{ root: classes.sectionWrapper }} ref={menuRoleCardRef}>
+                  )
+            }
+          </Grid>
+          <Grid
+            item={true}
+            xs={12}
+            sm={12}
+            md={6}
+            lg={7}
+            xl={8}
+          >
+            <Card classes={{ root: classes.sectionWrapper }} ref={menuRoleCardRef}>
+              {
+                !(_.isNumber(selectedMenuTreeItemIndex) && menuTreeItems[selectedMenuTreeItemIndex])
+                  ? <Typography style={{ textAlign: 'center' }}>{texts['002']}</Typography>
+                  : (
+                    <>
+                      <Tabs
+                        value={selectedTabIndex}
+                        indicatorColor="primary"
+                        textColor="primary"
+                        variant="scrollable"
+                        classes={{ root: classes.tabsWrapper }}
+                        onChange={(event, newIndex) => setSelectedTabIndex(newIndex)}
+                      >
+                        {
+                          menuInfoTabs.map((tabName, index) => {
+                            return (
+                              <Tab key={index} label={texts[tabName]} />
+                            );
+                          })
+                        }
+                      </Tabs>
                       {
-                        (!_.isNumber(selectedMenuTreeItemIndex) && menuTreeItems[selectedMenuTreeItemIndex])
-                          ? <Typography style={{ textAlign: 'center' }}>{texts['002']}</Typography>
-                          : (
-                            <>
-                              <Tabs
-                                value={selectedTabIndex}
-                                indicatorColor="primary"
-                                textColor="primary"
-                                variant="scrollable"
-                                classes={{ root: classes.tabsWrapper }}
-                                onChange={(event, newIndex) => setSelectedTabIndex(newIndex)}
-                              >
-                                {
-                                  menuInfoTabs.map((tabName, index) => {
-                                    return (
-                                      <Tab key={index} label={texts[tabName]} />
-                                    );
-                                  })
-                                }
-                              </Tabs>
-                              {
-                                menuInfoTabs[selectedTabIndex] === 'BASIC' && (
-                                  <Box>
-                                    <Box className={classes.createMenuInfoItemWrapper}>
-                                      <Button
-                                        variant="outlined"
-                                        size="small"
-                                        startIcon={<ArrowCollapseLeftIcon fontSize="small" />}
-                                        disabled={!selectedMenuTreeItemMovePermission.left}
-                                        onClick={() => handleMoveLevel('left')}
-                                      >{texts['MOVE_LEFT']}</Button>
-                                      <Button
-                                        variant="outlined"
-                                        size="small"
-                                        startIcon={<ArrowCollapseRightIcon fontSize="small" />}
-                                        disabled={!selectedMenuTreeItemMovePermission.right}
-                                        onClick={() => handleMoveLevel('right')}
-                                      >{texts['MOVE_RIGHT']}</Button>
-                                    </Box>
-                                    <Box className={classes.createMenuInfoItemWrapper}>
-                                      <Typography>{texts['004']}:&nbsp;{menuTreeItems[selectedMenuTreeItemIndex].title}</Typography>
-                                    </Box>
-                                    <Box className={classes.createMenuInfoItemWrapper}>
-                                      <TextField
-                                        variant="outlined"
-                                        fullWidth={true}
-                                        label={texts['005']}
-                                        value={menuTreeItems[selectedMenuTreeItemIndex].icon}
-                                        onChange={(event) => {
-                                          setMenuTreeItems(menuTreeItems.map((treeItem, index) => {
-                                            if (index === selectedMenuTreeItemIndex) {
-                                              return {
-                                                ...treeItem,
-                                                icon: event.target.value,
-                                              };
-                                            } else {
-                                              return treeItem;
-                                            }
-                                          }));
-                                        }}
-                                      />
-                                    </Box>
-                                    <Box className={classes.createMenuInfoItemWrapper}>
-                                      <TextField
-                                        variant="outlined"
-                                        fullWidth={true}
-                                        label={texts['006']}
-                                        value={menuTreeItems[selectedMenuTreeItemIndex].pathname}
-                                        onChange={(event) => {
-                                          setMenuTreeItems(menuTreeItems.map((treeItem, index) => {
-                                            if (index === selectedMenuTreeItemIndex) {
-                                              return {
-                                                ...treeItem,
-                                                pathname: event.target.value,
-                                              };
-                                            } else {
-                                              return treeItem;
-                                            }
-                                          }));
-                                        }}
-                                      />
-                                    </Box>
-                                    <Box className={classes.createMenuInfoItemWrapper}>
-                                      <Button
-                                        classes={{ root: classes.deleteButton }}
-                                        variant="outlined"
-                                        disabled={deleteMenuItemLoading}
-                                        onClick={() => {
-                                          AppDialogManager.confirm(texts['007'], {
-                                            onConfirm: () => {
-                                              handleDeleteMenuItem(_.get(menuTreeItems[selectedMenuTreeItemIndex], 'id'));
-                                            },
-                                          });
-                                        }}
-                                      >{systemTexts['DELETE']}</Button>
-                                    </Box>
-                                  </Box>
-                                )
-                              }
-                              {
-                                menuInfoTabs[selectedTabIndex] === 'ROLES' && (
-                                  <>
-                                    <Box className={classes.createMenuInfoItemWrapper}>
-                                      <Button
-                                        variant="outlined"
-                                        onClick={() => setRoleSelectorOpen(true)}
-                                      >{systemTexts['GRANT']}</Button>
-                                    </Box>
-                                    <AppTable
-                                      schema={schema}
-                                      data={menuRoles.items || []}
-                                      loading={queryMenuRolesLoading}
-                                      containerClassName={classes.menuRolesTableContainer}
-                                      selectable={false}
-                                      collapseHeight={185}
-                                      PaperProps={{
-                                        elevation: 0,
-                                      }}
-                                      TablePaginationProps={{
-                                        count: menuRoles.total,
-                                        page: (menuRolePagination.page || 1) - 1,
-                                        rowsPerPage: menuRolePagination.size || 10,
-                                        onChangePage: (event, newPageNumber) => {
-                                          setMenuRolePagination({
-                                            ...menuRolePagination,
-                                            page: newPageNumber + 1,
-                                          });
-                                        },
-                                        onChangeRowsPerPage: (event) => {
-                                          setMenuRolePagination({
-                                            ...menuRolePagination,
-                                            size: parseInt(event.target.value, 10),
-                                            page: 1,
-                                          });
-                                        },
-                                      }}
-                                    />
-                                  </>
-                                )
-                              }
-                            </>
-                          )
+                        menuInfoTabs[selectedTabIndex] === 'BASIC' && (
+                          <Box>
+                            <Box className={classes.createMenuInfoItemWrapper}>
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                startIcon={<ArrowCollapseLeftIcon fontSize="small" />}
+                                disabled={!selectedMenuTreeItemMovePermission.left}
+                                onClick={() => handleMoveLevel('left')}
+                              >{texts['MOVE_LEFT']}</Button>
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                startIcon={<ArrowCollapseRightIcon fontSize="small" />}
+                                disabled={!selectedMenuTreeItemMovePermission.right}
+                                onClick={() => handleMoveLevel('right')}
+                              >{texts['MOVE_RIGHT']}</Button>
+                            </Box>
+                            <Box className={classes.createMenuInfoItemWrapper}>
+                              <Typography>{texts['004']}:&nbsp;{menuTreeItems[selectedMenuTreeItemIndex].title}</Typography>
+                            </Box>
+                            <Box className={classes.createMenuInfoItemWrapper}>
+                              <TextField
+                                variant="outlined"
+                                fullWidth={true}
+                                label={texts['005']}
+                                value={menuTreeItems[selectedMenuTreeItemIndex].icon}
+                                onChange={(event) => {
+                                  setMenuTreeItems(menuTreeItems.map((treeItem, index) => {
+                                    if (index === selectedMenuTreeItemIndex) {
+                                      return {
+                                        ...treeItem,
+                                        icon: event.target.value,
+                                      };
+                                    } else {
+                                      return treeItem;
+                                    }
+                                  }));
+                                }}
+                              />
+                            </Box>
+                            <Box className={classes.createMenuInfoItemWrapper}>
+                              <TextField
+                                variant="outlined"
+                                fullWidth={true}
+                                label={texts['006']}
+                                value={menuTreeItems[selectedMenuTreeItemIndex].pathname}
+                                onChange={(event) => {
+                                  setMenuTreeItems(menuTreeItems.map((treeItem, index) => {
+                                    if (index === selectedMenuTreeItemIndex) {
+                                      return {
+                                        ...treeItem,
+                                        pathname: event.target.value,
+                                      };
+                                    } else {
+                                      return treeItem;
+                                    }
+                                  }));
+                                }}
+                              />
+                            </Box>
+                            <Box className={classes.createMenuInfoItemWrapper}>
+                              <Button
+                                classes={{ root: classes.deleteButton }}
+                                variant="outlined"
+                                disabled={deleteMenuItemLoading}
+                                onClick={() => {
+                                  AppDialogManager.confirm(texts['007'], {
+                                    onConfirm: () => {
+                                      handleDeleteMenuItem(_.get(menuTreeItems[selectedMenuTreeItemIndex], 'id'));
+                                    },
+                                  });
+                                }}
+                              >{systemTexts['DELETE']}</Button>
+                            </Box>
+                          </Box>
+                        )
                       }
-                    </Card>
-                  </Grid>
-                </>
-              )
-        }
+                      {
+                        menuInfoTabs[selectedTabIndex] === 'ROLES' && (
+                          <>
+                            <Box className={classes.createMenuInfoItemWrapper}>
+                              <Button
+                                variant="outlined"
+                                onClick={() => setRoleSelectorOpen(true)}
+                              >{systemTexts['GRANT']}</Button>
+                            </Box>
+                            <AppTable
+                              schema={schema}
+                              data={menuRoles.items || []}
+                              loading={queryMenuRolesLoading}
+                              containerClassName={classes.menuRolesTableContainer}
+                              selectable={false}
+                              collapseHeight={185}
+                              PaperProps={{
+                                elevation: 0,
+                              }}
+                              TablePaginationProps={{
+                                count: menuRoles.total,
+                                page: (menuRolePagination.page || 1) - 1,
+                                rowsPerPage: menuRolePagination.size || 10,
+                                onChangePage: (event, newPageNumber) => {
+                                  setMenuRolePagination({
+                                    ...menuRolePagination,
+                                    page: newPageNumber + 1,
+                                  });
+                                },
+                                onChangeRowsPerPage: (event) => {
+                                  setMenuRolePagination({
+                                    ...menuRolePagination,
+                                    size: parseInt(event.target.value, 10),
+                                    page: 1,
+                                  });
+                                },
+                              }}
+                            />
+                          </>
+                        )
+                      }
+                    </>
+                  )
+              }
+            </Card>
+          </Grid>
+        </>
       </Grid>
       <Dialog
         open={createMenuItemOpen}

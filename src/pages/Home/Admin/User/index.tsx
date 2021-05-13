@@ -292,7 +292,7 @@ const UserPage: React.FC<UserPageProps> = ({
           >
             <Card classes={{ root: classes.sectionWrapper }}>
               {
-                (!selectedUser)
+                !selectedUser
                   ? <Typography style={{ textAlign: 'center' }}>{texts['002']}</Typography>
                   : (
                     <>
