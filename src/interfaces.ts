@@ -258,3 +258,9 @@ export interface UserRoleResponseData {
   updatedAt?: string;
   deletedAt?: string;
 }
+
+export interface UserRequestData {
+  email: string;
+  password: string;
+  roles?: string[];
+}

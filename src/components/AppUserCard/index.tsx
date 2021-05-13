@@ -65,7 +65,6 @@ const AppUserCard: React.FC<AppUserCardProps> = React.forwardRef(({
         <div className={clsx('app-user-card__info-wrapper', classes.infoWrapper)}>
           <Typography
             noWrap={true}
-            variant="h6"
             classes={{ root: 'name' }}
           >{name || email}</Typography>
           <Typography variant="subtitle2" classes={{ root: 'email' }}>{email}</Typography>

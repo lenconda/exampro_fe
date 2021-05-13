@@ -4,6 +4,7 @@ import {
   Dispatch,
   PaginationResponse,
   User,
+  UserRequestData,
   UserRoleResponseData,
 } from '../../../../interfaces';
 import { AppState } from '../../../../models/app';
@@ -22,15 +23,10 @@ import CardContent from '@material-ui/core/CardContent';
 import React, { useEffect, useState } from 'react';
 import { lighten, makeStyles } from '@material-ui/core';
 import Box from '@material-ui/core/Box';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/CardActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
 import Grid from '@material-ui/core/Grid';
 import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
 import TablePagination from '@material-ui/core/TablePagination';
-import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import AccountPlusOutlineIcon from 'mdi-material-ui/AccountPlusOutline';
 import _ from 'lodash';
@@ -48,6 +44,11 @@ const defaultUserRolesPaginationData: UserRolePaginationData = {
 const defaultUsersPaginationData: UserPaginationData = {
   page: 1,
   size: 10,
+};
+const defaultUserRequestData: UserRequestData = {
+  email: '',
+  password: '',
+  roles: [],
 };
 
 const useStyles = makeStyles((theme) => {
@@ -231,14 +232,6 @@ const UserPage: React.FC<UserPageProps> = ({
                   ? <AppIndicator type="empty" />
                   : (
                     <Card classes={{ root: clsx(classes.sectionWrapper, classes.usersWrapper) }}>
-                      <CardContent classes={{ root: classes.buttonsWrapper }}>
-                        <Button
-                          startIcon={<AccountPlusOutlineIcon />}
-                          color="primary"
-                          variant="contained"
-                          size="small"
-                        >{texts['001']}</Button>
-                      </CardContent>
                       {
                         usersData.items.map((item) => {
                           return (
@@ -256,6 +249,7 @@ const UserPage: React.FC<UserPageProps> = ({
                         })
                       }
                       <TablePagination
+                        component="div"
                         count={usersData.total}
                         page={(usersPagination.page || 1) - 1}
                         rowsPerPageOptions={[5, 10, 20, 50]}
@@ -378,77 +372,6 @@ const UserPage: React.FC<UserPageProps> = ({
           </Grid>
         </>
       </Grid>
-      {/* <Dialog
-        open={createMenuItemOpen}
-        scroll="paper"
-        maxWidth="sm"
-        fullWidth={true}
-      >
-        <DialogTitle>{texts['003']}</DialogTitle>
-        <DialogContent>
-          <Box className={classes.infoItemWrapper}>
-            <TextField
-              variant="outlined"
-              fullWidth={true}
-              label={texts['004']}
-              value={createMenuData.title}
-              onChange={(event) => {
-                setCreateMenuData({
-                  ...createMenuData,
-                  title: event.target.value,
-                });
-              }}
-            />
-          </Box>
-          <Box className={classes.infoItemWrapper}>
-            <TextField
-              variant="outlined"
-              fullWidth={true}
-              label={texts['005']}
-              value={createMenuData.icon}
-              onChange={(event) => {
-                setCreateMenuData({
-                  ...createMenuData,
-                  icon: event.target.value,
-                });
-              }}
-            />
-            {
-              icons[createMenuData.icon] && (
-                <Box className={classes.createMenuInfoIconWrapper}>
-                  <SvgIcon component={icons[createMenuData.icon]} />
-                </Box>
-              )
-            }
-          </Box>
-          <Box className={classes.infoItemWrapper}>
-            <TextField
-              variant="outlined"
-              fullWidth={true}
-              label={texts['006']}
-              value={createMenuData.pathname}
-              onChange={(event) => {
-                setCreateMenuData({
-                  ...createMenuData,
-                  pathname: event.target.value,
-                });
-              }}
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions style={{ justifyContent: 'flex-end' }}>
-          <Button
-            color="primary"
-            disabled={createMenuLoading}
-            onClick={closeCreateMenuDialog}
-          >{systemTexts['CANCEL']}</Button>
-          <Button
-            color="primary"
-            disabled={!validateCreateMenuData(createMenuData) || createMenuLoading}
-            // onClick={() => createNewMenuItem(createMenuData)}
-          >{systemTexts['SUBMIT']}</Button>
-        </DialogActions>
-      </Dialog> */}
       <RoleSelector
         open={roleSelectorOpen}
         submitting={grantUserRolesLoading}
