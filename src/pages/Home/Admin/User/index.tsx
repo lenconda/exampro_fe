@@ -1,10 +1,14 @@
-import { deleteUserRoles, grantUserRoles, queryAllUsers, queryUserRoles } from './service';
+import {
+  deleteUserRoles,
+  grantUserRoles,
+  queryAllUsers,
+  queryUserRoles,
+} from './service';
 import {
   CustomPaginationData,
   Dispatch,
   PaginationResponse,
   User,
-  UserRequestData,
   UserRoleResponseData,
 } from '../../../../interfaces';
 import { AppState } from '../../../../models/app';
@@ -42,11 +46,6 @@ const defaultUserRolesPaginationData: UserRolePaginationData = {
 const defaultUsersPaginationData: UserPaginationData = {
   page: 1,
   size: 10,
-};
-const defaultUserRequestData: UserRequestData = {
-  email: '',
-  password: '',
-  roles: [],
 };
 
 const useStyles = makeStyles((theme) => {
