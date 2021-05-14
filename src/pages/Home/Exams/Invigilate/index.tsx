@@ -130,6 +130,10 @@ const InvigilatePage: React.FC<InvigilatePageProps> = ({
           render: (row, value) => (value ? new Date(value).toLocaleString() : systemTexts['NULL']),
         },
         {
+          title: texts['008'],
+          key: 'leftTimes',
+        },
+        {
           title: systemTexts['OPERATIONS'],
           key: 'user',
           render: (row: UserExam, value: User) => {

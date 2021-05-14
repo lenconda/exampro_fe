@@ -2,6 +2,7 @@ import {
   getExamInfo,
   getExamResult,
   getParticipantExamResult,
+  increaseLeftTimes,
   putParticipantExamScores,
   startExam,
   startReviewExam,
@@ -536,6 +537,14 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
     }, {});
     setParticipantAnswerStatus(currentParticipantAnswerStatus);
   }, [participantAnswer]);
+
+  useEffect(() => {
+    if (examState === 'processing') {
+      window.addEventListener('blur', () => {
+        increaseLeftTimes(examId);
+      });
+    }
+  }, [examState]);
 
   const statusesWrapper = (
     <Box className={classes.questionAnswerStatusesWrapper}>

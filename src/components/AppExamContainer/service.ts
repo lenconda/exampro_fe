@@ -67,9 +67,17 @@ export const putParticipantExamScores = async (
 };
 
 export const startReviewExam = async (examId: number, participantEmail: string) => {
-  const data = await AppRequestManager.send({
+  await AppRequestManager.send({
     url: `/exam/${examId}/review/${participantEmail}`,
     method: 'POST',
+  });
+  return;
+};
+
+export const increaseLeftTimes = async (examId: number) => {
+  await AppRequestManager.send({
+    url: `/exam/${examId}/left_times`,
+    method: 'PUT',
   });
   return;
 };

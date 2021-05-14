@@ -409,6 +409,7 @@ const AppModel: AppModelType = {
             '005': '邮箱',
             '006': '开始时间',
             '007': '刷新中...',
+            '008': '离开次数',
           },
           '/home/account/profile': {
             '001': '更换头像',
