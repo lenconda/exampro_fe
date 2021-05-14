@@ -111,3 +111,19 @@ export const checkResultPermission = (exam: ExamResponseData) => {
   return true;
 };
 
+export const checkInvigilatePermission = (exam: ExamResponseData) => {
+  if (!exam) {
+    return false;
+  }
+  if (!exam.userExam) {
+    return false;
+  }
+  const { startTime } = exam;
+  const startTimestamp = Date.parse(startTime);
+  const currentTimestamp = Date.now();
+  if (currentTimestamp > startTimestamp) {
+    return true;
+  } else {
+    return false;
+  }
+};

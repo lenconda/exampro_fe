@@ -14,6 +14,7 @@ export const getExamInfo = async (examId: number, action: string = '') => {
     participate_confirm: 'resource/exam/participant',
     result: 'resource/exam/participant',
     result_participant: 'resource/exam/initiator',
+    invigilate: 'resource/exam/invigilator',
   };
   const data = await AppRequestManager.send({
     url: `/exam/${examId}?role=${actionRoleMap[action] || ''}`,

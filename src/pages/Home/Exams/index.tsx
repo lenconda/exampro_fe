@@ -382,13 +382,13 @@ const ExamsPage: React.FC<ExamPageProps> = ({
                                 Icon: FileEyeIcon,
                                 title: texts['012'],
                                 show: selectedExams.length === 1
-                                && selectedExams[0].startTime
-                                && Date.now() >= Date.parse(selectedExams[0].startTime)
-                                && Date.now() <= Date.parse(selectedExams[0].endTime)
-                                && roleId === 'resource/exam/invigilator',
+                                  && selectedExams[0].startTime
+                                  && Date.now() >= Date.parse(selectedExams[0].startTime)
+                                  && roleId === 'resource/exam/invigilator',
                                 IconButtonProps: {
-                                // TODO: push to invigilator page
-                                  onClick: () => {},
+                                  onClick: () => {
+                                    history.push(`/home/exams/invigilate/${selectedExams[0].id}`);
+                                  },
                                 },
                               },
                               {
