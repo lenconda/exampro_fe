@@ -1,12 +1,22 @@
-import { createQuestion, getAllCategoriesWithoutPagination, updateQuestion } from './service';
-import { AppQuestionMetaData, Dispatch, QuestionCategory, QuestionChoice, QuestionChoiceWithAnswer, QuestionType } from '../../interfaces';
+import {
+  createQuestion,
+  getAllCategoriesWithoutPagination,
+  updateQuestion,
+} from './service';
+import {
+  AppQuestionMetaData,
+  Dispatch,
+  QuestionCategory,
+  QuestionChoice,
+  QuestionChoiceWithAnswer,
+  QuestionType,
+} from '../../interfaces';
 import { AppState } from '../../models/app';
 import Editor from '../Editor';
 import { connect } from '../../patches/dva';
 import { ConnectState } from '../../models';
 import { useTexts } from '../../utils/texts';
 import { useDebouncedValue, useUpdateEffect } from '../../utils/hooks';
-import { useRequest } from '../../utils/request';
 import AutoComplete from '@material-ui/lab/Autocomplete';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
@@ -44,6 +54,7 @@ import clsx from 'clsx';
 export interface AppQuestionEditorProps extends DialogProps {
   mode?: 'create' | 'edit';
   question?: AppQuestionMetaData;
+  categories?: QuestionCategory[];
   onSubmitQuestion?(questionMetaData: AppQuestionMetaData): void;
 }
 export interface AppQuestionEditorConnectedProps extends Dispatch, AppState, AppQuestionEditorProps {}
@@ -173,6 +184,7 @@ const reorderQuestionChoices = (
 const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
   mode = 'create',
   question,
+  categories = [],
   dispatch,
   onClose,
   onSubmitQuestion,
@@ -204,16 +216,22 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
     setQuestionShortAnswerContentState,
   ] = useState<ContentState>(EditorState.createEmpty().getCurrentContent());
   const [
-    questionCategories = [],
-    questionCategoriesLoading,
-  ] = useRequest<QuestionCategory[]>(getAllCategoriesWithoutPagination);
-  const [
     selectedQuestionCategories,
     setSelectedQuestionCategories,
   ] = useState<(QuestionCategory | string)[]>([]);
 
   const debouncedQuestionContentState = useDebouncedValue<ContentState>(questionContentState);
   const debouncedQuestionShortAnswerContentState = useDebouncedValue<ContentState>(questionShortAnswerContentState);
+
+  const [questionCategories, setQuestionCategories] = useState<QuestionCategory[]>([]);
+  const [questionCategoriesLoading, setQuestionCategoriesLoading] = useState<boolean>(false);
+
+  const handleGetAllCategoriesWithoutPagination = () => {
+    setQuestionCategoriesLoading(true);
+    getAllCategoriesWithoutPagination().then((categories) => {
+      setQuestionCategories(categories);
+    }).finally(() => setQuestionCategoriesLoading(false));
+  };
 
   const validateChoiceContent = (choices: Partial<QuestionChoiceWithAnswer>[]) => {
     for (const choice of choices) {
@@ -820,6 +838,7 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
               />
             );
           }}
+          onFocus={() => handleGetAllCategoriesWithoutPagination()}
           onChange={(event, data) => {
             setSelectedQuestionCategories(data);
           }}
