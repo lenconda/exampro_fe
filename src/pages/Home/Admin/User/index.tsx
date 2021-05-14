@@ -20,6 +20,8 @@ import AppDialogManager from '../../../../components/AppDialog/Manager';
 import AppTable, { TableSchema } from '../../../../components/AppTable';
 import RoleSelector from '../components/RoleSelector';
 import AppUserCard from '../../../../components/AppUserCard';
+import AppSearchBarInput from '../../../../components/AppSearchBar/Input';
+import { useDebouncedValue } from '../../../../utils/hooks';
 import React, { useEffect, useState } from 'react';
 import { lighten, makeStyles } from '@material-ui/core';
 import Avatar from '@material-ui/core/Avatar';
@@ -100,6 +102,9 @@ const useStyles = makeStyles((theme) => {
     userItemSelected: {
       backgroundColor: lighten(theme.palette.primary.main, 0.85),
     },
+    searchWrapper: {
+      padding: theme.spacing(2),
+    },
   };
 });
 
@@ -127,6 +132,8 @@ const UserPage: React.FC<UserPageProps> = ({
   const [selectedTabIndex, setSelectedTabIndex] = useState<number>(0);
   const [roleSelectorOpen, setRoleSelectorOpen] = useState<boolean>(false);
   const [grantUserRolesLoading, setGrantUserRolesLoading] = useState<boolean>(false);
+  const [searchValue, setSearchValue] = useState<string>('');
+  const debouncedSearchValue = useDebouncedValue(searchValue);
 
   const handleQueryAllUsers = (pagination: UserPaginationData) => {
     setUsersLoading(true);
@@ -207,6 +214,13 @@ const UserPage: React.FC<UserPageProps> = ({
     }
   }, [selectedUser]);
 
+  useEffect(() => {
+    setUsersPagination({
+      ...usersPagination,
+      search: debouncedSearchValue,
+    });
+  }, [debouncedSearchValue]);
+
   return (
     <div className="app-page app-page-admin__user">
       <Grid
@@ -226,54 +240,65 @@ const UserPage: React.FC<UserPageProps> = ({
             {
               usersLoading
                 ? <AppIndicator type="loading" />
-                : usersData && usersData.items.length === 0
-                  ? <AppIndicator type="empty" />
-                  : (
-                    <Card classes={{ root: clsx(classes.sectionWrapper) }}>
-                      <Box className={classes.usersWrapper}>
-                        {
-                          usersData.items.map((item) => {
-                            return (
-                              <AppUserCard
-                                key={item.email}
-                                user={item}
-                                classes={{
-                                  root: clsx(classes.userItem, {
-                                    [classes.userItemSelected]: selectedUser && selectedUser.email === item.email,
-                                  }),
-                                }}
-                                onClick={() => setSelectedUser(item)}
-                              />
-                            );
-                          })
-                        }
-                      </Box>
-                      <TablePagination
-                        component="div"
-                        count={usersData.total}
-                        page={(usersPagination.page || 1) - 1}
-                        rowsPerPageOptions={[5, 10, 20, 50]}
-                        rowsPerPage={usersPagination.size || 10}
-                        labelRowsPerPage={tableTexts['001']}
-                        backIconButtonText={tableTexts['002']}
-                        nextIconButtonText={tableTexts['003']}
-                        labelDisplayedRows={({ from, to, count }) => `${count} ${tableTexts['004']} ${from}-${to}`}
-                        onChangePage={(event, newPageNumber) => {
-                          setUsersPagination({
-                            ...usersPagination,
-                            page: newPageNumber + 1,
-                          });
-                        }}
-                        onChangeRowsPerPage={(event) => {
-                          setUsersPagination({
-                            ...usersPagination,
-                            size: parseInt(event.target.value, 10),
-                            page: 1,
-                          });
-                        }}
-                      />
-                    </Card>
-                  )
+                : <Card classes={{ root: clsx(classes.sectionWrapper) }}>
+                  <Box className={classes.searchWrapper}>
+                    <AppSearchBarInput
+                      value={searchValue}
+                      placeholder={texts['010']}
+                      onValueChange={(value) => setSearchValue(value)}
+                    />
+                  </Box>
+                  {
+                    usersData && usersData.items.length === 0
+                      ? <AppIndicator type="empty" />
+                      : (
+                        <>
+                          <Box className={classes.usersWrapper}>
+                            {
+                              usersData.items.map((item) => {
+                                return (
+                                  <AppUserCard
+                                    key={item.email}
+                                    user={item}
+                                    classes={{
+                                      root: clsx(classes.userItem, {
+                                        [classes.userItemSelected]: selectedUser && selectedUser.email === item.email,
+                                      }),
+                                    }}
+                                    onClick={() => setSelectedUser(item)}
+                                  />
+                                );
+                              })
+                            }
+                          </Box>
+                          <TablePagination
+                            component="div"
+                            count={usersData.total}
+                            page={(usersPagination.page || 1) - 1}
+                            rowsPerPageOptions={[5, 10, 20, 50]}
+                            rowsPerPage={usersPagination.size || 10}
+                            labelRowsPerPage={tableTexts['001']}
+                            backIconButtonText={tableTexts['002']}
+                            nextIconButtonText={tableTexts['003']}
+                            labelDisplayedRows={({ from, to, count }) => `${count} ${tableTexts['004']} ${from}-${to}`}
+                            onChangePage={(event, newPageNumber) => {
+                              setUsersPagination({
+                                ...usersPagination,
+                                page: newPageNumber + 1,
+                              });
+                            }}
+                            onChangeRowsPerPage={(event) => {
+                              setUsersPagination({
+                                ...usersPagination,
+                                size: parseInt(event.target.value, 10),
+                                page: 1,
+                              });
+                            }}
+                          />
+                        </>
+                      )
+                  }
+                </Card>
             }
           </Grid>
           {
