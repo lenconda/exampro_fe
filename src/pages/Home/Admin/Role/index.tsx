@@ -1,4 +1,6 @@
 import {
+  createRole,
+  deleteRole,
   getRoles,
 } from './service';
 import {
@@ -19,7 +21,13 @@ import Card from '@material-ui/core/Card';
 import React, { useEffect, useState } from 'react';
 import { lighten, makeStyles } from '@material-ui/core';
 import Box from '@material-ui/core/Box';
-import Grid from '@material-ui/core/Grid';
+import Checkbox from '@material-ui/core/Checkbox';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import TextField from '@material-ui/core/TextField';
 import TreeItem from '@material-ui/lab/TreeItem';
 import TreeView from '@material-ui/lab/TreeView';
 import AnchorIcon from 'mdi-material-ui/Anchor';
@@ -33,12 +41,14 @@ export interface RolePageProps extends Dispatch, AppState {}
 export type UserPaginationData = CustomPaginationData;
 export type UserRolePaginationData = CustomPaginationData;
 
+const ROOT_NODE_ORIGINAL_ID = '__root';
+
 const generateRootNode = (
   texts: Record<string, any>,
   children: RoleTreeItemResponseData[] = [],
 ): RoleTreeItemResponseData => {
   return {
-    originalId: '__root',
+    originalId: ROOT_NODE_ORIGINAL_ID,
     id: texts['001'],
     children,
   };
@@ -122,12 +132,15 @@ const RolePage: React.FC<RolePageProps> = ({
 }) => {
   const classes = useStyles();
   const texts = usePageTexts(dispatch, '/home/admin/role');
-  const tableTexts = useTexts(dispatch, 'table');
   const systemTexts = useTexts(dispatch, 'system');
   const [roles, setRoles] = useState<RoleResponseData[]>([]);
   const [rolesTree, setRolesTree] = useState<RoleTreeItemResponseData>(undefined);
   const [rolesLoading, setRolesLoading] = useState<boolean>(false);
   const [selectedRoleTreeItem, setSelectedRoleTreeItem] = useState<RoleTreeItemResponseData>(undefined);
+  const [createRoleId, setCreateRoleId] = useState<string>('');
+  const [createRoleLoading, setCreateRoleLoading] = useState<boolean>(false);
+  const [createRoleOpen, setCreateRoleOpen] = useState<boolean>(false);
+  const [deleteRoleLoading, setDeleteRoleLoading] = useState<boolean>(false);
 
   const renderTree = (treeNode: RoleTreeItemResponseData) => {
     return (
@@ -139,6 +152,7 @@ const RolePage: React.FC<RolePageProps> = ({
           label: classes.treeItemContent,
           iconContainer: classes.treeItemIconContainer,
         }}
+        onClick={() => setSelectedRoleTreeItem(treeNode)}
       >
         {
           _.isArray(treeNode.children)
@@ -149,15 +163,39 @@ const RolePage: React.FC<RolePageProps> = ({
     );
   };
 
-  const handleGetRolesTree = () => {
+  const handleGetRoles = () => {
     setRolesLoading(true);
     getRoles().then((roles) => {
       setRoles(roles);
     }).finally(() => setRolesLoading(false));
   };
 
+  const handleCreateRole = (parentRoleId: string, roleId: string) => {
+    if (!_.isString(roleId) || !_.isString(parentRoleId)) {
+      return;
+    }
+    const currentRoleId = parentRoleId === ROOT_NODE_ORIGINAL_ID ? roleId : `${parentRoleId}/${roleId}`;
+    setCreateRoleLoading(true);
+    createRole(currentRoleId).then(() => {
+      handleGetRoles();
+    }).finally(() => {
+      setCreateRoleId('');
+      setCreateRoleLoading(false);
+      setCreateRoleOpen(false);
+    });
+  };
+
+  const handleDeleteRole = (regexString: string) => {
+    setDeleteRoleLoading(true);
+    deleteRole(regexString).finally(() => {
+      setSelectedRoleTreeItem(undefined);
+      setDeleteRoleLoading(false);
+      handleGetRoles();
+    });
+  };
+
   useEffect(() => {
-    handleGetRolesTree();
+    handleGetRoles();
   }, []);
 
   useEffect(() => {
@@ -168,96 +206,87 @@ const RolePage: React.FC<RolePageProps> = ({
 
   return (
     <div className="app-page app-page-admin__role">
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: clsx('app-grid-container', classes.container) }}
+      <div className={clsx('app-grid-container', classes.container)}>
+        {
+          rolesLoading
+            ? <AppIndicator type="loading" />
+            : !rolesTree
+              ? <AppIndicator type="empty" />
+              : (
+                <Card classes={{ root: clsx(classes.sectionWrapper) }}>
+                  <Box className={clsx(classes.sectionButtonsWrapper, classes.wrapper)}>
+                    <Box>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        size="small"
+                        disabled={!selectedRoleTreeItem}
+                        startIcon={<AnchorIcon />}
+                        onClick={() => setCreateRoleOpen(true)}
+                      >{texts['002']}</Button>
+                      <Button
+                        size="small"
+                        disabled={!selectedRoleTreeItem || deleteRoleLoading}
+                        startIcon={<DeleteOutlineIcon />}
+                        classes={{ root: classes.deleteButton }}
+                        onClick={() => {
+                          AppDialogManager.confirm(texts['005'], {
+                            onConfirm: () => {
+                              handleDeleteRole(selectedRoleTreeItem.originalId);
+                            },
+                          });
+                        }}
+                      >{deleteRoleLoading ? systemTexts['DELETING'] : systemTexts['DELETE']}</Button>
+                    </Box>
+                  </Box>
+                  <TreeView
+                    defaultCollapseIcon={<MinusBoxOutlineIcon />}
+                    defaultExpandIcon={<PlusBoxOutlineIcon />}
+                    defaultEndIcon={<AnchorIcon />}
+                    defaultExpanded={['__root']}
+                    classes={{ root: clsx(classes.wrapper, classes.treeViewWrapper) }}
+                  >
+                    {renderTree(rolesTree)}
+                  </TreeView>
+                </Card>
+              )
+        }
+      </div>
+      <Dialog
+        open={createRoleOpen}
+        fullWidth={true}
+        maxWidth="sm"
       >
-        <>
-          <Grid
-            item={true}
-            xs={12}
-            sm={12}
-            md={6}
-            lg={5}
-            xl={4}
-          >
-            {
-              rolesLoading
-                ? <AppIndicator type="loading" />
-                : !rolesTree
-                  ? <AppIndicator type="empty" />
-                  : (
-                    <Card classes={{ root: clsx(classes.sectionWrapper) }}>
-                      <Box className={clsx(classes.sectionButtonsWrapper, classes.wrapper)}>
-                        <Box>
-                          <Button
-                            variant="outlined"
-                            size="small"
-                            startIcon={<AnchorIcon />}
-                          >{texts['002']}</Button>
-                          <Button
-                            variant="outlined"
-                            size="small"
-                            startIcon={<DeleteOutlineIcon />}
-                            classes={{ root: classes.deleteButton }}
-                          >{systemTexts['DELETE']}</Button>
-                        </Box>
-                        <Box>
-                          <Button
-                            variant="outlined"
-                            size="small"
-                          >{systemTexts['SAVE']}</Button>
-                        </Box>
-                      </Box>
-                      <TreeView
-                        defaultCollapseIcon={<MinusBoxOutlineIcon />}
-                        defaultExpandIcon={<PlusBoxOutlineIcon />}
-                        defaultEndIcon={<AnchorIcon />}
-                        defaultExpanded={['__root']}
-                        classes={{ root: clsx(classes.wrapper, classes.treeViewWrapper) }}
-                      >
-                        {renderTree(rolesTree)}
-                      </TreeView>
-                    </Card>
-                  )
-            }
-          </Grid>
-          <Grid
-            item={true}
-            xs={12}
-            sm={12}
-            md={6}
-            lg={7}
-            xl={8}
-          >
-            {/* <Card>
-              {
-                !selectedRoleTreeItem
-                  ? <Typography style={{ textAlign: 'center' }}>{texts['002']}</Typography>
-                  : (
-                    <>
-                      <Box>
-                        <Box className={classes.infoItemWrapper}>
-                          <Avatar src={selectedUser.avatar} />
-                        </Box>
-                        <Box className={classes.infoItemWrapper}>
-                          <Typography>{texts['006']}:&nbsp;{selectedUser.email}</Typography>
-                        </Box>
-                        <Box className={classes.infoItemWrapper}>
-                          <Typography>{texts['007']}:&nbsp;{selectedUser.name || selectedUser.email.split('@')[0]}</Typography>
-                        </Box>
-                        <Box className={classes.infoItemWrapper}>
-                          <Typography>{texts['008']}:&nbsp;{new Date(selectedUser.createdAt).toLocaleString()}</Typography>
-                        </Box>
-                      </Box>
-                    </>
-                  )
-              }
-            </Card> */}
-          </Grid>
-        </>
-      </Grid>
+        <DialogTitle>{texts['002']}</DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth={true}
+            variant="outlined"
+            label={texts['006']}
+            value={createRoleId}
+            onChange={(event) => setCreateRoleId(event.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="text"
+            color="primary"
+            disabled={createRoleLoading}
+            onClick={() => {
+              setCreateRoleId('');
+              setCreateRoleOpen(false);
+            }}
+          >{systemTexts['CANCEL']}</Button>
+          <Button
+            variant="text"
+            color="primary"
+            disabled={createRoleLoading}
+            onClick={() => {
+              handleCreateRole(selectedRoleTreeItem.originalId, createRoleId);
+            }}
+          >{createRoleLoading ? systemTexts['SUBMITTING'] : systemTexts['OK']}</Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

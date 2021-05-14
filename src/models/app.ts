@@ -151,6 +151,7 @@ const AppModel: AppModelType = {
           'SAVE_DRAFT': '保存草稿',
           'NULL': '无',
           'DELETE': '删除',
+          'DELETING': '删除中...',
           'EMPTY': '没有数据',
           'LOAD_MORE': '加载更多',
           'SUBMIT': '提交',
@@ -438,6 +439,10 @@ const AppModel: AppModelType = {
           '/home/admin/role': {
             '001': '所有角色',
             '002': '添加子角色',
+            '003': '选择一个角色，开始配置角色信息',
+            '004': 'ID',
+            '005': '确定要删除这个角色吗？与它相关联的所有子级角色也将会被一并删除',
+            '006': '角色ID',
           },
         },
       },
