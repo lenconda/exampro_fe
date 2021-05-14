@@ -128,11 +128,36 @@ const HomePage: React.FC<HomePageProps> = ({
               list: 'list',
             }}
             trigger={<AppAvatar user={userProfile} loading={userProfileLoading} />}
+            closeOnClickBody={true}
           >
             <AppUserCard user={userProfile} />
             <Divider />
-            <MenuItem>{dropdownTexts['001']}</MenuItem>
-            <MenuItem>{dropdownTexts['002']}</MenuItem>
+            <MenuItem
+              onClick={() => {
+                history.push('/home/account/profile');
+              }}
+            >{dropdownTexts['001']}</MenuItem>
+            <MenuItem
+              onClick={() => {
+                history.push('/home/account/change_email');
+              }}
+            >{dropdownTexts['002']}</MenuItem>
+            <Divider />
+            <MenuItem
+              onClick={() => {
+                history.push('/home/exams?role=resource%2Fexam%2Fparticipant');
+              }}
+            >{dropdownTexts['003']}</MenuItem>
+            <MenuItem
+              onClick={() => {
+                history.push('/home/papers');
+              }}
+            >{dropdownTexts['004']}</MenuItem>
+            <MenuItem
+              onClick={() => {
+                history.push('/home/questions');
+              }}
+            >{dropdownTexts['005']}</MenuItem>
             <Divider />
             <MenuItem
               onClick={() => {
@@ -143,7 +168,7 @@ const HomePage: React.FC<HomePageProps> = ({
                   }
                 });
               }}
-            >{dropdownTexts['003']}</MenuItem>
+            >{dropdownTexts['006']}</MenuItem>
           </Dropdown>
         </Toolbar>
       </AppBar>

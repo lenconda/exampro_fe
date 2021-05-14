@@ -92,7 +92,10 @@ const AppModel: AppModelType = {
         avatarDropdown: {
           '001': '个人资料',
           '002': '更新邮箱',
-          '003': '登出',
+          '003': '我的考试',
+          '004': '试卷管理',
+          '005': '考试题库',
+          '006': '登出',
         },
         sidebarMenu: {
           'EXAMS': '考试',
@@ -144,6 +147,10 @@ const AppModel: AppModelType = {
           '008': '查询成绩',
         },
         system: {
+          'CREATE_NEW': '新建',
+          'EXAM': '考试',
+          'PAPER': '试卷',
+          'QUESTION': '试题',
           'TRUE': '是',
           'FALSE': '否',
           'OK': '好',
