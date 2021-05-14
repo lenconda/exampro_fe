@@ -123,7 +123,7 @@ const UserPage: React.FC<UserPageProps> = ({
     items: [],
     total: 0,
   });
-  const [usersLoading, setUsersLoading] = useState<boolean>(false);
+  const [usersLoading, setUsersLoading] = useState<boolean>(true);
   const [userRolesLoading, setUserRolesLoading] = useState<boolean>(false);
   const [usersPagination, setUsersPagination] = useState<UserPaginationData>(_.clone(defaultUsersPaginationData));
   const [userRolesPagination, setUserRolesPagination] = useState<UserPaginationData>(_.clone(defaultUserRolesPaginationData));
