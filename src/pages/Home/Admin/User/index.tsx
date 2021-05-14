@@ -219,9 +219,9 @@ const UserPage: React.FC<UserPageProps> = ({
             item={true}
             xs={12}
             sm={12}
-            md={6}
-            lg={5}
-            xl={4}
+            md={selectedUser ? 6 : 12}
+            lg={selectedUser ? 5 : 12}
+            xl={selectedUser ? 4 : 12}
           >
             {
               usersLoading
@@ -276,102 +276,98 @@ const UserPage: React.FC<UserPageProps> = ({
                   )
             }
           </Grid>
-          <Grid
-            item={true}
-            xs={12}
-            sm={12}
-            md={6}
-            lg={7}
-            xl={8}
-          >
-            <Card>
-              <CardContent>
-                {
-                  !selectedUser
-                    ? <Typography style={{ textAlign: 'center' }}>{texts['002']}</Typography>
-                    : (
-                      <>
-                        <Tabs
-                          value={selectedTabIndex}
-                          indicatorColor="primary"
-                          textColor="primary"
-                          variant="scrollable"
-                          classes={{ root: classes.tabsWrapper }}
-                          onChange={(event, newIndex) => setSelectedTabIndex(newIndex)}
-                        >
-                          {
-                            tabs.map((tabName, index) => {
-                              return (
-                                <Tab key={index} label={texts[tabName]} />
-                              );
-                            })
-                          }
-                        </Tabs>
-                        {
-                          tabs[selectedTabIndex] === 'BASIC' && (
-                            <Box>
-                              <Box className={classes.infoItemWrapper}>
-                                <Avatar src={selectedUser.avatar} />
-                              </Box>
-                              <Box className={classes.infoItemWrapper}>
-                                <Typography>{texts['006']}:&nbsp;{selectedUser.email}</Typography>
-                              </Box>
-                              <Box className={classes.infoItemWrapper}>
-                                <Typography>{texts['007']}:&nbsp;{selectedUser.name || selectedUser.email.split('@')[0]}</Typography>
-                              </Box>
-                              <Box className={classes.infoItemWrapper}>
-                                <Typography>{texts['008']}:&nbsp;{new Date(selectedUser.createdAt).toLocaleString()}</Typography>
-                              </Box>
-                            </Box>
-                          )
-                        }
-                        {
-                          tabs[selectedTabIndex] === 'ROLES' && (
-                            <>
-                              <Box className={classes.infoItemWrapper}>
-                                <Button
-                                  variant="outlined"
-                                  onClick={() => setRoleSelectorOpen(true)}
-                                >{systemTexts['GRANT']}</Button>
-                              </Box>
-                              <AppTable
-                                schema={schema}
-                                data={userRolesData.items || []}
-                                loading={userRolesLoading}
-                                containerClassName={classes.tableContainer}
-                                selectable={false}
-                                collapseHeight={185}
-                                PaperProps={{
-                                  elevation: 0,
-                                }}
-                                TablePaginationProps={{
-                                  count: userRolesData.total,
-                                  page: (userRolesPagination.page || 1) - 1,
-                                  rowsPerPage: userRolesPagination.size || 10,
-                                  onChangePage: (event, newPageNumber) => {
-                                    setUserRolesPagination({
-                                      ...userRolesPagination,
-                                      page: newPageNumber + 1,
-                                    });
-                                  },
-                                  onChangeRowsPerPage: (event) => {
-                                    setUserRolesPagination({
-                                      ...userRolesPagination,
-                                      size: parseInt(event.target.value, 10),
-                                      page: 1,
-                                    });
-                                  },
-                                }}
-                              />
-                            </>
-                          )
-                        }
-                      </>
-                    )
-                }
-              </CardContent>
-            </Card>
-          </Grid>
+          {
+            selectedUser && (
+              <Grid
+                item={true}
+                xs={12}
+                sm={12}
+                md={6}
+                lg={7}
+                xl={8}
+              >
+                <Card>
+                  <CardContent>
+                    <Tabs
+                      value={selectedTabIndex}
+                      indicatorColor="primary"
+                      textColor="primary"
+                      variant="scrollable"
+                      classes={{ root: classes.tabsWrapper }}
+                      onChange={(event, newIndex) => setSelectedTabIndex(newIndex)}
+                    >
+                      {
+                        tabs.map((tabName, index) => {
+                          return (
+                            <Tab key={index} label={texts[tabName]} />
+                          );
+                        })
+                      }
+                    </Tabs>
+                    {
+                      tabs[selectedTabIndex] === 'BASIC' && (
+                        <Box>
+                          <Box className={classes.infoItemWrapper}>
+                            <Avatar src={selectedUser.avatar} />
+                          </Box>
+                          <Box className={classes.infoItemWrapper}>
+                            <Typography>{texts['006']}:&nbsp;{selectedUser.email}</Typography>
+                          </Box>
+                          <Box className={classes.infoItemWrapper}>
+                            <Typography>{texts['007']}:&nbsp;{selectedUser.name || selectedUser.email.split('@')[0]}</Typography>
+                          </Box>
+                          <Box className={classes.infoItemWrapper}>
+                            <Typography>{texts['008']}:&nbsp;{new Date(selectedUser.createdAt).toLocaleString()}</Typography>
+                          </Box>
+                        </Box>
+                      )
+                    }
+                    {
+                      tabs[selectedTabIndex] === 'ROLES' && (
+                        <>
+                          <Box className={classes.infoItemWrapper}>
+                            <Button
+                              variant="outlined"
+                              onClick={() => setRoleSelectorOpen(true)}
+                            >{systemTexts['GRANT']}</Button>
+                          </Box>
+                          <AppTable
+                            schema={schema}
+                            data={userRolesData.items || []}
+                            loading={userRolesLoading}
+                            containerClassName={classes.tableContainer}
+                            selectable={false}
+                            collapseHeight={185}
+                            PaperProps={{
+                              elevation: 0,
+                            }}
+                            TablePaginationProps={{
+                              count: userRolesData.total,
+                              page: (userRolesPagination.page || 1) - 1,
+                              rowsPerPage: userRolesPagination.size || 10,
+                              onChangePage: (event, newPageNumber) => {
+                                setUserRolesPagination({
+                                  ...userRolesPagination,
+                                  page: newPageNumber + 1,
+                                });
+                              },
+                              onChangeRowsPerPage: (event) => {
+                                setUserRolesPagination({
+                                  ...userRolesPagination,
+                                  size: parseInt(event.target.value, 10),
+                                  page: 1,
+                                });
+                              },
+                            }}
+                          />
+                        </>
+                      )
+                    }
+                  </CardContent>
+                </Card>
+              </Grid>
+            )
+          }
         </>
       </Grid>
       <RoleSelector
