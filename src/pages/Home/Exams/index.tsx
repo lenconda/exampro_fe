@@ -58,9 +58,6 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     paddingRight: theme.spacing(2),
     paddingLeft: theme.spacing(2),
   },
-  disappear: {
-    display: 'none',
-  },
 }));
 
 const ExamsPage: React.FC<ExamPageProps> = ({
@@ -71,12 +68,13 @@ const ExamsPage: React.FC<ExamPageProps> = ({
   const systemTexts = useTexts(dispatch, 'system');
   const tableTexts = useTexts(dispatch, 'table');
   const history = useHistory();
-  const roleId = useLocationQuery('role') as string;
+  const roleIdQuery = useLocationQuery('role') as string;
+  const [roleId, setRoleId] = useState<string>('');
   const texts = usePageTexts(dispatch, '/home/exams');
   const [selectedRoleIndex, setSelectedRoleIndex] = useState<number>(0);
   const [roles = [], rolesLoading] = useRequest<ExamRole[]>(getExamRoleTypes, [examRoleTexts]);
   const [
-    examItems = [],
+    currentExamItems = [],
     totalExams = 0,
     queryExamsLoading,
     page,
@@ -84,7 +82,8 @@ const ExamsPage: React.FC<ExamPageProps> = ({
     lastCursor,
     error,
     refresh,
-  ] = usePaginationRequest<Exam>(queryExams, { roles: roleId });
+  ] = usePaginationRequest<Exam>(queryExams, { roles: roleId }, false);
+  const [examItems, setExamItems] = useState<Exam[]>([]);
   const [schema, setSchema] = useState<TableSchema[]>([]);
   const theme = useTheme();
   const matchSm = useMediaQuery(theme.breakpoints.down('sm'));
@@ -185,6 +184,16 @@ const ExamsPage: React.FC<ExamPageProps> = ({
     }
   }, [debouncedSearchValue]);
 
+  useEffect(() => {
+    if (roleIdQuery && roleId !== roleIdQuery) {
+      setRoleId(roleIdQuery);
+    }
+  }, [roleIdQuery]);
+
+  useEffect(() => {
+    setExamItems(currentExamItems);
+  }, [currentExamItems]);
+
   return (
     <div className="app-page app-page-home__exams">
       <Grid
@@ -252,6 +261,7 @@ const ExamsPage: React.FC<ExamPageProps> = ({
                             }),
                           }}
                           onClick={() => {
+                            setExamItems([]);
                             history.push({
                               search: qs.stringify({
                                 ...qs.parse(_.get(history, 'location.search').slice(1)),
@@ -307,123 +317,121 @@ const ExamsPage: React.FC<ExamPageProps> = ({
                       <AppIndicator type="empty" />
                     )
                     : (
-                      <>
-                        <Grid
-                          container={true}
-                          spacing={2}
-                          classes={{
-                            root: clsx(classes.participantGridContainer, {
-                              [classes.disappear]: roleId !== 'resource/exam/participant',
-                            }),
-                          }}
-                        >
-                          {
-                            examItems.map((exam, index) => {
-                              return (
-                                <Grid
-                                  key={index}
-                                  item={true}
-                                  xs={12}
-                                  sm={12}
-                                  md={6}
-                                  lg={4}
-                                  xl={3}
-                                >
-                                  <ExamCard exam={exam} />
-                                </Grid>
-                              );
-                            })
-                          }
-                        </Grid>
-                        <AppTable
-                          schema={schema}
-                          data={examItems}
-                          loading={queryExamsLoading}
-                          wrapperClassName={clsx({
-                            [classes.disappear]: roleId === 'resource/exam/participant',
-                          })}
-                          toolbarButtons={[
+                      roleId === 'resource/exam/participant'
+                        ? (
+                          <Grid
+                            container={true}
+                            spacing={2}
+                            classes={{
+                              root: clsx(classes.participantGridContainer),
+                            }}
+                          >
                             {
-                              Icon: FileDocumentEditIcon,
-                              title: texts['011'],
-                              show: selectedExams.length === 1
+                              examItems.map((exam, index) => {
+                                return (
+                                  <Grid
+                                    key={index}
+                                    item={true}
+                                    xs={12}
+                                    sm={12}
+                                    md={6}
+                                    lg={4}
+                                    xl={3}
+                                  >
+                                    <ExamCard exam={exam} />
+                                  </Grid>
+                                );
+                              })
+                            }
+                          </Grid>
+                        )
+                        : (
+                          <AppTable
+                            schema={schema}
+                            data={examItems}
+                            loading={queryExamsLoading}
+                            toolbarButtons={[
+                              {
+                                Icon: FileDocumentEditIcon,
+                                title: texts['011'],
+                                show: selectedExams.length === 1
                                 && ['resource/exam/initiator', 'resource/exam/maintainer'].includes(roleId)
                                 && (selectedExams[0].startTime ? Date.parse(selectedExams[0].startTime) > Date.now() : true)
                                 && Date.now() < Date.parse(selectedExams[0].endTime),
-                              IconButtonProps: {
-                                onClick: () => {
-                                  setExamEditorMode('edit');
-                                  setExamEditorOpen(true);
+                                IconButtonProps: {
+                                  onClick: () => {
+                                    setExamEditorMode('edit');
+                                    setExamEditorOpen(true);
+                                  },
                                 },
                               },
-                            },
-                            {
-                              Icon: TextBoxCheckIcon,
-                              title: texts['015'],
-                              show: selectedExams.length === 1
+                              {
+                                Icon: TextBoxCheckIcon,
+                                title: texts['015'],
+                                show: selectedExams.length === 1
                                 && ['resource/exam/reviewer'].includes(roleId)
                                 && Date.parse(selectedExams[0].endTime) < Date.now()
                                 && Date.now() < Date.parse(selectedExams[0].resultTime),
-                              IconButtonProps: {
-                                onClick: () => {
-                                  history.push(`/home/exams/review_list/${selectedExams[0].id}`);
+                                IconButtonProps: {
+                                  onClick: () => {
+                                    history.push(`/home/exams/review_list/${selectedExams[0].id}`);
+                                  },
                                 },
                               },
-                            },
-                            {
-                              Icon: FileEyeIcon,
-                              title: texts['012'],
-                              show: selectedExams.length === 1
+                              {
+                                Icon: FileEyeIcon,
+                                title: texts['012'],
+                                show: selectedExams.length === 1
                                 && selectedExams[0].startTime
                                 && Date.now() >= Date.parse(selectedExams[0].startTime)
                                 && Date.now() <= Date.parse(selectedExams[0].endTime)
                                 && roleId === 'resource/exam/invigilator',
-                              IconButtonProps: {
+                                IconButtonProps: {
                                 // TODO: push to invigilator page
-                                onClick: () => {},
-                              },
-                            },
-                            {
-                              Icon: DeleteIcon,
-                              title: texts['010'],
-                              show: roleId === 'resource/exam/initiator',
-                              IconButtonProps: {
-                                onClick: () => {
-                                  AppDialogManager.confirm(`${texts['014']} ${selectedExams.map((exam) => exam.title).join(', ')}`, {
-                                    disableBackdropClick: true,
-                                    onConfirm: () => {
-                                      deleteExams(selectedExams).finally(() => {
-                                        refresh();
-                                      });
-                                    },
-                                  });
+                                  onClick: () => {},
                                 },
                               },
-                            },
-                          ]}
-                          TablePaginationProps={{
-                            count: totalExams,
-                            page: page - 1,
-                            rowsPerPage: size,
-                            onChangePage: (event, newPageNumber) => {
-                              history.push({
-                                search: pushSearch(history, {
-                                  page: newPageNumber + 1,
-                                }),
-                              });
-                            },
-                            onChangeRowsPerPage: (event) => {
-                              history.push({
-                                search: pushSearch(history, {
-                                  size: event.target.value,
-                                  page: 1,
-                                }),
-                              });
-                            },
-                          }}
-                          onSelectionChange={(items: Exam[]) => setSelectedExams(items)}
-                        />
-                      </>
+                              {
+                                Icon: DeleteIcon,
+                                title: texts['010'],
+                                show: roleId === 'resource/exam/initiator',
+                                IconButtonProps: {
+                                  onClick: () => {
+                                    AppDialogManager.confirm(`${texts['014']} ${selectedExams.map((exam) => exam.title).join(', ')}`, {
+                                      disableBackdropClick: true,
+                                      onConfirm: () => {
+                                        deleteExams(selectedExams).finally(() => {
+                                          refresh();
+                                        });
+                                      },
+                                    });
+                                  },
+                                },
+                              },
+                            ]}
+                            TablePaginationProps={{
+                              count: totalExams,
+                              page: page - 1,
+                              rowsPerPage: size,
+                              onChangePage: (event, newPageNumber) => {
+                                history.push({
+                                  search: pushSearch(history, {
+                                    page: newPageNumber + 1,
+                                  }),
+                                });
+                              },
+                              onChangeRowsPerPage: (event) => {
+                                history.push({
+                                  search: pushSearch(history, {
+                                    size: event.target.value,
+                                    page: 1,
+                                  }),
+                                });
+                              },
+                            }}
+                            onSelectionChange={(items: Exam[]) => setSelectedExams(items)}
+                          />
+                        )
                     )
               }
             </div>

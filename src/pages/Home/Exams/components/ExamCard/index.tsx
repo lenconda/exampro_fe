@@ -80,6 +80,7 @@ const ExamCard: React.FC<ExamCardProps> = ({
   dispatch,
   ...props
 }) => {
+  if (!exam) { return null }
   const examCardTexts = useTexts(dispatch, 'examCard');
   const [info, setInfo] = useState<ExamCardInfoType>({});
   const classes = useStyles();
