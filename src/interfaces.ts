@@ -143,7 +143,7 @@ export interface PaperQuestionResponseData {
 
 export interface RoleResponseData {
   id: string;
-  description: string;
+  description?: string;
   createdAt?: string;
   updatedAt?: string;
   deletedAt?: string;
@@ -268,6 +268,7 @@ export interface UserRequestData {
 export interface RoleTreeItemResponseData {
   id: string;
   originalId: string;
+  isLeaf?: boolean;
   description?: string;
   children?: RoleTreeItemResponseData[];
   createdAt?: string;

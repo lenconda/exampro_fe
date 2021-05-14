@@ -126,7 +126,6 @@ const AuthPage: React.FC<AuthPageProps> = (props) => {
                     className="app-form app-page-auth__card__form"
                     onKeyDown={(e) => {
                       if (e && e.key && e.key === 'Enter' && ['login', 'register'].indexOf(authStatus) !== -1) {
-                        console.log(authStatus);
                         submitForm();
                       }
                     }}

@@ -76,6 +76,12 @@ const useStyles = makeStyles((theme) => {
       alignItems: 'center',
       justifyContent: 'space-between',
     },
+    formItemWrapper: {
+      marginBottom: theme.spacing(2),
+      '&:last-child': {
+        marginBottom: 0,
+      },
+    },
     infoItemWrapper: {
       marginBottom: theme.spacing(3),
       display: 'flex',
@@ -138,6 +144,7 @@ const RolePage: React.FC<RolePageProps> = ({
   const [rolesLoading, setRolesLoading] = useState<boolean>(false);
   const [selectedRoleTreeItem, setSelectedRoleTreeItem] = useState<RoleTreeItemResponseData>(undefined);
   const [createRoleId, setCreateRoleId] = useState<string>('');
+  const [createRoleLeaf, setCreateRoleLeaf] = useState<boolean>(false);
   const [createRoleLoading, setCreateRoleLoading] = useState<boolean>(false);
   const [createRoleOpen, setCreateRoleOpen] = useState<boolean>(false);
   const [deleteRoleLoading, setDeleteRoleLoading] = useState<boolean>(false);
@@ -170,19 +177,30 @@ const RolePage: React.FC<RolePageProps> = ({
     }).finally(() => setRolesLoading(false));
   };
 
-  const handleCreateRole = (parentRoleId: string, roleId: string) => {
+  const handleCreateRole = (parentRoleId: string, roleId: string, isLeaf: boolean) => {
     if (!_.isString(roleId) || !_.isString(parentRoleId)) {
       return;
     }
     const currentRoleId = parentRoleId === ROOT_NODE_ORIGINAL_ID ? roleId : `${parentRoleId}/${roleId}`;
-    setCreateRoleLoading(true);
-    createRole(currentRoleId).then(() => {
-      handleGetRoles();
-    }).finally(() => {
+    if (isLeaf) {
+      if (parentRoleId !== ROOT_NODE_ORIGINAL_ID) {
+        setCreateRoleLoading(true);
+        createRole(currentRoleId).then(() => {
+          handleGetRoles();
+        }).finally(() => {
+          setCreateRoleId('');
+          setCreateRoleLoading(false);
+          setCreateRoleOpen(false);
+        });
+      }
+    } else {
+      setRoles([...roles, {
+        id: currentRoleId,
+      }]);
       setCreateRoleId('');
       setCreateRoleLoading(false);
       setCreateRoleOpen(false);
-    });
+    }
   };
 
   const handleDeleteRole = (regexString: string) => {
@@ -259,13 +277,29 @@ const RolePage: React.FC<RolePageProps> = ({
       >
         <DialogTitle>{texts['002']}</DialogTitle>
         <DialogContent>
-          <TextField
-            fullWidth={true}
-            variant="outlined"
-            label={texts['006']}
-            value={createRoleId}
-            onChange={(event) => setCreateRoleId(event.target.value)}
-          />
+          <Box className={classes.formItemWrapper}>
+            <TextField
+              fullWidth={true}
+              variant="outlined"
+              label={texts['006']}
+              value={createRoleId}
+              onChange={(event) => setCreateRoleId(event.target.value)}
+            />
+          </Box>
+          <Box className={classes.formItemWrapper}>
+            <FormControlLabel
+              label={texts['007']}
+              control={
+                <Checkbox
+                  checked={createRoleLeaf}
+                  color="primary"
+                  onChange={(event) => {
+                    setCreateRoleLeaf(event.target.checked);
+                  }}
+                />
+              }
+            />
+          </Box>
         </DialogContent>
         <DialogActions>
           <Button
@@ -282,7 +316,7 @@ const RolePage: React.FC<RolePageProps> = ({
             color="primary"
             disabled={createRoleLoading}
             onClick={() => {
-              handleCreateRole(selectedRoleTreeItem.originalId, createRoleId);
+              handleCreateRole(selectedRoleTreeItem.originalId, createRoleId, createRoleLeaf);
             }}
           >{createRoleLoading ? systemTexts['SUBMITTING'] : systemTexts['OK']}</Button>
         </DialogActions>
