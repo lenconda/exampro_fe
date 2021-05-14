@@ -13,8 +13,14 @@ import { makeStyles, createStyles } from '@material-ui/core/styles';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import List from '@material-ui/core/List';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
 import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
+import FileClockOutlineIcon from 'mdi-material-ui/FileClockOutline';
 import FolderPlusIcon from 'mdi-material-ui/FolderPlus';
+import MessageQuestionOutlineIcon from 'mdi-material-ui/MessageQuestionOutline';
+import NoteTextOutlineIcon from 'mdi-material-ui/NoteTextOutline';
 import clsx from 'clsx';
 import _ from 'lodash';
 import './index.less';
@@ -27,11 +33,19 @@ export interface AppMenuProps {
 export interface AppMenuComponentProps extends AppMenuProps, AppState, Dispatch {}
 
 const drawerWidth = 240;
-const resourceTypes = ['question', 'paper', 'exam'];
-const resourceRedirectMap = {
-  question: '/home/questions',
-  paper: '/home/papers',
-  exam: '/home/exams?role=resource%2Fexam%2Finitiator',
+const resourceMap = {
+  question: {
+    path: '/home/questions',
+    icon: MessageQuestionOutlineIcon,
+  },
+  paper: {
+    path: '/home/papers',
+    icon: NoteTextOutlineIcon,
+  },
+  exam: {
+    path: '/home/exams?role=resource%2Fexam%2Finitiator',
+    icon: FileClockOutlineIcon,
+  },
 };
 
 const useStyles = makeStyles((theme) => createStyles({
@@ -46,6 +60,15 @@ const useStyles = makeStyles((theme) => createStyles({
   },
   buttonWrapper: {
     padding: theme.spacing(2),
+  },
+  createResourceMenuPaper: {
+    minWidth: 320,
+  },
+  createResourceMenuItem: {
+    '& svg': {
+      marginRight: theme.spacing(2),
+      opacity: 0.6,
+    },
   },
 }));
 
@@ -62,6 +85,7 @@ const AppMenu: React.FC<AppMenuComponentProps> = ({
     paper: false,
     exam: false,
   });
+  const [createResourceAnchor, setCreateResourceAnchor] = useState<HTMLButtonElement>(null);
 
   const handleSetOpenStatus = (key: string, status: boolean) => {
     const newOpenStatus = Object.keys(openStatus).reduce((result, currentKey) => {
@@ -73,9 +97,9 @@ const AppMenu: React.FC<AppMenuComponentProps> = ({
 
   const handleSubmitResource = (type: string) => {
     handleSetOpenStatus(type, false);
-    const currentRedirectRoute = resourceRedirectMap[type];
-    if (_.isString(currentRedirectRoute)) {
-      history.push(currentRedirectRoute);
+    const currentRedirectPath = _.get(resourceMap[type], 'path');
+    if (_.isString(currentRedirectPath)) {
+      history.push(currentRedirectPath);
     }
   };
 
@@ -92,7 +116,35 @@ const AppMenu: React.FC<AppMenuComponentProps> = ({
             size="large"
             fullWidth={true}
             startIcon={<FolderPlusIcon />}
+            onClick={(event) => setCreateResourceAnchor(event.currentTarget as HTMLButtonElement)}
           >{systemTexts['CREATE_NEW']}</Button>
+          <Menu
+            anchorEl={createResourceAnchor}
+            open={Boolean(createResourceAnchor)}
+            classes={{ paper: classes.createResourceMenuPaper }}
+            onClose={() => setCreateResourceAnchor(null)}
+          >
+            {
+              Object.keys(resourceMap).map((type, index) => {
+                const Icon = _.get(resourceMap[type], 'icon');
+                return (
+                  <MenuItem
+                    key={index}
+                    classes={{ root: classes.createResourceMenuItem }}
+                    onClick={() => {
+                      setCreateResourceAnchor(null);
+                      handleSetOpenStatus(type, true);
+                    }}
+                  >
+                    {
+                      Icon && <Icon />
+                    }
+                    <Typography>{systemTexts[type.toUpperCase()]}</Typography>
+                  </MenuItem>
+                );
+              })
+            }
+          </Menu>
         </Box>
         {
           !loading ?
@@ -101,9 +153,7 @@ const AppMenu: React.FC<AppMenuComponentProps> = ({
                 <AppMenuItem item={item} key={index} />
               ))
             )
-            : (
-              <AppIndicator type="loading" />
-            )
+            : <AppIndicator type="loading" />
         }
       </List>
       <AppPaperEditor

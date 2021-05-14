@@ -3,7 +3,12 @@ import { ConnectState } from '../../../models';
 import { AppState } from '../../../models/app';
 import { connect } from '../../../patches/dva';
 import { usePageTexts, useTexts } from '../../../utils/texts';
-import { Dispatch, PaperResponseData, QuestionCategory, QuestionResponseData } from '../../../interfaces';
+import {
+  Dispatch,
+  PaperResponseData,
+  QuestionCategory,
+  QuestionResponseData,
+} from '../../../interfaces';
 import AppQuestionEditor from '../../../components/AppQuestionEditor';
 import { getAllCategoriesWithoutPagination } from '../../../components/AppQuestionEditor/service';
 import AppQuestionItem from '../../../components/AppQuestionItem';
@@ -306,7 +311,7 @@ const QuestionsPage: React.FC<QuestionPageProps> = ({
           )
         }
         {
-          questionItems.length > 0 && (
+          (questionItems.length > 0 && !queryQuestionsLoading) && (
             <TablePagination
               style={{ overflow: 'initial' }}
               component={Box}

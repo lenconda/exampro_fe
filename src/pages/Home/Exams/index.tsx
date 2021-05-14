@@ -393,7 +393,7 @@ const ExamsPage: React.FC<ExamPageProps> = ({
                                     disableBackdropClick: true,
                                     onConfirm: () => {
                                       deleteExams(selectedExams).finally(() => {
-                                        history.push({});
+                                        refresh();
                                       });
                                     },
                                   });
@@ -428,7 +428,7 @@ const ExamsPage: React.FC<ExamPageProps> = ({
               }
             </div>
             {
-              (roleId === 'resource/exam/participant' && examItems.length > 0) && (
+              (roleId === 'resource/exam/participant' && examItems.length > 0 && !queryExamsLoading) && (
                 <Grid container={true}>
                   <Grid
                     item={true}
