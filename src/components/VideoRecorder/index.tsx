@@ -47,17 +47,13 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({
   const remoteVideo = useRef<HTMLVideoElement>();
 
   useEffect(() => {
-    console.log(111);
     if (userEmail) {
-      console.log(222);
       setPeerVideoConnection(createPeerConnectionContext(userEmail));
     }
   }, []);
 
   useEffect(() => {
-    console.log(333);
     (async () => {
-      console.log(444);
       if (!userMediaStream && peerVideoConnection) {
         const stream = type === 'camera' ? await navigator.mediaDevices.getUserMedia({
           video: {
