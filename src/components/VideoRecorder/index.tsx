@@ -12,7 +12,7 @@ const useStyles = makeStyles((theme) => {
     participantVideoCard: {
       position: 'relative',
       marginTop: theme.spacing(2),
-      width: '100%',
+      maxHeight: 180,
     },
   };
 });
@@ -42,7 +42,6 @@ export default () => {
         });
 
         if (localVideo && localVideo.current) {
-          console.log(111, localVideo);
           localVideo.current.srcObject = stream;
         }
 
@@ -63,7 +62,9 @@ export default () => {
     peerVideoConnection.onUpdateUserList((users) => setConnectedUsers(users));
     peerVideoConnection.onAnswerMade((socket) => peerVideoConnection.callUser(socket));
     peerVideoConnection.onCallRejected((data) => alert(`User: "Socket: ${data.socket}" rejected your call.`));
-    peerVideoConnection.onTrack((stream) => (remoteVideo.current.srcObject = stream));
+    peerVideoConnection.onTrack((stream) => {
+      remoteVideo.current.srcObject = stream;
+    });
 
     peerVideoConnection.onConnected(() => {
       setStartTimer(true);
@@ -99,41 +100,6 @@ export default () => {
     setDisplayMediaStream(null);
   }
 
-  // function fullScreen() {
-  //   setFullScreen(true);
-  //   const elem = mainRef.current;
-  //   if (elem.requestFullscreen) {
-  //     elem.requestFullscreen();
-  //   } else if (elem.msRequestFullscreen) {
-  //     elem.msRequestFullscreen();
-  //   } else if (elem.mozRequestFullScreen) {
-  //     elem.mozRequestFullScreen();
-  //   } else if (elem.webkitRequestFullscreen) {
-  //     elem.webkitRequestFullscreen();
-  //   }
-  // }
-
-  // function cancelFullScreen() {
-  //   if (document.exitFullscreen) {
-  //     document.exitFullscreen();
-  //   } else if (document.mozCancelFullScreen) {
-  //     document.mozCancelFullScreen();
-  //   } else if (document.webkitExitFullscreen) {
-  //     document.webkitExitFullscreen();
-  //   } else if (document.msExitFullscreen) {
-  //     document.msExitFullscreen();
-  //   }
-  // }
-
-  // function handleFullScreen(isFullScreen) {
-  //   setFullScreen(isFullScreen);
-  //   if (isFullScreen) {
-  //     fullScreen();
-  //   } else {
-  //     cancelFullScreen();
-  //   }
-  // }
-
   async function handleScreenSharing(isScreenShared) {
     if (isScreenShared) {
       await shareScreen();
@@ -142,28 +108,6 @@ export default () => {
     }
   }
 
-  // return (
-  //   <div className={styles.container}>
-  //     <OrganismsHeader
-  //       onNavItemSelect={(user) => peerVideoConnection.callUser(user.id)}
-  //       navItems={connectedUsers.map((user) => ({ id: user, title: user }))}
-  //       title="WebRTC Example"
-  //       picture={logo}
-  //     />
-
-  //     <OrganismsMain ref={mainRef}>
-  //       <MoleculesRemoteVideo ref={remoteVideo} autoPlay />
-  //       <MoleculesLocalVideo ref={localVideo} autoPlay muted />
-  //       <MoleculesVideoControls
-  //         isScreenSharing={Boolean(displayMediaStream)}
-  //         onScreenShare={handleScreenSharing}
-  //         isFullScreen={isFullScreen}
-  //         onFullScreen={handleFullScreen}
-  //         isTimerStarted={startTimer}
-  //       />
-  //     </OrganismsMain>
-  //   </div>
-  // );
   return (
     <video
       ref={localVideo}

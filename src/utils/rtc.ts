@@ -1,5 +1,4 @@
 import io, { Socket } from 'socket.io-client';
-import { DefaultEventsMap } from 'socket.io-client/build/typed-events';
 
 const { RTCPeerConnection, RTCSessionDescription } = window;
 
@@ -8,21 +7,20 @@ const capitalizeFirstLetter = (string: string) => {
 };
 
 export default class PeerConnectionSession {
+  public isAlreadyCalling = false;
+  public getCalled = false;
+  public peerConnection: RTCPeerConnection;
+  public socket: Socket;
+
   _onConnected;
   _onDisconnected;
   _room;
-  isAlreadyCalling = false;
-  getCalled = false;
 
-  public peerConnection: RTCPeerConnection;
-  public socket: Socket<DefaultEventsMap, DefaultEventsMap>;
-
-  constructor(socket: Socket<DefaultEventsMap, DefaultEventsMap>, peerConnection: RTCPeerConnection) {
+  constructor(socket: Socket, peerConnection: RTCPeerConnection) {
     this.socket = socket;
     this.peerConnection = peerConnection;
 
     this.peerConnection.addEventListener('connectionstatechange', (event) => {
-      console.log(this.peerConnection.connectionState);
       const fn = this['_on' + capitalizeFirstLetter(this.peerConnection.connectionState)];
       fn && fn(event);
     });
@@ -115,7 +113,7 @@ export const createPeerConnectionContext = () => {
   const peerConnection = new RTCPeerConnection({
     iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
   });
-  const socketURL = 'http://127.0.0.1:3000';
+  const socketURL = 'http://localhost:3000/video';
   const socket = io(socketURL);
 
   return new PeerConnectionSession(socket, peerConnection);
