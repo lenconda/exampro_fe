@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import io, { Socket } from 'socket.io-client';
 
 const { RTCPeerConnection, RTCSessionDescription } = window;
@@ -86,6 +87,14 @@ export default class PeerConnectionSession {
       if (!this.isAlreadyCalling) {
         callback(data.socket);
         this.isAlreadyCalling = true;
+      }
+    });
+  }
+
+  onAnswerMadeCallback(callback: Function) {
+    this.socket.on('answer-made', async () => {
+      if (_.isFunction(callback)) {
+        callback();
       }
     });
   }

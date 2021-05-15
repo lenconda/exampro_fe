@@ -1,6 +1,6 @@
 /* eslint-disable no-return-assign */
 /* eslint-disable max-nested-callbacks */
-import PeerConnectionSession, { createPeerConnectionContext } from '../../utils/rtc';
+import PeerConnectionSession, { createPeerConnectionContext } from './rtc';
 import React, { useEffect, useRef, useState } from 'react';
 import { makeStyles } from '@material-ui/core';
 import clsx from 'clsx';
@@ -47,15 +47,18 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({
   const remoteVideo = useRef<HTMLVideoElement>();
 
   useEffect(() => {
+    console.log(111);
     if (userEmail) {
+      console.log(222);
       setPeerVideoConnection(createPeerConnectionContext(userEmail));
     }
   }, []);
 
   useEffect(() => {
+    console.log(333);
     (async () => {
+      console.log(444);
       if (!userMediaStream && peerVideoConnection) {
-        console.log(111);
         const stream = type === 'camera' ? await navigator.mediaDevices.getUserMedia({
           video: {
             width: { min: 640, ideal: 1920 },

@@ -540,11 +540,15 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
   }, [participantAnswer]);
 
   useEffect(() => {
+    let handler = () => {
+      increaseLeftTimes(examId);
+    };
     if (examState === 'processing') {
-      window.addEventListener('blur', () => {
-        increaseLeftTimes(examId);
-      });
+      window.addEventListener('blur', handler);
     }
+    return () => {
+      window.removeEventListener('blur', handler);
+    };
   }, [examState]);
 
   const statusesWrapper = (
