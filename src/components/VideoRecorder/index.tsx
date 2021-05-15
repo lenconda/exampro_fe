@@ -3,6 +3,7 @@
 import { createPeerConnectionContext } from '../../utils/rtc';
 import React, { useEffect, useRef, useState } from 'react';
 import { makeStyles } from '@material-ui/core';
+import clsx from 'clsx';
 
 const senders = [];
 const peerVideoConnection = createPeerConnectionContext();
@@ -17,7 +18,17 @@ const useStyles = makeStyles((theme) => {
   };
 });
 
-export default () => {
+export interface VideoRecorderProps {
+  roomId: string;
+  userEmail: string;
+  className?: string;
+}
+
+const VideoRecorder: React.FC<VideoRecorderProps> = ({
+  roomId,
+  className = '',
+  userEmail,
+}) => {
   const classes = useStyles();
   const [connectedUsers, setConnectedUsers] = useState([]);
   const [userMediaStream, setUserMediaStream] = useState(null);
@@ -27,7 +38,6 @@ export default () => {
 
   const localVideo = useRef<HTMLVideoElement>();
   const remoteVideo = useRef<HTMLVideoElement>();
-  const mainRef = useRef();
 
   useEffect(() => {
     const createMediaStream = async () => {
@@ -57,7 +67,7 @@ export default () => {
   }, [userMediaStream]);
 
   useEffect(() => {
-    peerVideoConnection.joinRoom('123');
+    peerVideoConnection.joinRoom(roomId, userEmail);
     peerVideoConnection.onRemoveUser((socketId) => setConnectedUsers((users) => users.filter((user) => user !== socketId)));
     peerVideoConnection.onUpdateUserList((users) => setConnectedUsers(users));
     peerVideoConnection.onAnswerMade((socket) => peerVideoConnection.callUser(socket));
@@ -113,7 +123,9 @@ export default () => {
       ref={localVideo}
       autoPlay={true}
       muted={true}
-      className={classes.participantVideoCard}
+      className={clsx(classes.participantVideoCard, className)}
     />
   );
 };
+
+export default VideoRecorder;

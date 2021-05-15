@@ -42,9 +42,9 @@ export default class PeerConnectionSession {
     this._onDisconnected = callback;
   }
 
-  joinRoom(room) {
+  joinRoom(room, email: string) {
     this._room = room;
-    this.socket.emit('joinRoom', room);
+    this.socket.emit('join-room', { room, email });
   }
 
   onCallMade() {
