@@ -14,6 +14,9 @@ const useStyles = makeStyles((theme) => {
       marginTop: theme.spacing(2),
       maxHeight: 180,
     },
+    disappear: {
+      display: 'none',
+    },
   };
 });
 
@@ -22,6 +25,7 @@ export interface VideoRecorderProps {
   userEmail: string;
   mode?: 'participant' | 'invigilator';
   type?: 'camera' | 'desktop';
+  participantEmail?: string;
   className?: string;
 }
 
@@ -30,6 +34,7 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({
   className = '',
   mode = 'participant',
   type = 'camera',
+  participantEmail = '',
   userEmail,
 }) => {
   const classes = useStyles();
@@ -48,8 +53,9 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({
   }, []);
 
   useEffect(() => {
-    const createMediaStream = async () => {
-      if (!userMediaStream) {
+    (async () => {
+      if (!userMediaStream && peerVideoConnection) {
+        console.log(111);
         const stream = type === 'camera' ? await navigator.mediaDevices.getUserMedia({
           video: {
             width: { min: 640, ideal: 1920 },
@@ -64,17 +70,13 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({
           localVideo.current.srcObject = stream;
         }
 
-        if (peerVideoConnection) {
-          stream.getTracks().forEach((track) => {
-            senders.push(peerVideoConnection.peerConnection.addTrack(track, stream));
-          });
-        }
+        stream.getTracks().forEach((track) => {
+          senders.push(peerVideoConnection.peerConnection.addTrack(track, stream));
+        });
 
         setUserMediaStream(stream);
       }
-    };
-
-    createMediaStream();
+    })();
   }, [userMediaStream, peerVideoConnection]);
 
   useEffect(() => {
@@ -93,45 +95,20 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({
     }
   }, [peerVideoConnection]);
 
-  // async function shareScreen() {
-  //   // @ts-ignore
-  //   const stream = displayMediaStream || (await navigator.mediaDevices.getDisplayMedia());
-
-  //   await senders.find((sender) => sender.track.kind === 'video').replaceTrack(stream.getTracks()[0]);
-
-  //   stream.getVideoTracks()[0].addEventListener('ended', () => {
-  //     cancelScreenSharing(stream);
-  //   });
-
-  //   localVideo.current.srcObject = stream;
-
-  //   setDisplayMediaStream(stream);
-  // }
-
-  // async function cancelScreenSharing(stream) {
-  //   await senders
-  //     .find((sender) => sender.track.kind === 'video')
-  //     .replaceTrack(userMediaStream.getTracks().find((track) => track.kind === 'video'));
-
-  //   localVideo.current.srcObject = userMediaStream;
-  //   stream.getTracks().forEach((track) => track.stop());
-  //   setDisplayMediaStream(null);
-  // }
-
-  // async function handleScreenSharing(isScreenShared) {
-  //   if (isScreenShared) {
-  //     await shareScreen();
-  //   } else {
-  //     await cancelScreenSharing(displayMediaStream);
-  //   }
-  // }
+  useEffect(() => {
+    if (mode === 'invigilator' && participantEmail && userEmail) {
+      peerVideoConnection.callUser(participantEmail);
+    }
+  }, []);
 
   return (
     <video
       ref={mode === 'participant' ? localVideo : remoteVideo}
       autoPlay={true}
       muted={true}
-      className={clsx(classes.videoCard, className)}
+      className={clsx(classes.videoCard, className, {
+        [classes.disappear]: mode === 'participant' && type === 'desktop',
+      })}
     />
   );
 };

@@ -731,10 +731,20 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                   </Card>
                   {
                     (exam && examState === 'processing' && timerUnlocked) && (
-                      <VideoRecorder
-                        roomId={`exam#${examId}`}
-                        userEmail={_.get(exam, 'userExam.user.email')}
-                      />
+                      <>
+                        <VideoRecorder
+                          roomId={`exam_camera#${examId}`}
+                          type="camera"
+                          mode="participant"
+                          userEmail={_.get(exam, 'userExam.user.email')}
+                        />
+                        <VideoRecorder
+                          roomId={`exam_desktop#${examId}`}
+                          type="desktop"
+                          mode="participant"
+                          userEmail={_.get(exam, 'userExam.user.email')}
+                        />
+                      </>
                     )
                   }
                 </Grid>
