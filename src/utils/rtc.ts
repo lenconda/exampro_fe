@@ -16,7 +16,9 @@ export default class PeerConnectionSession {
   _onDisconnected;
   _room;
 
-  constructor(socket: Socket, peerConnection: RTCPeerConnection) {
+  private email: string;
+
+  constructor(socket: Socket, peerConnection: RTCPeerConnection, email: string) {
     this.socket = socket;
     this.peerConnection = peerConnection;
 
@@ -24,14 +26,17 @@ export default class PeerConnectionSession {
       const fn = this['_on' + capitalizeFirstLetter(this.peerConnection.connectionState)];
       fn && fn(event);
     });
+    this.email = email;
     this.onCallMade();
   }
 
+  // to：要调取的用户
+  // email：自己
   async callUser(to) {
     const offer = await this.peerConnection.createOffer();
     await this.peerConnection.setLocalDescription(new RTCSessionDescription(offer));
 
-    this.socket.emit('call-user', { offer, to });
+    this.socket.emit('call-user', { offer, to, email: this.email });
   }
 
   onConnected(callback) {
@@ -42,25 +47,13 @@ export default class PeerConnectionSession {
     this._onDisconnected = callback;
   }
 
-  joinRoom(room, email: string) {
+  joinRoom(room) {
     this._room = room;
-    this.socket.emit('join-room', { room, email });
+    this.socket.emit('join-room', { room, email: this.email });
   }
 
   onCallMade() {
     this.socket.on('call-made', async (data) => {
-      if (this.getCalled) {
-        const confirmed = window.confirm(`User "Socket: ${data.socket}" wants to call you. Do accept this call?`);
-
-        if (!confirmed) {
-          this.socket.emit('reject-call', {
-            from: data.socket,
-          });
-
-          return;
-        }
-      }
-
       await this.peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
       const answer = await this.peerConnection.createAnswer();
       await this.peerConnection.setLocalDescription(new RTCSessionDescription(answer));
@@ -68,6 +61,7 @@ export default class PeerConnectionSession {
       this.socket.emit('make-answer', {
         answer,
         to: data.socket,
+        email: this.email,
       });
       this.getCalled = true;
     });
@@ -109,12 +103,12 @@ export default class PeerConnectionSession {
   }
 }
 
-export const createPeerConnectionContext = () => {
+export const createPeerConnectionContext = (email: string) => {
   const peerConnection = new RTCPeerConnection({
     iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
   });
   const socketURL = 'http://localhost:3000/video';
   const socket = io(socketURL);
 
-  return new PeerConnectionSession(socket, peerConnection);
+  return new PeerConnectionSession(socket, peerConnection, email);
 };

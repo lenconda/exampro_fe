@@ -1,16 +1,15 @@
 /* eslint-disable no-return-assign */
 /* eslint-disable max-nested-callbacks */
-import { createPeerConnectionContext } from '../../utils/rtc';
+import PeerConnectionSession, { createPeerConnectionContext } from '../../utils/rtc';
 import React, { useEffect, useRef, useState } from 'react';
 import { makeStyles } from '@material-ui/core';
 import clsx from 'clsx';
 
 const senders = [];
-const peerVideoConnection = createPeerConnectionContext();
 
 const useStyles = makeStyles((theme) => {
   return {
-    participantVideoCard: {
+    videoCard: {
       position: 'relative',
       marginTop: theme.spacing(2),
       maxHeight: 180,
@@ -21,109 +20,118 @@ const useStyles = makeStyles((theme) => {
 export interface VideoRecorderProps {
   roomId: string;
   userEmail: string;
+  mode?: 'participant' | 'invigilator';
+  type?: 'camera' | 'desktop';
   className?: string;
 }
 
 const VideoRecorder: React.FC<VideoRecorderProps> = ({
   roomId,
   className = '',
+  mode = 'participant',
+  type = 'camera',
   userEmail,
 }) => {
   const classes = useStyles();
   const [connectedUsers, setConnectedUsers] = useState([]);
   const [userMediaStream, setUserMediaStream] = useState(null);
   const [displayMediaStream, setDisplayMediaStream] = useState(null);
-  const [startTimer, setStartTimer] = useState(false);
-  const [isFullScreen, setFullScreen] = useState(false);
+  const [peerVideoConnection, setPeerVideoConnection] = useState<PeerConnectionSession>(null);
 
   const localVideo = useRef<HTMLVideoElement>();
   const remoteVideo = useRef<HTMLVideoElement>();
 
   useEffect(() => {
+    if (userEmail) {
+      setPeerVideoConnection(createPeerConnectionContext(userEmail));
+    }
+  }, []);
+
+  useEffect(() => {
     const createMediaStream = async () => {
       if (!userMediaStream) {
-        const stream = await navigator.mediaDevices.getUserMedia({
+        const stream = type === 'camera' ? await navigator.mediaDevices.getUserMedia({
           video: {
             width: { min: 640, ideal: 1920 },
             height: { min: 400, ideal: 1080 },
             aspectRatio: { ideal: 1.7777777778 },
           },
           audio: true,
-        });
+          // @ts-ignore
+        }) : (displayMediaStream || (await navigator.mediaDevices.getDisplayMedia()));
 
         if (localVideo && localVideo.current) {
           localVideo.current.srcObject = stream;
         }
 
-        stream.getTracks().forEach((track) => {
-          senders.push(peerVideoConnection.peerConnection.addTrack(track, stream));
-        });
+        if (peerVideoConnection) {
+          stream.getTracks().forEach((track) => {
+            senders.push(peerVideoConnection.peerConnection.addTrack(track, stream));
+          });
+        }
 
         setUserMediaStream(stream);
       }
     };
 
     createMediaStream();
-  }, [userMediaStream]);
+  }, [userMediaStream, peerVideoConnection]);
 
   useEffect(() => {
-    peerVideoConnection.joinRoom(roomId, userEmail);
-    peerVideoConnection.onRemoveUser((socketId) => setConnectedUsers((users) => users.filter((user) => user !== socketId)));
-    peerVideoConnection.onUpdateUserList((users) => setConnectedUsers(users));
-    peerVideoConnection.onAnswerMade((socket) => peerVideoConnection.callUser(socket));
-    peerVideoConnection.onCallRejected((data) => alert(`User: "Socket: ${data.socket}" rejected your call.`));
-    peerVideoConnection.onTrack((stream) => {
-      remoteVideo.current.srcObject = stream;
-    });
+    if (peerVideoConnection) {
+      peerVideoConnection.joinRoom(roomId);
+      peerVideoConnection.onRemoveUser((socketId) => setConnectedUsers((users) => users.filter((user) => user !== socketId)));
+      peerVideoConnection.onUpdateUserList((users) => setConnectedUsers(users));
+      peerVideoConnection.onAnswerMade((socket) => peerVideoConnection.callUser(socket));
+      peerVideoConnection.onTrack((stream) => {
+        remoteVideo.current.srcObject = stream;
+      });
 
-    peerVideoConnection.onConnected(() => {
-      setStartTimer(true);
-    });
-    peerVideoConnection.onDisconnected(() => {
-      setStartTimer(false);
-      remoteVideo.current.srcObject = null;
-    });
-  }, []);
-
-  async function shareScreen() {
-    // @ts-ignore
-    const stream = displayMediaStream || (await navigator.mediaDevices.getDisplayMedia());
-
-    await senders.find((sender) => sender.track.kind === 'video').replaceTrack(stream.getTracks()[0]);
-
-    stream.getVideoTracks()[0].addEventListener('ended', () => {
-      cancelScreenSharing(stream);
-    });
-
-    localVideo.current.srcObject = stream;
-
-    setDisplayMediaStream(stream);
-  }
-
-  async function cancelScreenSharing(stream) {
-    await senders
-      .find((sender) => sender.track.kind === 'video')
-      .replaceTrack(userMediaStream.getTracks().find((track) => track.kind === 'video'));
-
-    localVideo.current.srcObject = userMediaStream;
-    stream.getTracks().forEach((track) => track.stop());
-    setDisplayMediaStream(null);
-  }
-
-  async function handleScreenSharing(isScreenShared) {
-    if (isScreenShared) {
-      await shareScreen();
-    } else {
-      await cancelScreenSharing(displayMediaStream);
+      peerVideoConnection.onDisconnected(() => {
+        remoteVideo.current.srcObject = null;
+      });
     }
-  }
+  }, [peerVideoConnection]);
+
+  // async function shareScreen() {
+  //   // @ts-ignore
+  //   const stream = displayMediaStream || (await navigator.mediaDevices.getDisplayMedia());
+
+  //   await senders.find((sender) => sender.track.kind === 'video').replaceTrack(stream.getTracks()[0]);
+
+  //   stream.getVideoTracks()[0].addEventListener('ended', () => {
+  //     cancelScreenSharing(stream);
+  //   });
+
+  //   localVideo.current.srcObject = stream;
+
+  //   setDisplayMediaStream(stream);
+  // }
+
+  // async function cancelScreenSharing(stream) {
+  //   await senders
+  //     .find((sender) => sender.track.kind === 'video')
+  //     .replaceTrack(userMediaStream.getTracks().find((track) => track.kind === 'video'));
+
+  //   localVideo.current.srcObject = userMediaStream;
+  //   stream.getTracks().forEach((track) => track.stop());
+  //   setDisplayMediaStream(null);
+  // }
+
+  // async function handleScreenSharing(isScreenShared) {
+  //   if (isScreenShared) {
+  //     await shareScreen();
+  //   } else {
+  //     await cancelScreenSharing(displayMediaStream);
+  //   }
+  // }
 
   return (
     <video
-      ref={localVideo}
+      ref={mode === 'participant' ? localVideo : remoteVideo}
       autoPlay={true}
       muted={true}
-      className={clsx(classes.participantVideoCard, className)}
+      className={clsx(classes.videoCard, className)}
     />
   );
 };
