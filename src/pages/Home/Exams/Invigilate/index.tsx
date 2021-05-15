@@ -13,10 +13,12 @@ import { pushSearch } from '../../../../utils/history';
 import Avatar from '@material-ui/core/Avatar';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
-import Link from '@material-ui/core/Link';
 import Typography from '@material-ui/core/Typography';
+import AlertCircleOutlineIcon from 'mdi-material-ui/AlertCircleOutline';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import FileClockIcon from 'mdi-material-ui/FileClock';
+import MonitorIcon from 'mdi-material-ui/Monitor';
+import VideoOutlineIcon from 'mdi-material-ui/VideoOutline';
 import RefreshOutlinedIcon from '@material-ui/icons/RefreshOutlined';
 import React, { useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router';
@@ -40,6 +42,9 @@ const useStyles = makeStyles((theme) => {
       '& > div:first-child': {
         padding: 0,
       },
+    },
+    reportFraudButton: {
+      color: theme.palette.warning.main,
     },
   };
 });
@@ -134,10 +139,55 @@ const InvigilatePage: React.FC<InvigilatePageProps> = ({
           key: 'leftTimes',
         },
         {
+          title: texts['009'],
+          key: 'fraud',
+          render: (row: UserExam, value: boolean) => {
+            return value ? systemTexts['TRUE'] : systemTexts['FALSE'];
+          },
+        },
+        {
           title: systemTexts['OPERATIONS'],
           key: 'user',
           render: (row: UserExam, value: User) => {
-            return null;
+            if (!exam) {
+              return null;
+            }
+            const { startTime, endTime } = exam;
+            const startTimestamp = Date.parse(startTime);
+            const endTimestamp = Date.parse(endTime);
+            const currentTimestamp = Date.now();
+            return (
+              <>
+                {
+                  (startTimestamp < currentTimestamp && endTimestamp > currentTimestamp) && (
+                    <>
+                      <Button
+                        size="small"
+                        color="primary"
+                        variant="text"
+                        fullWidth={true}
+                        startIcon={<VideoOutlineIcon />}
+                      >{texts['010']}</Button>
+                      <Button
+                        size="small"
+                        color="primary"
+                        variant="text"
+                        fullWidth={true}
+                        startIcon={<MonitorIcon />}
+                      >{texts['011']}</Button>
+                    </>
+                  )
+                }
+                <Button
+                  size="small"
+                  color="primary"
+                  variant="text"
+                  fullWidth={true}
+                  startIcon={<AlertCircleOutlineIcon />}
+                  classes={{ root: classes.reportFraudButton }}
+                >{texts['012']}</Button>
+              </>
+            );
           },
         },
       ]);
