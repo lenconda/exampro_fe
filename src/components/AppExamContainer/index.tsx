@@ -29,6 +29,7 @@ import AppPaperContainer from '../AppPaperContainer';
 import AppDialogManager from '../../components/AppDialog/Manager';
 import { getQuestionAnswerStatus } from '../../utils/question';
 import { pushSearch, useLocationQuery } from '../../utils/history';
+import VideoRecorder from '../VideoRecorder';
 import {
   calculateExamParticipantTotalScore,
   checkExamParticipantScoresStatus,
@@ -728,6 +729,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                       )
                     }
                   </Card>
+                  <VideoRecorder />
                 </Grid>
               )
             }
