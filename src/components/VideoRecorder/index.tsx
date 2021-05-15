@@ -80,7 +80,7 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({
         setUserMediaStream(stream);
       }
     })();
-  }, [userMediaStream, peerVideoConnection]);
+  }, [peerVideoConnection]);
 
   useEffect(() => {
     if (peerVideoConnection) {
