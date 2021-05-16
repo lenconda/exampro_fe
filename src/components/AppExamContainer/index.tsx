@@ -29,7 +29,7 @@ import AppPaperContainer from '../AppPaperContainer';
 import AppDialogManager from '../../components/AppDialog/Manager';
 import { getQuestionAnswerStatus } from '../../utils/question';
 import { pushSearch, useLocationQuery } from '../../utils/history';
-import VideoRecorder from '../VideoRecorder';
+// import VideoRecorder from '../VideoRecorder';
 import {
   calculateExamParticipantTotalScore,
   checkExamParticipantScoresStatus,
@@ -736,7 +736,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                   {
                     (exam && examState === 'processing' && timerUnlocked) && (
                       <>
-                        <VideoRecorder
+                        {/* <VideoRecorder
                           roomId={`exam_camera#${examId}`}
                           type="camera"
                           mode="participant"
@@ -747,7 +747,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                           type="desktop"
                           mode="participant"
                           userEmail={_.get(exam, 'userExam.user.email')}
-                        />
+                        /> */}
                       </>
                     )
                   }

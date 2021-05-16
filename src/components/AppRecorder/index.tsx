@@ -2,18 +2,27 @@ import { createPeerConnectionContext } from './connection';
 import { OrganismsHeader, OrganismsMain } from './organisms';
 import { MoleculesLocalVideo, MoleculesRemoteVideo, MoleculesVideoControls } from './molecules';
 import React, { useEffect, useRef, useState } from 'react';
+import { User } from '../../interfaces';
 
 const senders = [];
 const peerVideoConnection = createPeerConnectionContext();
 
 export interface AppRecorderProps {
   room: string;
+  profile: User;
+}
+
+export interface ConnectedUser {
+  id: string;
+  room: string;
+  user: User;
 }
 
 const Room: React.FC<AppRecorderProps> = ({
   room,
+  profile,
 }) => {
-  const [connectedUsers, setConnectedUsers] = useState([]);
+  const [connectedUsers, setConnectedUsers] = useState<ConnectedUser[]>([]);
   const [userMediaStream, setUserMediaStream] = useState(null);
   const [displayMediaStream, setDisplayMediaStream] = useState(null);
   // const [startTimer, setStartTimer] = useState(false);
@@ -22,6 +31,8 @@ const Room: React.FC<AppRecorderProps> = ({
   const localVideo = useRef<HTMLVideoElement>();
   const remoteVideo = useRef<HTMLVideoElement>();
   const mainRef = useRef<HTMLElement>();
+
+  useEffect(() => {}, []);
 
   useEffect(() => {
     const createMediaStream = async () => {
@@ -51,7 +62,7 @@ const Room: React.FC<AppRecorderProps> = ({
   }, [userMediaStream]);
 
   useEffect(() => {
-    peerVideoConnection.joinRoom(room, `${Math.random().toString(32)}@lenconda.top`);
+    peerVideoConnection.joinRoom(room, profile);
     peerVideoConnection.onRemoveUser((socketId) => setConnectedUsers((users) => users.filter((user) => user !== socketId)));
     peerVideoConnection.onUpdateUserList((users) => {
       console.log(users);
@@ -141,7 +152,7 @@ const Room: React.FC<AppRecorderProps> = ({
     <div>
       <OrganismsHeader
         onNavItemSelect={(user) => peerVideoConnection.callUser(user.id)}
-        navItems={connectedUsers.map((user) => ({ id: user, title: user }))}
+        navItems={connectedUsers}
         title="WebRTC Example"
         // picture={logo}
       />

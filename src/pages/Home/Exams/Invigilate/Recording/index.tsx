@@ -7,7 +7,6 @@ import { getExamInfo } from '../../../../../components/AppExamContainer/service'
 import { checkInvigilatePermission } from '../../../../../utils/exam';
 import AppIndicator from '../../../../../components/AppIndicator';
 import { useLocationQuery } from '../../../../../utils/history';
-import { getUserProfile } from '../../../../../service';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import React, { useEffect, useState } from 'react';
@@ -15,6 +14,7 @@ import { useHistory, useParams } from 'react-router';
 import { makeStyles } from '@material-ui/core';
 import _ from 'lodash';
 import AppRecorder from '../../../../../components/AppRecorder';
+import { getUserProfile } from '../../../service';
 
 export interface ReviewListPageProps extends Dispatch, AppState {}
 
@@ -35,13 +35,19 @@ const RecordingPage: React.FC<ReviewListPageProps> = ({
   const texts = usePageTexts(dispatch, '/home/exams/invigilate/recording');
   const [examLoading, setExamLoading] = useState<boolean>(true);
   const [exam, setExam] = useState<ExamResponseData>(undefined);
-  const [participant, setParticipant] = useState<User>(undefined);
+  const [profileLoading, setProfileLoading] = useState<boolean>(true);
+  const [profile, setProfile] = useState<User>(undefined);
 
   const handleGetExamInfo = (id: number) => {
     setExamLoading(true);
     getExamInfo(id, 'invigilate').then((info) => {
       setExam(info);
     }).finally(() => setExamLoading(false));
+  };
+
+  const handleGetProfile = () => {
+    setProfileLoading(true);
+    getUserProfile().then((profile) => setProfile(profile)).finally(() => setProfileLoading(false));
   };
 
   useEffect(() => {
@@ -54,18 +60,22 @@ const RecordingPage: React.FC<ReviewListPageProps> = ({
     }
   }, [params]);
 
+  useEffect(() => {
+    handleGetProfile();
+  }, [])
+
   return (
     <div className="app-page app-page-home__exams__invigilate__recording">
       <div className="app-grid-container">
         {
-          examLoading
+          (examLoading || profileLoading)
             ? <AppIndicator type="loading" />
-            : !exam
+            : !(exam && profile)
               ? <AppIndicator type="empty" />
               : !checkInvigilatePermission(exam)
                 ? <AppIndicator type="not_ready" />
                 : (
-                  <AppRecorder room={exam.id.toString()} />
+                  <AppRecorder room={exam.id.toString()} profile={profile} />
                 )
         }
       </div>

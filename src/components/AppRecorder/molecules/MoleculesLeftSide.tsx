@@ -71,7 +71,7 @@ export const MoleculesLeftSide = ({ items, onItemSelect, isLeftSideShow }) => {
               onClick={() => handleSelection(item)}
               key={item.id}
             >
-              {item.title}
+              {item.user.email}
             </NavItem>
           ))}
         </nav>

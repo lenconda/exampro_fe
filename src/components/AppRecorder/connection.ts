@@ -1,4 +1,5 @@
 import io, { Socket } from 'socket.io-client';
+import { User } from '../../interfaces';
 
 const { RTCPeerConnection, RTCSessionDescription } = window;
 
@@ -27,40 +28,27 @@ export default class PeerConnectionSession {
     this.onCallMade();
   }
 
-  async callUser(to) {
+  async callUser(to: string) {
     const offer = await this.peerConnection.createOffer();
     await this.peerConnection.setLocalDescription(new RTCSessionDescription(offer));
-
     this.socket.emit('call-user', { offer, to });
   }
 
-  onConnected(callback) {
+  onConnected(callback: Function) {
     this._onConnected = callback;
   }
 
-  onDisconnected(callback) {
+  onDisconnected(callback: Function) {
     this._onDisconnected = callback;
   }
 
-  joinRoom(room, email) {
+  joinRoom(room: string, user: User) {
     this._room = room;
-    this.socket.emit('join-room', { room, email });
+    this.socket.emit('join-room', { room, user });
   }
 
   onCallMade() {
     this.socket.on('call-made', async (data) => {
-      // if (this.getCalled) {
-      //   const confirmed = window.confirm(`User "Socket: ${data.socket}" wants to call you. Do accept this call?`);
-
-      //   if (!confirmed) {
-      //     this.socket.emit('reject-call', {
-      //       from: data.socket,
-      //     });
-
-      //     return;
-      //   }
-      // }
-
       await this.peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
       const answer = await this.peerConnection.createAnswer();
       await this.peerConnection.setLocalDescription(new RTCSessionDescription(answer));
@@ -69,6 +57,7 @@ export default class PeerConnectionSession {
         answer,
         to: data.socket,
       });
+
       this.getCalled = true;
     });
   }
