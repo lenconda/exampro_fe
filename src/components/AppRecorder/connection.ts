@@ -44,7 +44,7 @@ export default class PeerConnectionSession {
 
   joinRoom(room, email) {
     this._room = room;
-    this.socket.emit('joinRoom', { room, email });
+    this.socket.emit('join-room', { room, email });
   }
 
   onCallMade() {
