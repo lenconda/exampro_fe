@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import io, { Socket } from 'socket.io-client';
 
 const { RTCPeerConnection, RTCSessionDescription } = window;
@@ -8,36 +7,31 @@ const capitalizeFirstLetter = (string: string) => {
 };
 
 export default class PeerConnectionSession {
-  public isAlreadyCalling = false;
-  public getCalled = false;
-  public peerConnection: RTCPeerConnection;
-  public socket: Socket;
+  _onConnected: Function;
+  _onDisconnected: Function;
+  _room: string;
+  isAlreadyCalling: boolean = false;
+  getCalled: boolean = false;
+  socket: Socket;
+  peerConnection: RTCPeerConnection;
 
-  _onConnected;
-  _onDisconnected;
-  _room;
-
-  private email: string;
-
-  constructor(socket: Socket, peerConnection: RTCPeerConnection, email: string) {
+  constructor(socket, peerConnection) {
     this.socket = socket;
     this.peerConnection = peerConnection;
 
     this.peerConnection.addEventListener('connectionstatechange', (event) => {
+      console.log(this.peerConnection.connectionState);
       const fn = this['_on' + capitalizeFirstLetter(this.peerConnection.connectionState)];
       fn && fn(event);
     });
-    this.email = email;
     this.onCallMade();
   }
 
-  // to：要调取的用户
-  // email：自己
   async callUser(to) {
     const offer = await this.peerConnection.createOffer();
     await this.peerConnection.setLocalDescription(new RTCSessionDescription(offer));
 
-    this.socket.emit('call-user', { offer, to, email: this.email });
+    this.socket.emit('call-user', { offer, to });
   }
 
   onConnected(callback) {
@@ -48,13 +42,25 @@ export default class PeerConnectionSession {
     this._onDisconnected = callback;
   }
 
-  joinRoom(room) {
+  joinRoom(room, email) {
     this._room = room;
-    this.socket.emit('join-room', { room, email: this.email });
+    this.socket.emit('joinRoom', { room, email });
   }
 
   onCallMade() {
     this.socket.on('call-made', async (data) => {
+      // if (this.getCalled) {
+      //   const confirmed = window.confirm(`User "Socket: ${data.socket}" wants to call you. Do accept this call?`);
+
+      //   if (!confirmed) {
+      //     this.socket.emit('reject-call', {
+      //       from: data.socket,
+      //     });
+
+      //     return;
+      //   }
+      // }
+
       await this.peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
       const answer = await this.peerConnection.createAnswer();
       await this.peerConnection.setLocalDescription(new RTCSessionDescription(answer));
@@ -62,7 +68,6 @@ export default class PeerConnectionSession {
       this.socket.emit('make-answer', {
         answer,
         to: data.socket,
-        email: this.email,
       });
       this.getCalled = true;
     });
@@ -91,14 +96,6 @@ export default class PeerConnectionSession {
     });
   }
 
-  onAnswerMadeCallback(callback: Function) {
-    this.socket.on('answer-made', async () => {
-      if (_.isFunction(callback)) {
-        callback();
-      }
-    });
-  }
-
   onCallRejected(callback) {
     this.socket.on('call-rejected', (data) => {
       callback(data);
@@ -112,12 +109,11 @@ export default class PeerConnectionSession {
   }
 }
 
-export const createPeerConnectionContext = (email: string) => {
+export const createPeerConnectionContext = () => {
   const peerConnection = new RTCPeerConnection({
     iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
   });
-  const socketURL = 'http://localhost:3000/video';
-  const socket = io(socketURL);
+  const socket = io('http://localhost:3000/video');
 
-  return new PeerConnectionSession(socket, peerConnection, email);
+  return new PeerConnectionSession(socket, peerConnection);
 };

@@ -36,6 +36,8 @@ const HomePapersPage = React.lazy(() => import('./Papers'));
 const HomeExamsReviewListPage = React.lazy(() => import('./Exams/ReviewList'));
 // /home/exams/invigilate/:id
 const HomeExamInvigilatePage = React.lazy(() => import('./Exams/Invigilate'));
+// /home/exams/invigilate/recording/:id
+const HomeExamInvigilateRecordingPage = React.lazy(() => import('./Exams/Invigilate/Recording'));
 // /home/account
 const HomeAccountPage = React.lazy(() => import('./Account'));
 // /home/admin
@@ -214,6 +216,7 @@ const HomePage: React.FC<HomePageProps> = ({
             <Route path="/home/account" component={HomeAccountPage} />
             <Route path="/home/admin" component={HomeAdminPage} />
             <Route path="/home/exams/review_list/:id" component={HomeExamsReviewListPage} />
+            <Route path="/home/exams/invigilate/recording/:id" component={HomeExamInvigilateRecordingPage} />
             <Route path="/home/exams/invigilate/:id" component={HomeExamInvigilatePage} />
             <Redirect from="/home" to="/home/exams" exact={true} />
           </Switch>
