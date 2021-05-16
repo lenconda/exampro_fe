@@ -41,6 +41,10 @@ const useStyles = makeStyles((theme) => {
       flexWrap: 'nowrap',
       overflowY: 'scroll',
     },
+    channelItem: {
+      userSelect: 'none',
+      cursor: 'pointer',
+    },
     videoCard: {
       width: '100%',
       height: '100%',
@@ -55,7 +59,7 @@ const useStyles = makeStyles((theme) => {
   };
 });
 
-const AppRecorder: React.FC<AppRecorderProps> = ({
+const AppRecorder: React.FC<AppRecorderProps> = React.memo(({
   room,
   profile,
   type = 'camera',
@@ -69,6 +73,9 @@ const AppRecorder: React.FC<AppRecorderProps> = ({
   const [mediaStream, setMediaStream] = useState(null);
   const localVideo = useRef<HTMLVideoElement>();
   const remoteVideo = useRef<HTMLVideoElement>();
+
+  const joined = useRef<boolean>();
+  joined.current = false;
 
   const handleSelectChannel = (channel: ConnectedChannel) => {
     peerConnection.callUser(channel.id);
@@ -115,28 +122,36 @@ const AppRecorder: React.FC<AppRecorderProps> = ({
 }, [mediaStream]);
 
   useEffect(() => {
-    peerConnection.joinRoom(room, profile);
-    peerConnection.onRemoveUser((socketId) => setConnectedChannels((users) => users.filter((user) => user !== socketId)));
-    peerConnection.onUpdateUserList((users) => {
-      setConnectedChannels(users);
-    });
-    peerConnection.onAnswerMade((socket) => {
-      peerConnection.callUser(socket)
-    });
-    peerConnection.onCallRejected((data) => alert(`User: "Socket: ${data.socket}" rejected your call.`));
-    if (mode === 'invigilator') {
-      peerConnection.onTrack((stream) => {
+    if (!joined.current) {
+      peerConnection.joinRoom(room, profile);
+      peerConnection.onRemoveUser((socketId) => {
+        setConnectedChannels((users) => users.filter((user) => user !== socketId));
+      });
+      peerConnection.onUpdateUserList((users) => {
+        setConnectedChannels(users);
+      });
+      peerConnection.onAnswerMade((socket) => {
+        peerConnection.callUser(socket)
+      });
+      peerConnection.onCallRejected((data) => alert(`User: "Socket: ${data.socket}" rejected your call.`));
+
+      if (mode === 'invigilator') {
+        peerConnection.onTrack((stream) => {
+          if (remoteVideo.current) {
+            remoteVideo.current.srcObject = stream;
+          }
+        });
+      }
+
+      peerConnection.onDisconnected(() => {
         if (remoteVideo.current) {
-          remoteVideo.current.srcObject = stream;
+          remoteVideo.current.srcObject = null;
         }
       });
     }
-
-    peerConnection.onDisconnected(() => {
-      if (remoteVideo.current) {
-        remoteVideo.current.srcObject = null;
-      }
-    });
+    return () => {
+      joined.current = true;
+    }
   }, []);
 
   if (type === 'desktop' && mode === 'participant') {
@@ -162,6 +177,7 @@ const AppRecorder: React.FC<AppRecorderProps> = ({
                     <AppUserCard
                       key={channel.id}
                       user={channel.user}
+                      classes={{ root: classes.channelItem }}
                       onClick={() => handleSelectChannel(channel)}
                     />
                   );
@@ -195,6 +211,8 @@ const AppRecorder: React.FC<AppRecorderProps> = ({
         className={clsx(className)}
       />
     );
-};
+}, (prevProps, nextProps) => {
+  return JSON.stringify(prevProps) !== JSON.stringify(nextProps);
+});
 
 export default AppRecorder;
