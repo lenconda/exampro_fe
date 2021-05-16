@@ -19,3 +19,6 @@ package-lock.json
 .DS_Store
 
 dist
+
+# HTTPS certification files
+ssl

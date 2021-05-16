@@ -102,7 +102,7 @@ export const createPeerConnectionContext = () => {
   const peerConnection = new RTCPeerConnection({
     iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
   });
-  const socket = io('http://localhost:3000/video');
+  const socket = io('/video');
 
   return new PeerConnectionSession(socket, peerConnection);
 };

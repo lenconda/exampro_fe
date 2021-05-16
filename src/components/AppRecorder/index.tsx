@@ -1,38 +1,80 @@
 import { createPeerConnectionContext } from './connection';
-import { OrganismsHeader, OrganismsMain } from './organisms';
-import { MoleculesLocalVideo, MoleculesRemoteVideo, MoleculesVideoControls } from './molecules';
 import React, { useEffect, useRef, useState } from 'react';
 import { User } from '../../interfaces';
+import Card from '@material-ui/core/Card';
+import Grid from '@material-ui/core/Grid';
+import { makeStyles } from '@material-ui/core';
+import AppIndicator from '../AppIndicator';
+import _ from 'lodash';
+import AppUserCard from '../AppUserCard';
 
 const senders = [];
 const peerVideoConnection = createPeerConnectionContext();
 
-export interface AppRecorderProps {
-  room: string;
-  profile: User;
-}
-
-export interface ConnectedUser {
+export interface ConnectedChannel {
   id: string;
   room: string;
   user: User;
 }
 
-const Room: React.FC<AppRecorderProps> = ({
+export interface AppRecorderProps {
+  room: string;
+  profile: User;
+  type?: 'camera' | 'desktop';
+  mode?: 'participant' | 'invigilator';
+  onSelectChannel?(channel: ConnectedChannel): void;
+}
+
+const useStyles = makeStyles((theme) => {
+  return {
+    invigilatorContainer: {
+      display: 'flex',
+      alignItems: 'flex-start',
+    },
+    channelsCard: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'stretch',
+      flexWrap: 'nowrap',
+      overflowY: 'scroll',
+    },
+    videoCard: {
+      width: '100%',
+      height: '100%',
+      overflow: 'hidden',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    invigilatorVideo: {
+      width: '100%',
+    },
+  };
+});
+
+const AppRecorder: React.FC<AppRecorderProps> = ({
   room,
   profile,
+  type = 'camera',
+  mode = 'participant',
+  onSelectChannel,
 }) => {
-  const [connectedUsers, setConnectedUsers] = useState<ConnectedUser[]>([]);
+  const classes = useStyles();
+  const [connectedChannels, setConnectedChannels] = useState<ConnectedChannel[]>([]);
   const [userMediaStream, setUserMediaStream] = useState(null);
   const [displayMediaStream, setDisplayMediaStream] = useState(null);
   // const [startTimer, setStartTimer] = useState(false);
   // const [isFullScreen, setFullScreen] = useState(false);
-
   const localVideo = useRef<HTMLVideoElement>();
   const remoteVideo = useRef<HTMLVideoElement>();
   const mainRef = useRef<HTMLElement>();
 
-  useEffect(() => {}, []);
+  const handleSelectChannel = (channel: ConnectedChannel) => {
+    peerVideoConnection.callUser(channel.id);
+    if (_.isFunction(onSelectChannel)) {
+      onSelectChannel(channel);
+    }
+  }
 
   useEffect(() => {
     const createMediaStream = async () => {
@@ -63,10 +105,10 @@ const Room: React.FC<AppRecorderProps> = ({
 
   useEffect(() => {
     peerVideoConnection.joinRoom(room, profile);
-    peerVideoConnection.onRemoveUser((socketId) => setConnectedUsers((users) => users.filter((user) => user !== socketId)));
+    peerVideoConnection.onRemoveUser((socketId) => setConnectedChannels((users) => users.filter((user) => user !== socketId)));
     peerVideoConnection.onUpdateUserList((users) => {
       console.log(users);
-      setConnectedUsers(users);
+      setConnectedChannels(users);
     });
     peerVideoConnection.onAnswerMade((socket) => peerVideoConnection.callUser(socket));
     peerVideoConnection.onCallRejected((data) => alert(`User: "Socket: ${data.socket}" rejected your call.`));
@@ -81,94 +123,54 @@ const Room: React.FC<AppRecorderProps> = ({
     });
   }, []);
 
-  async function shareScreen() {
-    const stream = displayMediaStream || (await (navigator.mediaDevices as any).getDisplayMedia());
-
-    await senders.find((sender) => sender.track.kind === 'video').replaceTrack(stream.getTracks()[0]);
-
-    stream.getVideoTracks()[0].addEventListener('ended', () => {
-      cancelScreenSharing(stream);
-    });
-
-    localVideo.current.srcObject = stream;
-
-    setDisplayMediaStream(stream);
-  }
-
-  async function cancelScreenSharing(stream) {
-    await senders
-      .find((sender) => sender.track.kind === 'video')
-      .replaceTrack(userMediaStream.getTracks().find((track) => track.kind === 'video'));
-
-    localVideo.current.srcObject = userMediaStream;
-    stream.getTracks().forEach((track) => track.stop());
-    setDisplayMediaStream(null);
-  }
-
-  // function fullScreen() {
-  //   setFullScreen(true);
-  //   const elem = mainRef.current;
-  //   if (elem.requestFullscreen) {
-  //     elem.requestFullscreen();
-  //   } else if (elem.msRequestFullscreen) {
-  //     elem.msRequestFullscreen();
-  //   } else if (elem.mozRequestFullScreen) {
-  //     elem.mozRequestFullScreen();
-  //   } else if (elem.webkitRequestFullscreen) {
-  //     elem.webkitRequestFullscreen();
-  //   }
-  // }
-
-  // function cancelFullScreen() {
-  //   if (document.exitFullscreen) {
-  //     document.exitFullscreen();
-  //   } else if (document.mozCancelFullScreen) {
-  //     document.mozCancelFullScreen();
-  //   } else if (document.webkitExitFullscreen) {
-  //     document.webkitExitFullscreen();
-  //   } else if (document.msExitFullscreen) {
-  //     document.msExitFullscreen();
-  //   }
-  // }
-
-  // function handleFullScreen(isFullScreen) {
-  //   setFullScreen(isFullScreen);
-  //   if (isFullScreen) {
-  //     fullScreen();
-  //   } else {
-  //     cancelFullScreen();
-  //   }
-  // }
-
-  // async function handleScreenSharing(isScreenShared) {
-  //   if (isScreenShared) {
-  //     await shareScreen();
-  //   } else {
-  //     await cancelScreenSharing(displayMediaStream);
-  //   }
-  // }
-
-  return (
-    <div>
-      <OrganismsHeader
-        onNavItemSelect={(user) => peerVideoConnection.callUser(user.id)}
-        navItems={connectedUsers}
-        title="WebRTC Example"
-        // picture={logo}
-      />
-      <OrganismsMain ref={mainRef}>
-        <MoleculesRemoteVideo ref={remoteVideo} autoPlay />
-        <MoleculesLocalVideo ref={localVideo} autoPlay muted />
-        {/* <MoleculesVideoControls
-          isScreenSharing={Boolean(displayMediaStream)}
-          onScreenShare={handleScreenSharing}
-          isFullScreen={isFullScreen}
-          onFullScreen={handleFullScreen}
-          isTimerStarted={startTimer}
-        /> */}
-      </OrganismsMain>
-    </div>
-  );
+  return mode === 'invigilator'
+    ? (
+      <Grid container={true} spacing={3} className={classes.invigilatorContainer}>
+        <Grid
+          item={true}
+          xs={12}
+          sm={12}
+          md={4}
+          lg={3}
+          xl={2}
+        >
+          <Card classes={{ root: classes.channelsCard }}>
+            {
+              connectedChannels.length === 0
+                ? <AppIndicator type="empty" />
+                : connectedChannels.map((channel) => {
+                  return (
+                    <AppUserCard
+                      key={channel.id}
+                      user={channel.user}
+                      onClick={() => handleSelectChannel(channel)}
+                    />
+                  );
+                })
+            }
+          </Card>
+        </Grid>
+        <Grid
+          item={true}
+          xs={12}
+          sm={12}
+          md={8}
+          lg={9}
+          xl={10}
+        >
+          <Card classes={{ root: classes.videoCard }}>
+            <video
+              ref={remoteVideo}
+              autoPlay={true}
+              className={classes.invigilatorVideo}
+            />
+          </Card>
+        </Grid>
+      </Grid>
+    )
+    : (
+      <video ref={localVideo} autoPlay muted />
+    );
 };
 
-export default Room;
+export default AppRecorder;

@@ -75,7 +75,11 @@ const RecordingPage: React.FC<ReviewListPageProps> = ({
               : !checkInvigilatePermission(exam)
                 ? <AppIndicator type="not_ready" />
                 : (
-                  <AppRecorder room={exam.id.toString()} profile={profile} />
+                  <AppRecorder
+                    room={exam.id.toString()}
+                    profile={profile}
+                    mode="invigilator"
+                  />
                 )
         }
       </div>
