@@ -77,7 +77,7 @@ const RecordingPage: React.FC<ReviewListPageProps> = ({
                 ? <AppIndicator type="not_ready" />
                 : (
                   <AppRecorder
-                    room={exam.id.toString()}
+                    room={`exam@${exam.id}#${type}`}
                     profile={profile}
                     mode="invigilator"
                     type={type}

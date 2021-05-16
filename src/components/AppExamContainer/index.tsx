@@ -29,7 +29,6 @@ import AppPaperContainer from '../AppPaperContainer';
 import AppDialogManager from '../../components/AppDialog/Manager';
 import { getQuestionAnswerStatus } from '../../utils/question';
 import { pushSearch, useLocationQuery } from '../../utils/history';
-// import VideoRecorder from '../VideoRecorder';
 import {
   calculateExamParticipantTotalScore,
   checkExamParticipantScoresStatus,
@@ -38,6 +37,7 @@ import {
   checkReviewPermission,
 } from '../../utils/exam';
 import { getUserProfile } from '../../service';
+import { getUserProfile as getSelfProfile } from '../../pages/Home/service';
 import AppAlertManager from '../AppAlert/Manager';
 import AppUserCard from '../AppUserCard';
 import { usePreviousValue } from '../../utils/hooks';
@@ -68,6 +68,7 @@ import formatDistanceToNowStrict from 'date-fns/formatDistanceToNowStrict';
 import './index.less';
 import { useHistory } from 'react-router';
 import { CSSProperties } from '@material-ui/styles';
+import AppRecorder from '../AppRecorder';
 
 export const getDistanceString = (dateString) => {
   const formatDistance = ({ days, hours, minutes, seconds }) => [
@@ -328,6 +329,10 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
     getUserProfile(email).then((info) => setParticipant(info));
   };
 
+  const fetchSelfInfo = () => {
+    getSelfProfile().then((info) => setParticipant(info));
+  };
+
   const submitParticipantScore = (
     examId: number,
     result: ExamResultResponseData,
@@ -362,6 +367,9 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
         fetchParticipantInfo(participantEmail);
         fetchParticipantExamResult(examId, participantEmail);
       }).catch(() => setExamState('not_ready'));
+    }
+    if (examState === 'processing') {
+      fetchSelfInfo();
     }
   }, [examId, examState, action, participantEmail]);
 
@@ -734,20 +742,20 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                     }
                   </Card>
                   {
-                    (exam && examState === 'processing' && timerUnlocked) && (
+                    (exam && examState === 'processing' && timerUnlocked && participant) && (
                       <>
-                        {/* <VideoRecorder
-                          roomId={`exam_camera#${examId}`}
+                        <AppRecorder
+                          room={`exam@${examId}#camera`}
                           type="camera"
                           mode="participant"
-                          userEmail={_.get(exam, 'userExam.user.email')}
+                          profile={participant}
                         />
-                        <VideoRecorder
-                          roomId={`exam_desktop#${examId}`}
+                        <AppRecorder
+                          room={`exam@${examId}#desktop`}
                           type="desktop"
                           mode="participant"
-                          userEmail={_.get(exam, 'userExam.user.email')}
-                        /> */}
+                          profile={participant}
+                        />
                       </>
                     )
                   }

@@ -7,6 +7,7 @@ import { makeStyles } from '@material-ui/core';
 import AppIndicator from '../AppIndicator';
 import _ from 'lodash';
 import AppUserCard from '../AppUserCard';
+import clsx from 'clsx';
 
 const senders = [];
 const peerVideoConnection = createPeerConnectionContext();
@@ -22,6 +23,7 @@ export interface AppRecorderProps {
   profile: User;
   type?: 'camera' | 'desktop';
   mode?: 'participant' | 'invigilator';
+  className?: string;
   onSelectChannel?(channel: ConnectedChannel): void;
 }
 
@@ -57,6 +59,7 @@ const AppRecorder: React.FC<AppRecorderProps> = ({
   profile,
   type = 'camera',
   mode = 'participant',
+  className = '',
   onSelectChannel,
 }) => {
   const classes = useStyles();
@@ -99,7 +102,7 @@ const AppRecorder: React.FC<AppRecorderProps> = ({
     };
 
     createMediaStream();
-  }, [mediaStream]);
+}, [mediaStream]);
 
   useEffect(() => {
     peerVideoConnection.joinRoom(room, profile);
@@ -110,13 +113,21 @@ const AppRecorder: React.FC<AppRecorderProps> = ({
     });
     peerVideoConnection.onAnswerMade((socket) => peerVideoConnection.callUser(socket));
     peerVideoConnection.onCallRejected((data) => alert(`User: "Socket: ${data.socket}" rejected your call.`));
-    peerVideoConnection.onTrack((stream) => (remoteVideo.current.srcObject = stream));
+    if (mode === 'invigilator') {
+      peerVideoConnection.onTrack((stream) => {
+        console.log(111);
+        remoteVideo.current.srcObject = stream;
+      });
+    }
 
     peerVideoConnection.onDisconnected(() => {
       remoteVideo.current.srcObject = null;
     });
   }, []);
 
+  if (type === 'desktop' && mode === 'participant') {
+    return null;
+  }
   return mode === 'invigilator'
     ? (
       <Grid container={true} spacing={3} className={classes.invigilatorContainer}>
@@ -156,14 +167,19 @@ const AppRecorder: React.FC<AppRecorderProps> = ({
             <video
               ref={remoteVideo}
               autoPlay={true}
-              className={classes.invigilatorVideo}
+              className={clsx(classes.invigilatorVideo, className)}
             />
           </Card>
         </Grid>
       </Grid>
     )
     : (
-      <video ref={localVideo} autoPlay muted />
+      <video
+        ref={localVideo}
+        autoPlay={true}
+        muted={true}
+        className={clsx(className)}
+      />
     );
 };
 
