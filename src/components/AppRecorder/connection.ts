@@ -28,7 +28,10 @@ export default class PeerConnectionSession {
   }
 
   async callUser(to: string) {
-    const offer = await this.peerConnection.createOffer();
+    const offer = await this.peerConnection.createOffer({
+      offerToReceiveVideo: true,
+      offerToReceiveAudio: true,
+    });
     await this.peerConnection.setLocalDescription(new RTCSessionDescription(offer));
     this.socket.emit('call-user', { offer, to });
   }
@@ -48,6 +51,7 @@ export default class PeerConnectionSession {
 
   onCallMade() {
     this.socket.on('call-made', async (data) => {
+      console.log('call-made');
       await this.peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
       const answer = await this.peerConnection.createAnswer();
       await this.peerConnection.setLocalDescription(new RTCSessionDescription(answer));
@@ -75,6 +79,7 @@ export default class PeerConnectionSession {
 
   onAnswerMade(callback) {
     this.socket.on('answer-made', async (data) => {
+      console.log('answer-made');
       await this.peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
 
       if (!this.isAlreadyCalling) {

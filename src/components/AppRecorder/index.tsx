@@ -80,16 +80,22 @@ const AppRecorder: React.FC<AppRecorderProps> = ({
   useEffect(() => {
     const createMediaStream = async () => {
       if (!mediaStream) {
-        const stream = type === 'camera'
-          ? await navigator.mediaDevices.getUserMedia({
-            video: {
-              width: { min: 640, ideal: 1920 },
-              height: { min: 400, ideal: 1080 },
-              aspectRatio: { ideal: 1.7777777778 },
-            },
-            audio: true,
-          })
-          : (await (navigator.mediaDevices as any).getDisplayMedia());
+        let stream;
+
+        if (mode === 'invigilator') {
+          stream = new MediaStream();
+        } else {
+          stream = type === 'camera'
+            ? await navigator.mediaDevices.getUserMedia({
+              video: {
+                width: { min: 640, ideal: 1920 },
+                height: { min: 400, ideal: 1080 },
+                aspectRatio: { ideal: 1.7777777778 },
+              },
+              audio: true,
+            })
+            : (await (navigator.mediaDevices as any).getDisplayMedia());
+        }
 
         if (localVideo && localVideo.current) {
           localVideo.current.srcObject = stream;
@@ -103,7 +109,9 @@ const AppRecorder: React.FC<AppRecorderProps> = ({
       }
     };
 
-    createMediaStream();
+    if (mode === 'participant') {
+      createMediaStream();
+    }
 }, [mediaStream]);
 
   useEffect(() => {
@@ -112,16 +120,22 @@ const AppRecorder: React.FC<AppRecorderProps> = ({
     peerConnection.onUpdateUserList((users) => {
       setConnectedChannels(users);
     });
-    peerConnection.onAnswerMade((socket) => peerConnection.callUser(socket));
+    peerConnection.onAnswerMade((socket) => {
+      peerConnection.callUser(socket)
+    });
     peerConnection.onCallRejected((data) => alert(`User: "Socket: ${data.socket}" rejected your call.`));
     if (mode === 'invigilator') {
       peerConnection.onTrack((stream) => {
-        remoteVideo.current.srcObject = stream;
+        if (remoteVideo.current) {
+          remoteVideo.current.srcObject = stream;
+        }
       });
     }
 
     peerConnection.onDisconnected(() => {
-      remoteVideo.current.srcObject = null;
+      if (remoteVideo.current) {
+        remoteVideo.current.srcObject = null;
+      }
     });
   }, []);
 
