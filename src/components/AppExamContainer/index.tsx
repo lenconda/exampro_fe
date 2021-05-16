@@ -758,7 +758,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                     (!_.isEmpty(exam) && !examLoading && examState === 'processing' && participant) && (
                       <>
                         <AppRecorder
-                          room={`exam@${examId}#camera`}
+                          room={`exam@${examId}`}
                           type="camera"
                           mode="participant"
                           profile={participant}
@@ -768,7 +768,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                           })}
                         />
                         <AppRecorder
-                          room={`exam@${examId}#desktop`}
+                          room={`exam@${examId}`}
                           type="desktop"
                           mode="participant"
                           profile={participant}

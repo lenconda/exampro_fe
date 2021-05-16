@@ -21,7 +21,6 @@ export default class PeerConnectionSession {
     this.peerConnection = peerConnection;
 
     this.peerConnection.addEventListener('connectionstatechange', (event) => {
-      console.log(this.peerConnection.connectionState);
       const fn = this['_on' + capitalizeFirstLetter(this.peerConnection.connectionState)];
       fn && fn(event);
     });
@@ -98,11 +97,11 @@ export default class PeerConnectionSession {
   }
 }
 
-export const createPeerConnectionContext = () => {
+export const createPeerConnectionContext = (path: string) => {
   const peerConnection = new RTCPeerConnection({
     iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
   });
-  const socket = io('/video');
+  const socket = io(path);
 
   return new PeerConnectionSession(socket, peerConnection);
 };

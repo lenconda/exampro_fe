@@ -10,7 +10,8 @@ import AppUserCard from '../AppUserCard';
 import clsx from 'clsx';
 
 const senders = [];
-const peerVideoConnection = createPeerConnectionContext();
+const cameraPeerConnection = createPeerConnectionContext('/camera');
+const desktopPeerConnection = createPeerConnectionContext('/desktop');
 
 export interface ConnectedChannel {
   id: string;
@@ -62,6 +63,7 @@ const AppRecorder: React.FC<AppRecorderProps> = ({
   className = '',
   onSelectChannel,
 }) => {
+  const peerConnection = type === 'camera' ? cameraPeerConnection : desktopPeerConnection;
   const classes = useStyles();
   const [connectedChannels, setConnectedChannels] = useState<ConnectedChannel[]>([]);
   const [mediaStream, setMediaStream] = useState(null);
@@ -69,7 +71,7 @@ const AppRecorder: React.FC<AppRecorderProps> = ({
   const remoteVideo = useRef<HTMLVideoElement>();
 
   const handleSelectChannel = (channel: ConnectedChannel) => {
-    peerVideoConnection.callUser(channel.id);
+    peerConnection.callUser(channel.id);
     if (_.isFunction(onSelectChannel)) {
       onSelectChannel(channel);
     }
@@ -94,7 +96,7 @@ const AppRecorder: React.FC<AppRecorderProps> = ({
         }
 
         stream.getTracks().forEach((track) => {
-          senders.push(peerVideoConnection.peerConnection.addTrack(track, stream));
+          senders.push(peerConnection.peerConnection.addTrack(track, stream));
         });
 
         setMediaStream(stream);
@@ -105,22 +107,20 @@ const AppRecorder: React.FC<AppRecorderProps> = ({
 }, [mediaStream]);
 
   useEffect(() => {
-    peerVideoConnection.joinRoom(room, profile);
-    peerVideoConnection.onRemoveUser((socketId) => setConnectedChannels((users) => users.filter((user) => user !== socketId)));
-    peerVideoConnection.onUpdateUserList((users) => {
-      console.log(users);
+    peerConnection.joinRoom(room, profile);
+    peerConnection.onRemoveUser((socketId) => setConnectedChannels((users) => users.filter((user) => user !== socketId)));
+    peerConnection.onUpdateUserList((users) => {
       setConnectedChannels(users);
     });
-    peerVideoConnection.onAnswerMade((socket) => peerVideoConnection.callUser(socket));
-    peerVideoConnection.onCallRejected((data) => alert(`User: "Socket: ${data.socket}" rejected your call.`));
+    peerConnection.onAnswerMade((socket) => peerConnection.callUser(socket));
+    peerConnection.onCallRejected((data) => alert(`User: "Socket: ${data.socket}" rejected your call.`));
     if (mode === 'invigilator') {
-      peerVideoConnection.onTrack((stream) => {
-        console.log(111);
+      peerConnection.onTrack((stream) => {
         remoteVideo.current.srcObject = stream;
       });
     }
 
-    peerVideoConnection.onDisconnected(() => {
+    peerConnection.onDisconnected(() => {
       remoteVideo.current.srcObject = null;
     });
   }, []);
