@@ -32,6 +32,7 @@ const RecordingPage: React.FC<ReviewListPageProps> = ({
   const history = useHistory();
   const classes = useStyles();
   const params = useParams() as Record<string, string>;
+  const type = useLocationQuery('type') as 'camera' | 'desktop';
   const texts = usePageTexts(dispatch, '/home/exams/invigilate/recording');
   const [examLoading, setExamLoading] = useState<boolean>(true);
   const [exam, setExam] = useState<ExamResponseData>(undefined);
@@ -70,7 +71,7 @@ const RecordingPage: React.FC<ReviewListPageProps> = ({
         {
           (examLoading || profileLoading)
             ? <AppIndicator type="loading" />
-            : !(exam && profile)
+            : !(exam && profile && (type === 'camera' || type === 'desktop'))
               ? <AppIndicator type="empty" />
               : !checkInvigilatePermission(exam)
                 ? <AppIndicator type="not_ready" />
@@ -79,6 +80,7 @@ const RecordingPage: React.FC<ReviewListPageProps> = ({
                     room={exam.id.toString()}
                     profile={profile}
                     mode="invigilator"
+                    type={type}
                   />
                 )
         }

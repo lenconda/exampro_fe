@@ -61,13 +61,9 @@ const AppRecorder: React.FC<AppRecorderProps> = ({
 }) => {
   const classes = useStyles();
   const [connectedChannels, setConnectedChannels] = useState<ConnectedChannel[]>([]);
-  const [userMediaStream, setUserMediaStream] = useState(null);
-  const [displayMediaStream, setDisplayMediaStream] = useState(null);
-  // const [startTimer, setStartTimer] = useState(false);
-  // const [isFullScreen, setFullScreen] = useState(false);
+  const [mediaStream, setMediaStream] = useState(null);
   const localVideo = useRef<HTMLVideoElement>();
   const remoteVideo = useRef<HTMLVideoElement>();
-  const mainRef = useRef<HTMLElement>();
 
   const handleSelectChannel = (channel: ConnectedChannel) => {
     peerVideoConnection.callUser(channel.id);
@@ -78,15 +74,17 @@ const AppRecorder: React.FC<AppRecorderProps> = ({
 
   useEffect(() => {
     const createMediaStream = async () => {
-      if (!userMediaStream) {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            width: { min: 640, ideal: 1920 },
-            height: { min: 400, ideal: 1080 },
-            aspectRatio: { ideal: 1.7777777778 },
-          },
-          audio: true,
-        });
+      if (!mediaStream) {
+        const stream = type === 'camera'
+          ? await navigator.mediaDevices.getUserMedia({
+            video: {
+              width: { min: 640, ideal: 1920 },
+              height: { min: 400, ideal: 1080 },
+              aspectRatio: { ideal: 1.7777777778 },
+            },
+            audio: true,
+          })
+          : (await (navigator.mediaDevices as any).getDisplayMedia());
 
         if (localVideo && localVideo.current) {
           localVideo.current.srcObject = stream;
@@ -96,12 +94,12 @@ const AppRecorder: React.FC<AppRecorderProps> = ({
           senders.push(peerVideoConnection.peerConnection.addTrack(track, stream));
         });
 
-        setUserMediaStream(stream);
+        setMediaStream(stream);
       }
     };
 
     createMediaStream();
-  }, [userMediaStream]);
+  }, [mediaStream]);
 
   useEffect(() => {
     peerVideoConnection.joinRoom(room, profile);
@@ -114,11 +112,7 @@ const AppRecorder: React.FC<AppRecorderProps> = ({
     peerVideoConnection.onCallRejected((data) => alert(`User: "Socket: ${data.socket}" rejected your call.`));
     peerVideoConnection.onTrack((stream) => (remoteVideo.current.srcObject = stream));
 
-    peerVideoConnection.onConnected(() => {
-      // setStartTimer(true);
-    });
     peerVideoConnection.onDisconnected(() => {
-      // setStartTimer(false);
       remoteVideo.current.srcObject = null;
     });
   }, []);
