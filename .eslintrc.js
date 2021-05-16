@@ -43,6 +43,6 @@ module.exports = {
     quotes: [2, 'single'],
     'jsx-quotes': ['error', 'prefer-double'],
     'complexity': 'off',
-    'max-nested-callbacks': 5
+    'max-nested-callbacks': 'off',
   }
 };

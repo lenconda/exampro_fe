@@ -197,7 +197,11 @@ const useStyles = makeStyles((theme) => {
     },
     mainContent: {
     },
-    controlColumnWrapper: {
+    controlColumnWrapperHorizontal: {
+      display: 'flex',
+      justifyContent: 'flex-start',
+      alignItems: 'center',
+      flexWrap: 'nowrap',
     },
     controlColumnWrapperWithPadding: {
       padding: theme.spacing(3),
@@ -218,6 +222,14 @@ const useStyles = makeStyles((theme) => {
     },
     questionAnswerStatusesCard: {
       width: 240,
+    },
+    participantVideoVertical: {
+      width: '100%',
+      marginTop: theme.spacing(2),
+    },
+    participantVideoHorizontal: {
+      height: 180,
+      marginLeft: theme.spacing(2),
     },
   };
 });
@@ -371,7 +383,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
     if (examState === 'processing') {
       fetchSelfInfo();
     }
-  }, [examId, examState, action, participantEmail]);
+  }, [examState, action, participantEmail]);
 
   useEffect(() => {
     if (examState === 'resulted' && examResult) {
@@ -611,8 +623,9 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                   lg={4}
                   xl={3}
                   classes={{
-                    item: clsx(classes.controlColumnWrapper, {
+                    item: clsx({
                       [classes.controlColumnWrapperWithPadding]: !mediaUpMd,
+                      [classes.controlColumnWrapperHorizontal]: !mediaUpMd,
                     }),
                   }}
                 >
@@ -742,13 +755,17 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                     }
                   </Card>
                   {
-                    (exam && examState === 'processing' && timerUnlocked && participant) && (
+                    (!_.isEmpty(exam) && !examLoading && examState === 'processing' && participant) && (
                       <>
                         <AppRecorder
                           room={`exam@${examId}#camera`}
                           type="camera"
                           mode="participant"
                           profile={participant}
+                          className={clsx({
+                            [classes.participantVideoVertical]: mediaUpMd,
+                            [classes.participantVideoHorizontal]: !mediaUpMd,
+                          })}
                         />
                         <AppRecorder
                           room={`exam@${examId}#desktop`}
