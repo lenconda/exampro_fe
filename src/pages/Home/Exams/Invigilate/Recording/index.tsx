@@ -13,7 +13,7 @@ import React, { useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router';
 import { makeStyles } from '@material-ui/core';
 import _ from 'lodash';
-import AppRecorder from '../../../../../components/AppRecorder';
+import AppRecorder, { ConnectedChannel } from '../../../../../components/AppRecorder';
 import { getUserProfile } from '../../../service';
 
 export interface ReviewListPageProps extends Dispatch, AppState {}
@@ -38,6 +38,7 @@ const RecordingPage: React.FC<ReviewListPageProps> = ({
   const [exam, setExam] = useState<ExamResponseData>(undefined);
   const [profileLoading, setProfileLoading] = useState<boolean>(true);
   const [profile, setProfile] = useState<User>(undefined);
+  const [selectedChannel, setSelectedChannel] = useState<ConnectedChannel>(null);
 
   const handleGetExamInfo = (id: number) => {
     setExamLoading(true);
@@ -81,6 +82,8 @@ const RecordingPage: React.FC<ReviewListPageProps> = ({
                     profile={profile}
                     mode="invigilator"
                     type={type}
+                    selectedChannel={selectedChannel}
+                    onSelectChannel={(channel) => setSelectedChannel(channel)}
                   />
                 )
         }
