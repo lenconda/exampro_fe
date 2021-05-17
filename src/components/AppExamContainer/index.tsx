@@ -384,9 +384,12 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = React.memo(({
   }, [examState, action, participantEmail]);
 
   useEffect(() => {
-    if (examState === 'resulted' && examResult) {
-      setGradeInfo(calculateExamParticipantTotalScore(examResult));
+    if (examState === 'resulted' && examResult && exam) {
+      setGradeInfo(calculateExamParticipantTotalScore(examResult, exam.userExam));
     }
+  }, [examResult, examState, paperQuestions, exam]);
+
+  useEffect(() => {
     if (examState === 'reviewing' && examResult) {
       const automaticScores = Object.keys(examResult).reduce((accumulator, currentQuestionId) => {
         const currentQuestionResult = examResult[currentQuestionId];
@@ -697,7 +700,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = React.memo(({
                         )
                       }
                       {
-                        examState === 'resulted' && (
+                        (examState === 'resulted' && exam) && (
                           <Box>
                             <Typography
                               variant="h2"
@@ -710,6 +713,14 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = React.memo(({
                                   variant="h6"
                                   color="textSecondary"
                                 >{gradeInfo.percentage}%</Typography>
+                              )
+                            }
+                            {
+                              _.get(exam, 'userExam.fraud') && (
+                                <Alert severity="error" style={{ textAlign: 'left' }}>
+                                  <AlertTitle>{texts['FRAUD_MARKED_TITLE']}</AlertTitle>
+                                  {texts['FRAUD_MARKED_MESSAGE']}
+                                </Alert>
                               )
                             }
                           </Box>

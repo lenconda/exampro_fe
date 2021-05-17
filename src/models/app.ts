@@ -311,6 +311,8 @@ const AppModel: AppModelType = {
           'NOT_READY_MESSAGE': '你暂未获得该项操作的许可，这是因为当前时间没有处在操作许可的时间范围内。现在，你可以单击「返回主页」按钮回到主页',
           'PROGRESS': '答题进展',
           'SURE_TO_SUBMIT': '确定要提交考试答案吗？',
+          'FRAUD_MARKED_TITLE': '被标记为舞弊',
+          'FRAUD_MARKED_MESSAGE': '你在这场考试过程中被监考人员判定存在舞弊行为。即使你的单个试题可能有得分，但总成绩依然为0。',
         },
         roleSelector: {
           'TITLE': '选择一个或多个角色',

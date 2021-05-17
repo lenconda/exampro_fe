@@ -1,4 +1,4 @@
-import { ExamResponseData, ExamResultMetadata, ExamResultResponseData } from '../interfaces';
+import { ExamResponseData, ExamResultMetadata, ExamResultResponseData, UserExam } from '../interfaces';
 import _ from 'lodash';
 
 export const checkExamParticipantScoresStatus = (result: ExamResultResponseData): boolean => {
@@ -11,7 +11,7 @@ export const checkExamParticipantScoresStatus = (result: ExamResultResponseData)
   return true;
 };
 
-export const calculateExamParticipantTotalScore = (result: ExamResultResponseData): ExamResultMetadata => {
+export const calculateExamParticipantTotalScore = (result: ExamResultResponseData, userExam: UserExam): ExamResultMetadata => {
   const { totalPoints, totalScore } = Object.keys(result).reduce((accumulator, currentQuestionId) => {
     const {
       totalPoints: previousTotalPoints,
@@ -32,6 +32,14 @@ export const calculateExamParticipantTotalScore = (result: ExamResultResponseDat
     totalScore: 0,
     percentage: null,
   } as Partial<ExamResultMetadata>);
+
+  if (userExam && userExam.fraud) {
+    return {
+      totalPoints,
+      totalScore: 0,
+      percentage: '0',
+    };
+  }
 
   let percentage = '0';
 
