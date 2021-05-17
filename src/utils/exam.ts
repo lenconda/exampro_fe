@@ -64,7 +64,7 @@ export const checkParticipantQualification = (exam: ExamResponseData) => {
   const startTimestamp = Date.parse(startTime);
   const endTimestamp = Date.parse(endTime);
   const currentTimestamp = Date.now();
-  if (!(startTimestamp <= currentTimestamp && currentTimestamp <= endTimestamp)) {
+  if (!(startTimestamp <= currentTimestamp && currentTimestamp <= endTimestamp + 10000)) {
     return false;
   }
   return true;

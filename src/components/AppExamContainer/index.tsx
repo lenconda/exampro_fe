@@ -37,6 +37,7 @@ import {
   checkReviewPermission,
 } from '../../utils/exam';
 import { getUserProfile } from '../../service';
+import { getUserProfile as getSelfProfile } from '../../pages/Home/service';
 import AppAlertManager from '../AppAlert/Manager';
 import AppUserCard from '../AppUserCard';
 import { usePreviousValue } from '../../utils/hooks';
@@ -67,6 +68,7 @@ import formatDistanceToNowStrict from 'date-fns/formatDistanceToNowStrict';
 import './index.less';
 import { useHistory } from 'react-router';
 import { CSSProperties } from '@material-ui/styles';
+import AppRecorder from '../AppRecorder';
 
 export const getDistanceString = (dateString) => {
   const formatDistance = ({ days, hours, minutes, seconds }) => [
@@ -195,7 +197,11 @@ const useStyles = makeStyles((theme) => {
     },
     mainContent: {
     },
-    controlColumnWrapper: {
+    controlColumnWrapperHorizontal: {
+      display: 'flex',
+      justifyContent: 'flex-start',
+      alignItems: 'center',
+      flexWrap: 'nowrap',
     },
     controlColumnWrapperWithPadding: {
       padding: theme.spacing(3),
@@ -217,10 +223,18 @@ const useStyles = makeStyles((theme) => {
     questionAnswerStatusesCard: {
       width: 240,
     },
+    participantVideoVertical: {
+      width: '100%',
+      marginTop: theme.spacing(2),
+    },
+    participantVideoHorizontal: {
+      height: 180,
+      marginLeft: theme.spacing(2),
+    },
   };
 });
 
-const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
+const AppExamContainer: React.FC<AppExamContainerComponentProps> = React.memo(({
   examId,
   dispatch,
   ...props
@@ -310,21 +324,23 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
     setStartExamLoading(true);
     setExamConfirmed(true);
     startExam(examId).then(() => {
-      setExamState('processing');
+      const { pathname } = window.location;
+      window.location.href = `${pathname}?action=participate`;
     }).catch((err) => {
       if (_.get(err, 'response.status') === 403) {
         setExamState('not_ready');
       }
     }).finally(() => {
       setStartExamLoading(false);
-      history.push(pushSearch(history, {
-        action: 'participate',
-      }));
     });
   };
 
   const fetchParticipantInfo = (email: string) => {
     getUserProfile(email).then((info) => setParticipant(info));
+  };
+
+  const fetchSelfInfo = () => {
+    getSelfProfile().then((info) => setParticipant(info));
   };
 
   const submitParticipantScore = (
@@ -362,7 +378,10 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
         fetchParticipantExamResult(examId, participantEmail);
       }).catch(() => setExamState('not_ready'));
     }
-  }, [examId, examState, action, participantEmail]);
+    if (examState === 'processing') {
+      fetchSelfInfo();
+    }
+  }, [examState, action, participantEmail]);
 
   useEffect(() => {
     if (examState === 'resulted' && examResult) {
@@ -469,23 +488,25 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
   useEffect(() => {
     let timer;
 
-    if (exam) {
-      if (timerUnlocked && examState === 'processing') {
-        timer = setInterval(() => {
-          const distance = getDistanceString(exam.endTime);
-          setTimerString(distance);
-        }, 1000);
-      }
+    const intervalFunction = () => {
+      const distance = getDistanceString(exam.endTime);
       const endTimestamp = Date.parse(exam.endTime);
       const currentTimestamp = Date.now();
       if (endTimestamp - currentTimestamp <= 0 && examState === 'processing') {
         submitAnswer(exam.id, participantAnswer);
         clearInterval(timer);
       }
+      setTimerString(distance);
+    }
+
+    if (exam) {
+      if (timerUnlocked && examState === 'processing') {
+        timer = setInterval(intervalFunction, 1000);
+      }
     }
 
     return () => clearInterval(timer);
-  }, [timerUnlocked, examState, exam]);
+  }, [timerUnlocked, examState, exam, participantAnswer]);
 
   useEffect(() => {
     if (previousExamState === 'not_ready') { return }
@@ -539,11 +560,15 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
   }, [participantAnswer]);
 
   useEffect(() => {
+    let handler = () => {
+      increaseLeftTimes(examId);
+    };
     if (examState === 'processing') {
-      window.addEventListener('blur', () => {
-        increaseLeftTimes(examId);
-      });
+      window.addEventListener('blur', handler);
     }
+    return () => {
+      window.removeEventListener('blur', handler);
+    };
   }, [examState]);
 
   const statusesWrapper = (
@@ -598,8 +623,9 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                   lg={4}
                   xl={3}
                   classes={{
-                    item: clsx(classes.controlColumnWrapper, {
+                    item: clsx({
                       [classes.controlColumnWrapperWithPadding]: !mediaUpMd,
+                      [classes.controlColumnWrapperHorizontal]: !mediaUpMd,
                     }),
                   }}
                 >
@@ -728,6 +754,28 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                       )
                     }
                   </Card>
+                  {
+                    (examState === 'processing' && participant) && (
+                      <>
+                        <AppRecorder
+                          room={`exam@${examId}`}
+                          type="camera"
+                          mode="participant"
+                          profile={participant}
+                          className={clsx({
+                            [classes.participantVideoVertical]: mediaUpMd,
+                            [classes.participantVideoHorizontal]: !mediaUpMd,
+                          })}
+                        />
+                        <AppRecorder
+                          room={`exam@${examId}`}
+                          type="desktop"
+                          mode="participant"
+                          profile={participant}
+                        />
+                      </>
+                    )
+                  }
                 </Grid>
               )
             }
@@ -796,7 +844,9 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                                 <AppPaperContainer
                                   paper={exam.paper}
                                   mode="answer"
-                                  onAnswerChange={(paper, answer) => setParticipantAnswer(answer)}
+                                  onAnswerChange={(paper, answer) => {
+                                    setParticipantAnswer(answer)
+                                  }}
                                   onPaperQuestionLoaded={(loadedPaperQuestions) => {
                                     setPaperQuestionLoaded(true);
                                     setPaperQuestions(loadedPaperQuestions);
@@ -964,6 +1014,6 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
       }
     </Paper>
   );
-};
+}, (prevProps, nextProps) => _.isEqual(prevProps, nextProps));
 
 export default connect(({ app }: ConnectState) => app)(AppExamContainer) as React.FC<AppExamContainerProps>;

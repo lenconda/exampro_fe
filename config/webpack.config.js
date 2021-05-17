@@ -9,6 +9,7 @@ const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin'
 const safePostCssParser = require('postcss-safe-parser');
 const postcssNormalize = require('postcss-normalize');
 const path = require('path');
+const fs = require('fs');
 
 const APP_SRC_PATH = path.resolve(__dirname, '../src');
 const APP_DIST_PATH = path.resolve(__dirname, '../dist');
@@ -229,6 +230,19 @@ module.exports = function() {
             '^/api': '/api',
           },
         },
+        '/socket.io': {
+          target: 'http://localhost:3000',
+          secure: true,
+          changeOrigin: true,
+          pathRewrite: {
+            '^/socket.io': '/socket.io',
+          },
+        },
+      },
+      https: {
+        key: fs.readFileSync(path.resolve(__dirname, '../ssl/*.lenconda.top.key'), 'utf-8'),
+        cert: fs.readFileSync(path.resolve(__dirname, '../ssl/*.lenconda.top.cer'), 'utf-8'),
+        ca: fs.readFileSync(path.resolve(__dirname, '../ssl/ca.cer'), 'utf-8'),
       },
     },
     module: {

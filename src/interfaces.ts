@@ -62,6 +62,7 @@ export interface UserExam {
   confirmed: boolean;
   leftTimes: number;
   reviewing: boolean;
+  fraud: boolean;
   user?: User;
   startTime?: string;
   submitTime?: string;

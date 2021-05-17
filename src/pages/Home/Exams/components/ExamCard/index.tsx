@@ -102,7 +102,7 @@ const ExamCard: React.FC<ExamCardProps> = ({
       startTime: {
         title: examCardTexts['001'],
         value: examStartTime
-          ? new Date(examStartTime).toLocaleDateString()
+          ? new Date(examStartTime).toLocaleString()
           : examCardTexts['006'],
         Icon: CalendarClockIcon,
       },
