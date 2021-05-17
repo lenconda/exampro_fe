@@ -234,7 +234,7 @@ const useStyles = makeStyles((theme) => {
   };
 });
 
-const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
+const AppExamContainer: React.FC<AppExamContainerComponentProps> = React.memo(({
   examId,
   dispatch,
   ...props
@@ -1012,6 +1012,6 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
       }
     </Paper>
   );
-};
+}, (prevProps, nextProps) => _.isEqual(prevProps, nextProps));
 
 export default connect(({ app }: ConnectState) => app)(AppExamContainer) as React.FC<AppExamContainerProps>;

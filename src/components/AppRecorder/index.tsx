@@ -92,7 +92,7 @@ const AppRecorder: React.FC<AppRecorderProps> = React.memo(({
 
   useEffect(() => {
     const createMediaStream = async () => {
-      if (!mediaStream && !mediaStreamSet) {
+      if (!mediaStream) {
         let stream;
 
         if (mode === 'invigilator') {
@@ -114,19 +114,21 @@ const AppRecorder: React.FC<AppRecorderProps> = React.memo(({
           senders.push(peerConnection.peerConnection.addTrack(track, stream));
         });
 
-        setMediaStream(stream);
-        console.log('STREAM CREATED: ', type, mediaStream);
+        console.log('STREAM CREATED: ', type, stream);
+        return stream;
+      } else {
+        return mediaStream;
       }
     };
 
-    if (mode === 'participant') {
-      createMediaStream();
-      return () => {
-        console.log('FUCK');
-        mediaStreamSet = true;
-      };
-    } else {
-      return () => {};
+    return () => {
+      if (mode === 'participant') {
+        createMediaStream().then((stream) => {
+          if (stream) {
+            setMediaStream(stream);
+          }
+        });
+      }
     }
   }, []);
 
@@ -134,6 +136,9 @@ const AppRecorder: React.FC<AppRecorderProps> = React.memo(({
     console.log('STREAM DETECTED 1: ', type, mediaStream);
     if (mediaStream) {
       console.log('STREAM DETECTED 2: ', type);
+      if (localVideo.current) {
+        localVideo.current.srcObject = mediaStream;
+      }
     }
   }, [mediaStream]);
 
