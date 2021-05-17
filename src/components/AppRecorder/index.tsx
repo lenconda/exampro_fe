@@ -14,17 +14,21 @@ const cameraPeerConnection = createPeerConnectionContext('/camera');
 const desktopPeerConnection = createPeerConnectionContext('/desktop');
 let joined = false;
 
+export type ChannelMode = 'participant' | 'invigilator';
+export type ChannelType = 'camera' | 'desktop';
+
 export interface ConnectedChannel {
   id: string;
   room: string;
   user: User;
+  mode: ChannelMode;
 }
 
 export interface AppRecorderProps {
   room: string;
   profile: User;
-  type?: 'camera' | 'desktop';
-  mode?: 'participant' | 'invigilator';
+  type?: ChannelType;
+  mode?: ChannelMode;
   className?: string;
   onSelectChannel?(channel: ConnectedChannel): void;
 }
@@ -143,12 +147,16 @@ const AppRecorder: React.FC<AppRecorderProps> = React.memo(({
 
   useEffect(() => {
     if (!joined) {
-      peerConnection.joinRoom(room, profile);
+      peerConnection.joinRoom(room, profile, mode);
       peerConnection.onRemoveUser((socketId) => {
-        setConnectedChannels((users) => users.filter((user) => user !== socketId));
+        setConnectedChannels((users) => users.filter((user) => {
+          return user !== socketId;
+        }));
       });
-      peerConnection.onUpdateUserList((users) => {
-        setConnectedChannels(users);
+      peerConnection.onUpdateUserList((channels) => {
+        setConnectedChannels(channels.filter((channel) => {
+          return channel.mode !== 'invigilator';
+        }));
       });
       peerConnection.onAnswerMade((socket) => {
         peerConnection.callUser(socket)

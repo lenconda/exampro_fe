@@ -1,4 +1,5 @@
 import io, { Socket } from 'socket.io-client';
+import { ChannelMode, ConnectedChannel } from '.';
 import { User } from '../../interfaces';
 
 const { RTCPeerConnection, RTCSessionDescription } = window;
@@ -44,9 +45,9 @@ export default class PeerConnectionSession {
     this._onDisconnected = callback;
   }
 
-  joinRoom(room: string, user: User) {
+  joinRoom(room: string, user: User, mode: ChannelMode) {
     this._room = room;
-    this.socket.emit('join-room', { room, user });
+    this.socket.emit('join-room', { room, user, mode });
   }
 
   onCallMade() {
@@ -71,9 +72,9 @@ export default class PeerConnectionSession {
     });
   }
 
-  onUpdateUserList(callback) {
+  onUpdateUserList(callback: (channels: ConnectedChannel[]) => void) {
     this.socket.on(`${this._room}-update-user-list`, ({ users }) => {
-      callback(users);
+      callback(users as ConnectedChannel[]);
     });
   }
 
