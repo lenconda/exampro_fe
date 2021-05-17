@@ -1,4 +1,4 @@
-import { queryExamParticipantsWithUserExamRelation } from './service';
+import { changeFraudStatus, queryExamParticipantsWithUserExamRelation } from './service';
 import { Dispatch, ExamResponseData, User, UserExam } from '../../../../interfaces';
 import { AppState } from '../../../../models/app';
 import { connect } from '../../../../patches/dva';
@@ -10,11 +10,14 @@ import AppIndicator from '../../../../components/AppIndicator';
 import { usePaginationRequest } from '../../../../utils/request';
 import AppTable, { TableSchema } from '../../../../components/AppTable';
 import { pushSearch } from '../../../../utils/history';
+import { ChannelType } from '../../../../components/AppRecorder';
+import AppDialogManager from '../../../../components/AppDialog/Manager';
 import Avatar from '@material-ui/core/Avatar';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
-import AlertCircleOutlineIcon from 'mdi-material-ui/AlertCircleOutline';
+import AccountAlertOutlineIcon from 'mdi-material-ui/AccountAlertOutline';
+import AccountRemoveOutlineIcon from 'mdi-material-ui/AccountRemoveOutline';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import FileClockIcon from 'mdi-material-ui/FileClock';
 import MonitorIcon from 'mdi-material-ui/Monitor';
@@ -24,6 +27,7 @@ import React, { useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router';
 import { makeStyles } from '@material-ui/core';
 import _ from 'lodash';
+import clsx from 'clsx';
 
 export interface InvigilatePageProps extends Dispatch, AppState {}
 
@@ -33,6 +37,12 @@ const useStyles = makeStyles((theme) => {
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'flex-start',
+      '& button': {
+        marginRight: theme.spacing(1),
+      },
+      '& button:last-child': {
+        marginRight: 0,
+      },
     },
     contentWrapper: {
       paddingTop: theme.spacing(3),
@@ -45,6 +55,9 @@ const useStyles = makeStyles((theme) => {
     },
     reportFraudButton: {
       color: theme.palette.warning.main,
+    },
+    cancelReportFraudButton: {
+      color: theme.palette.success.main,
     },
   };
 });
@@ -77,6 +90,21 @@ const InvigilatePage: React.FC<InvigilatePageProps> = ({
       setExam(info);
     }).finally(() => {
       setExamLoading(false);
+    });
+  };
+
+  const handleJumpMediaPage = (examId: number, type: ChannelType) => {
+    window.open(`/home/exams/invigilate/recording/${examId}?type=${type}`, '_blank');
+  };
+
+  const handleChangeFraudStatus = (examId: number, participantEmail: string, status: boolean) => {
+    const message = status ? texts['014'] : texts['015'];
+    AppDialogManager.confirm(message, {
+      onConfirm: () => {
+        changeFraudStatus(examId, participantEmail, status).finally(() => {
+          refreshQueryExamParticipants();
+        });
+      },
     });
   };
 
@@ -152,41 +180,16 @@ const InvigilatePage: React.FC<InvigilatePageProps> = ({
             if (!exam) {
               return null;
             }
-            const { startTime, endTime } = exam;
-            const startTimestamp = Date.parse(startTime);
-            const endTimestamp = Date.parse(endTime);
-            const currentTimestamp = Date.now();
+            const { fraud } = row;
             return (
-              <>
-                {
-                  (startTimestamp < currentTimestamp && endTimestamp > currentTimestamp) && (
-                    <>
-                      <Button
-                        size="small"
-                        color="primary"
-                        variant="text"
-                        fullWidth={true}
-                        startIcon={<VideoOutlineIcon />}
-                      >{texts['010']}</Button>
-                      <Button
-                        size="small"
-                        color="primary"
-                        variant="text"
-                        fullWidth={true}
-                        startIcon={<MonitorIcon />}
-                      >{texts['011']}</Button>
-                    </>
-                  )
-                }
-                <Button
-                  size="small"
-                  color="primary"
-                  variant="text"
-                  fullWidth={true}
-                  startIcon={<AlertCircleOutlineIcon />}
-                  classes={{ root: classes.reportFraudButton }}
-                >{texts['012']}</Button>
-              </>
+              <Button
+                size="small"
+                color="primary"
+                variant="text"
+                startIcon={fraud ? <AccountRemoveOutlineIcon /> : <AccountAlertOutlineIcon />}
+                classes={{ root: clsx(fraud ? classes.cancelReportFraudButton : classes.reportFraudButton) }}
+                onClick={() => handleChangeFraudStatus(exam.id, value.email, !fraud)}
+              >{fraud ? texts['013'] : texts['012']}</Button>
             );
           },
         },
@@ -198,11 +201,25 @@ const InvigilatePage: React.FC<InvigilatePageProps> = ({
     <div className="app-page app-page-home__exams__invigilate">
       <div className="app-grid-container">
         <Box className={classes.controlButtonsWrapper}>
-          <Button
-            startIcon={<ArrowBackIcon />}
-            variant="outlined"
-            onClick={() => history.go(-1)}
-          >{texts['001']}</Button>
+          <Box>
+            <Button
+              startIcon={<ArrowBackIcon />}
+              variant="outlined"
+              onClick={() => history.go(-1)}
+            >{texts['001']}</Button>
+            <Button
+              startIcon={<VideoOutlineIcon />}
+              variant="text"
+              color="primary"
+              onClick={() => handleJumpMediaPage(exam.id, 'camera')}
+            >{texts['010']}</Button>
+            <Button
+              startIcon={<MonitorIcon />}
+              variant="text"
+              color="primary"
+              onClick={() => handleJumpMediaPage(exam.id, 'desktop')}
+            >{texts['011']}</Button>
+          </Box>
           <Button
             startIcon={queryExamParticipantsLoading ? null : <RefreshOutlinedIcon />}
             disabled={queryExamParticipantsLoading}

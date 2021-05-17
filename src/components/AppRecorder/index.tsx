@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { User } from '../../interfaces';
 import Card from '@material-ui/core/Card';
 import Grid from '@material-ui/core/Grid';
-import { makeStyles } from '@material-ui/core';
+import { lighten, makeStyles } from '@material-ui/core';
 import AppIndicator from '../AppIndicator';
 import _ from 'lodash';
 import AppUserCard from '../AppUserCard';
@@ -30,6 +30,7 @@ export interface AppRecorderProps {
   type?: ChannelType;
   mode?: ChannelMode;
   className?: string;
+  selectedChannel?: ConnectedChannel;
   onSelectChannel?(channel: ConnectedChannel): void;
 }
 
@@ -49,6 +50,9 @@ const useStyles = makeStyles((theme) => {
     channelItem: {
       userSelect: 'none',
       cursor: 'pointer',
+    },
+    channelItemSelected: {
+      backgroundColor: lighten(theme.palette.primary.main, 0.85),
     },
     videoCard: {
       width: '100%',
@@ -70,6 +74,7 @@ const AppRecorder: React.FC<AppRecorderProps> = React.memo(({
   type = 'camera',
   mode = 'participant',
   className = '',
+  selectedChannel,
   onSelectChannel,
 }) => {
   const peerConnection = type === 'camera' ? cameraPeerConnection : desktopPeerConnection;
@@ -205,7 +210,11 @@ const AppRecorder: React.FC<AppRecorderProps> = React.memo(({
                     <AppUserCard
                       key={channel.id}
                       user={channel.user}
-                      classes={{ root: classes.channelItem }}
+                      classes={{
+                        root: clsx(classes.channelItem, {
+                          [classes.channelItemSelected]: _.get(selectedChannel, 'id') === channel.id
+                        })
+                      }}
                       onClick={() => handleSelectChannel(channel)}
                     />
                   );

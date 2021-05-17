@@ -11,3 +11,16 @@ export const queryExamParticipantsWithUserExamRelation = (examId: number) => {
     return _.get(data, 'data.data') as PaginationResponse<UserExam>;
   };
 };
+
+export const changeFraudStatus = async (examId: number, participantEmail: string, status: boolean) => {
+  if (!(examId && participantEmail)) {
+    return;
+  }
+
+  const data = await AppRequestManager.send({
+    url: `/exam/${examId}/fraud/${participantEmail}`,
+    method: status ? 'POST' : 'DELETE',
+  });
+
+  return data;
+};
