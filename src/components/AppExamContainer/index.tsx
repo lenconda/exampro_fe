@@ -324,16 +324,14 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = React.memo(({
     setStartExamLoading(true);
     setExamConfirmed(true);
     startExam(examId).then(() => {
-      setExamState('processing');
+      const { pathname } = window.location;
+      window.location.href = `${pathname}?action=participate`;
     }).catch((err) => {
       if (_.get(err, 'response.status') === 403) {
         setExamState('not_ready');
       }
     }).finally(() => {
       setStartExamLoading(false);
-      history.push(pushSearch(history, {
-        action: 'participate',
-      }));
     });
   };
 
