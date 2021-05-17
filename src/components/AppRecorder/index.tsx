@@ -12,6 +12,8 @@ import clsx from 'clsx';
 const senders = [];
 const cameraPeerConnection = createPeerConnectionContext('/camera');
 const desktopPeerConnection = createPeerConnectionContext('/desktop');
+let mediaStreamSet = false;
+let joined = false;
 
 export interface ConnectedChannel {
   id: string;
@@ -73,9 +75,12 @@ const AppRecorder: React.FC<AppRecorderProps> = React.memo(({
   const [mediaStream, setMediaStream] = useState(null);
   const localVideo = useRef<HTMLVideoElement>();
   const remoteVideo = useRef<HTMLVideoElement>();
+  // const mediaStream = useRef<MediaStream>();
 
-  const joined = useRef<boolean>();
-  joined.current = false;
+  // const joined = useRef<boolean>();
+  // joined.current = false;
+  // const mediaStreamSet = useRef<boolean>();
+  // mediaStreamSet.current = false;
 
   const handleSelectChannel = (channel: ConnectedChannel) => {
     peerConnection.callUser(channel.id);
@@ -104,25 +109,35 @@ const AppRecorder: React.FC<AppRecorderProps> = React.memo(({
             : (await (navigator.mediaDevices as any).getDisplayMedia());
         }
 
-        if (localVideo && localVideo.current) {
-          localVideo.current.srcObject = stream;
-        }
-
         stream.getTracks().forEach((track) => {
           senders.push(peerConnection.peerConnection.addTrack(track, stream));
         });
 
         setMediaStream(stream);
+        console.log('STREAM CREATED: ', type, mediaStream);
       }
     };
 
-    if (mode === 'participant') {
+    if (mode === 'participant' && !mediaStreamSet) {
       createMediaStream();
+      return () => {
+        console.log('FUCK');
+        mediaStreamSet = true;
+      };
+    } else {
+      return () => {};
     }
-}, [mediaStream]);
+  }, []);
 
   useEffect(() => {
-    if (!joined.current) {
+    console.log('STREAM DETECTED 1: ', type, mediaStream);
+    if (mediaStream) {
+      console.log('STREAM DETECTED 2: ', type);
+    }
+  }, [mediaStream]);
+
+  useEffect(() => {
+    if (!joined) {
       peerConnection.joinRoom(room, profile);
       peerConnection.onRemoveUser((socketId) => {
         setConnectedChannels((users) => users.filter((user) => user !== socketId));
@@ -150,7 +165,7 @@ const AppRecorder: React.FC<AppRecorderProps> = React.memo(({
       });
     }
     return () => {
-      joined.current = true;
+      joined = true;
     }
   }, []);
 
