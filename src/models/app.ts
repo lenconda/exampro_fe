@@ -304,7 +304,7 @@ const AppModel: AppModelType = {
           'SUBMIT_SUCCESSFULLY': '考生成绩提交成功，5秒后跳转至主页',
           'START_EXAM': '开始考试',
           'CANNOT_START_EXAM': '无法开始考试',
-          'CANNOT_START_EXAM_REASONS': '你暂时没有获得进入这场考试的许可，原因可能是：<br />1. 当前时间未处在考试时间范围内<br />2. 你已参加过该考试',
+          'CANNOT_START_EXAM_REASONS': '你暂时没有获得进入这场考试的许可，原因可能是：<br />1. 当前时间未处在考试时间范围内<br />2. 你已参加过该考试<br />3. 你的设备不支持摄像头',
           'NOTES': '考试须知',
           'NOTES_CONTENT': '1. 考试期间禁止离开浏览器页面<br />2. 考试期间请不要刷新浏览器页面',
           'NOT_READY': '操作暂时不被允许',

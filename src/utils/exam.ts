@@ -59,6 +59,15 @@ export const calculateExamParticipantTotalScore = (result: ExamResultResponseDat
 };
 
 export const checkParticipantQualification = (exam: ExamResponseData) => {
+  if (!window.navigator || !window.navigator.mediaDevices) {
+    return false;
+  }
+  const { getUserMedia, getDisplayMedia } = (window.navigator.mediaDevices as any);
+
+  if (!_.isFunction(getUserMedia) || !_.isFunction(getDisplayMedia)) {
+    return false;
+  }
+
   if (!exam) {
     return false;
   }
