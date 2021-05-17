@@ -69,6 +69,7 @@ const AppRecorder: React.FC<AppRecorderProps> = React.memo(({
   className = '',
   onSelectChannel,
 }) => {
+  console.log('re-render');
   const peerConnection = type === 'camera' ? cameraPeerConnection : desktopPeerConnection;
   const classes = useStyles();
   const [connectedChannels, setConnectedChannels] = useState<ConnectedChannel[]>([]);
@@ -91,7 +92,7 @@ const AppRecorder: React.FC<AppRecorderProps> = React.memo(({
 
   useEffect(() => {
     const createMediaStream = async () => {
-      if (!mediaStream) {
+      if (!mediaStream && !mediaStreamSet) {
         let stream;
 
         if (mode === 'invigilator') {
@@ -118,7 +119,7 @@ const AppRecorder: React.FC<AppRecorderProps> = React.memo(({
       }
     };
 
-    if (mode === 'participant' && !mediaStreamSet) {
+    if (mode === 'participant') {
       createMediaStream();
       return () => {
         console.log('FUCK');
@@ -227,7 +228,7 @@ const AppRecorder: React.FC<AppRecorderProps> = React.memo(({
       />
     );
 }, (prevProps, nextProps) => {
-  return JSON.stringify(prevProps) !== JSON.stringify(nextProps);
+  return _.isEqual(prevProps, nextProps);
 });
 
 export default AppRecorder;

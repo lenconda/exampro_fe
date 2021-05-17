@@ -755,7 +755,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = ({
                     }
                   </Card>
                   {
-                    (!_.isEmpty(exam) && !examLoading && examState === 'processing' && participant) && (
+                    (examState === 'processing' && participant) && (
                       <>
                         <AppRecorder
                           room={`exam@${examId}`}
