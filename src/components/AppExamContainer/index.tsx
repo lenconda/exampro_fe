@@ -490,23 +490,25 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = React.memo(({
   useEffect(() => {
     let timer;
 
-    if (exam) {
-      if (timerUnlocked && examState === 'processing') {
-        timer = setInterval(() => {
-          const distance = getDistanceString(exam.endTime);
-          setTimerString(distance);
-        }, 1000);
-      }
+    const intervalFunction = () => {
+      const distance = getDistanceString(exam.endTime);
       const endTimestamp = Date.parse(exam.endTime);
       const currentTimestamp = Date.now();
       if (endTimestamp - currentTimestamp <= 0 && examState === 'processing') {
         submitAnswer(exam.id, participantAnswer);
         clearInterval(timer);
       }
+      setTimerString(distance);
+    }
+
+    if (exam) {
+      if (timerUnlocked && examState === 'processing') {
+        timer = setInterval(intervalFunction, 1000);
+      }
     }
 
     return () => clearInterval(timer);
-  }, [timerUnlocked, examState, exam]);
+  }, [timerUnlocked, examState, exam, participantAnswer]);
 
   useEffect(() => {
     if (previousExamState === 'not_ready') { return }
@@ -844,7 +846,9 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = React.memo(({
                                 <AppPaperContainer
                                   paper={exam.paper}
                                   mode="answer"
-                                  onAnswerChange={(paper, answer) => setParticipantAnswer(answer)}
+                                  onAnswerChange={(paper, answer) => {
+                                    setParticipantAnswer(answer)
+                                  }}
                                   onPaperQuestionLoaded={(loadedPaperQuestions) => {
                                     setPaperQuestionLoaded(true);
                                     setPaperQuestions(loadedPaperQuestions);
