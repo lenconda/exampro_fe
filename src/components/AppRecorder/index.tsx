@@ -1,5 +1,5 @@
 import { createPeerConnectionContext } from './connection';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { User } from '../../interfaces';
 import Card from '@material-ui/core/Card';
 import Grid from '@material-ui/core/Grid';
@@ -12,7 +12,6 @@ import clsx from 'clsx';
 const senders = [];
 const cameraPeerConnection = createPeerConnectionContext('/camera');
 const desktopPeerConnection = createPeerConnectionContext('/desktop');
-let mediaStreamSet = false;
 let joined = false;
 
 export interface ConnectedChannel {
@@ -69,19 +68,17 @@ const AppRecorder: React.FC<AppRecorderProps> = React.memo(({
   className = '',
   onSelectChannel,
 }) => {
-  console.log('re-render');
   const peerConnection = type === 'camera' ? cameraPeerConnection : desktopPeerConnection;
   const classes = useStyles();
   const [connectedChannels, setConnectedChannels] = useState<ConnectedChannel[]>([]);
-  const [mediaStream, setMediaStream] = useState(null);
+  const [mediaStream, setMediaStream] = useState<MediaStream>(null);
+  const [mounted, setMounted] = useState<boolean>(false);
   const localVideo = useRef<HTMLVideoElement>();
   const remoteVideo = useRef<HTMLVideoElement>();
-  // const mediaStream = useRef<MediaStream>();
 
-  // const joined = useRef<boolean>();
-  // joined.current = false;
-  // const mediaStreamSet = useRef<boolean>();
-  // mediaStreamSet.current = false;
+  const handleSetMediaStream = useCallback((stream: MediaStream) => {
+    setMediaStream(stream);
+  }, []);
 
   const handleSelectChannel = (channel: ConnectedChannel) => {
     peerConnection.callUser(channel.id);
@@ -91,8 +88,15 @@ const AppRecorder: React.FC<AppRecorderProps> = React.memo(({
   }
 
   useEffect(() => {
+    setMounted(true);
+    return () => {
+      setMounted(false);
+    }
+  }, []);
+
+  useEffect(() => {
     const createMediaStream = async () => {
-      if (!mediaStream) {
+      if (!mediaStream && mounted) {
         let stream;
 
         if (mode === 'invigilator') {
@@ -114,28 +118,23 @@ const AppRecorder: React.FC<AppRecorderProps> = React.memo(({
           senders.push(peerConnection.peerConnection.addTrack(track, stream));
         });
 
-        console.log('STREAM CREATED: ', type, stream);
         return stream;
       } else {
         return mediaStream;
       }
     };
 
-    return () => {
-      if (mode === 'participant') {
-        createMediaStream().then((stream) => {
-          if (stream) {
-            setMediaStream(stream);
-          }
-        });
-      }
+    if (mode === 'participant') {
+      createMediaStream().then((stream) => {
+        if (stream) {
+          handleSetMediaStream(stream);
+        }
+      });
     }
-  }, []);
+  }, [mounted]);
 
   useEffect(() => {
-    console.log('STREAM DETECTED 1: ', type, mediaStream);
     if (mediaStream) {
-      console.log('STREAM DETECTED 2: ', type);
       if (localVideo.current) {
         localVideo.current.srcObject = mediaStream;
       }
