@@ -150,6 +150,8 @@ const DynamicPage: React.FC<DynamicPageProps> = ({
   const [createDynamicConfigOpen, setCreateDynamicConfigOpen] = useState<boolean>(false);
   const [createDynamicConfigLoading, setCreateDynamicConfigLoading] = useState<boolean>(false);
   const [createDynamicConfigData, setCreateDynamicConfigData] = useState(_.clone(defaultCreateDynamicConfigData));
+  const [updateDynamicConfigLoading, setUpdateDynamicConfigLoading] = useState<boolean>(false);
+  const [deleteDynamicConfigLoading, setDeleteDynamicConfigLoading] = useState<boolean>(false);
 
   const validateDynamicConfigData = (config: Partial<DynamicConfig>) => {
     if (!config.pathname || !config.content) {
@@ -176,6 +178,23 @@ const DynamicPage: React.FC<DynamicPageProps> = ({
       setCreateDynamicConfigData(_.clone(defaultCreateDynamicConfigData));
       setCreateDynamicConfigLoading(false);
       setCreateDynamicConfigOpen(false);
+      handleQueryAllDynamicConfigs(dynamicConfigsPagination);
+    });
+  };
+
+  const handleUpdateDynamicConfigItem = (config: Partial<DynamicConfig>) => {
+    setUpdateDynamicConfigLoading(true);
+    updateDynamicConfig(config.id, config).finally(() => {
+      setUpdateDynamicConfigLoading(false);
+      handleQueryAllDynamicConfigs(dynamicConfigsPagination);
+    });
+  };
+
+  const handleDeleteDynamicConfigItem = (config: Partial<DynamicConfig>) => {
+    setDeleteDynamicConfigLoading(true);
+    deleteDynamicConfigs([config.id]).finally(() => {
+      setDeleteDynamicConfigLoading(false);
+      setSelectedDynamicConfig(null);
       handleQueryAllDynamicConfigs(dynamicConfigsPagination);
     });
   };
@@ -316,6 +335,7 @@ const DynamicPage: React.FC<DynamicPageProps> = ({
                         className="app-monaco-editor"
                         wrapperClassName="app-monaco-editor-wrapper"
                         value={selectedDynamicConfig.content}
+                        language="json"
                         onChange={(content: string) => {
                           setSelectedDynamicConfig({
                             ...selectedDynamicConfig,
@@ -331,11 +351,22 @@ const DynamicPage: React.FC<DynamicPageProps> = ({
                       <Button
                         variant="outlined"
                         color="primary"
-                      >{systemTexts['SAVE']}</Button>
+                        disabled={
+                          !validateDynamicConfigData(selectedDynamicConfig)
+                          || updateDynamicConfigLoading
+                          || deleteDynamicConfigLoading
+                        }
+                        onClick={() => handleUpdateDynamicConfigItem(selectedDynamicConfig)}
+                      >{updateDynamicConfigLoading ? systemTexts['SAVING'] : systemTexts['SAVE']}</Button>
                       <Button
                         variant="outlined"
                         classes={{ root: classes.deleteButton }}
-                      >{systemTexts['DELETE']}</Button>
+                        disabled={
+                          updateDynamicConfigLoading
+                          || deleteDynamicConfigLoading
+                        }
+                        onClick={() => handleDeleteDynamicConfigItem(selectedDynamicConfig)}
+                      >{deleteDynamicConfigLoading ? systemTexts['DELETING'] : systemTexts['DELETE']}</Button>
                     </Box>
                   </CardContent>
                 </Card>
