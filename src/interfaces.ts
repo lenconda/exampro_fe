@@ -276,3 +276,12 @@ export interface RoleTreeItemResponseData {
   updatedAt?: string;
   deletedAt?: string;
 }
+
+export interface DynamicConfig {
+  id: number;
+  pathname: string;
+  content: string;
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string;
+}

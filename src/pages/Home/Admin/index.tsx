@@ -14,6 +14,7 @@ export interface AccountPageProps extends Dispatch, AppState {}
 const permissionMap = {
   '/home/admin/role': ['user/admin/role', 'user/admin/layout', 'user/admin/user'],
   '/home/admin/menu': ['user/admin/layout'],
+  '/home/admin/dynamic': ['user/admin/layout', 'user/admin/role'],
 };
 
 // /home/admin/menu
