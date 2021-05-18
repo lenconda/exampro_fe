@@ -23,13 +23,19 @@ import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogTitle from '@material-ui/core/DialogTitle';
 import Grid from '@material-ui/core/Grid';
 import MenuItem from '@material-ui/core/MenuItem';
 import TablePagination from '@material-ui/core/TablePagination';
+import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import CogOutlineIcon from 'mdi-material-ui/CogOutline';
 import _ from 'lodash';
 import clsx from 'clsx';
+import MonacoEditor from '@monaco-editor/react';
 
 export interface DynamicPageProps extends Dispatch, AppState {}
 export type DynamicConfigPaginationData = CustomPaginationData;
@@ -37,6 +43,10 @@ export type DynamicConfigPaginationData = CustomPaginationData;
 const defaultDynamicConfigsPaginationData: DynamicConfigPaginationData = {
   page: 1,
   size: 10,
+};
+const defaultCreateDynamicConfigData: Omit<DynamicConfig, 'id'> = {
+  content: '',
+  pathname: '',
 };
 
 const useStyles = makeStyles((theme) => {
@@ -53,6 +63,20 @@ const useStyles = makeStyles((theme) => {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'stretch',
+      '& > *': {
+        flexShrink: 0,
+        flexGrow: 0,
+      },
+    },
+    item: {
+      flexShrink: 0,
+      flexGrow: 0,
+    },
+    selectedItem: {
+      backgroundColor: lighten(theme.palette.primary.main, 0.85),
+      '&:hover': {
+        backgroundColor: lighten(theme.palette.primary.main, 0.85),
+      },
     },
     container: {
       flexWrap: 'nowrap',
@@ -64,6 +88,8 @@ const useStyles = makeStyles((theme) => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
+      padding: theme.spacing(2),
+      paddingTop: 0,
     },
     infoItemWrapper: {
       marginBottom: theme.spacing(3),
@@ -73,17 +99,31 @@ const useStyles = makeStyles((theme) => {
         marginRight: theme.spacing(1),
       },
     },
-    tabsWrapper: {
-      marginBottom: theme.spacing(3),
-    },
     deleteButton: {
       color: theme.palette.error.main,
     },
-    tableContainer: {
-      padding: 0,
-    },
     searchWrapper: {
       padding: theme.spacing(2),
+    },
+    createDynamicConfigDialogContent: {
+      display: 'flex',
+    },
+    infoCard: {
+      height: '100%',
+    },
+    infoCardContent: {
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'flex-start',
+      alignItems: 'stretch',
+      paddingTop: theme.spacing(4),
+    },
+    editorWrapper: {
+      display: 'flex',
+      flexDirection: 'column',
+      flexGrow: 1,
+      flexShrink: 0,
     },
   };
 });
@@ -107,12 +147,37 @@ const DynamicPage: React.FC<DynamicPageProps> = ({
   const [selectedDynamicConfig, setSelectedDynamicConfig] = useState<DynamicConfig>(undefined);
   const [searchValue, setSearchValue] = useState<string>('');
   const debouncedSearchValue = useDebouncedValue(searchValue);
+  const [createDynamicConfigOpen, setCreateDynamicConfigOpen] = useState<boolean>(false);
+  const [createDynamicConfigLoading, setCreateDynamicConfigLoading] = useState<boolean>(false);
+  const [createDynamicConfigData, setCreateDynamicConfigData] = useState(_.clone(defaultCreateDynamicConfigData));
+
+  const validateDynamicConfigData = (config: Partial<DynamicConfig>) => {
+    if (!config.pathname || !config.content) {
+      return false;
+    }
+    try {
+      JSON.parse(config.content);
+      return true;
+    } catch {
+      return false;
+    }
+  };
 
   const handleQueryAllDynamicConfigs = (pagination: DynamicConfigPaginationData) => {
     setDynamicConfigsLoading(true);
     queryAllDynamicConfigs(pagination).then((data) => {
       setDynamicConfigsData(data);
     }).finally(() => setDynamicConfigsLoading(false));
+  };
+
+  const handleCreateDynamicConfigItem = (config: Partial<DynamicConfig>) => {
+    setCreateDynamicConfigLoading(true);
+    createDynamicConfig(config).finally(() => {
+      setCreateDynamicConfigData(_.clone(defaultCreateDynamicConfigData));
+      setCreateDynamicConfigLoading(false);
+      setCreateDynamicConfigOpen(false);
+      handleQueryAllDynamicConfigs(dynamicConfigsPagination);
+    });
   };
 
   useEffect(() => {
@@ -149,9 +214,17 @@ const DynamicPage: React.FC<DynamicPageProps> = ({
                   <Box className={classes.searchWrapper}>
                     <AppSearchBarInput
                       value={searchValue}
-                      placeholder={texts['010']}
+                      placeholder={texts['001']}
                       onValueChange={(value) => setSearchValue(value)}
                     />
+                  </Box>
+                  <Box className={classes.buttonsWrapper}>
+                    <Button
+                      color="primary"
+                      size="small"
+                      variant="contained"
+                      onClick={() => setCreateDynamicConfigOpen(true)}
+                    >{texts['002']}</Button>
                   </Box>
                   {
                     dynamicConfigsData && dynamicConfigsData.items.length === 0
@@ -160,11 +233,19 @@ const DynamicPage: React.FC<DynamicPageProps> = ({
                         <>
                           <Box className={classes.itemsWrapper}>
                             {
-                              dynamicConfigsData.items.map((item) => {
+                              dynamicConfigsData.items.map((item, index) => {
                                 return (
-                                  <MenuItem key={item.id}>
-                                    <Typography>
-                                      <CogOutlineIcon />
+                                  <MenuItem
+                                    key={index}
+                                    classes={{
+                                      root: clsx(classes.item, {
+                                        [classes.selectedItem]: selectedDynamicConfig && selectedDynamicConfig.id === item.id,
+                                      }),
+                                    }}
+                                    onClick={() => setSelectedDynamicConfig(item)}
+                                  >
+                                    <Typography classes={{ root: 'app-icon-typography' }}>
+                                      <CogOutlineIcon fontSize="small" />
                                       {item.pathname}
                                     </Typography>
                                   </MenuItem>
@@ -181,6 +262,7 @@ const DynamicPage: React.FC<DynamicPageProps> = ({
                             labelRowsPerPage={tableTexts['001']}
                             backIconButtonText={tableTexts['002']}
                             nextIconButtonText={tableTexts['003']}
+                            style={{ flexShrink: 0 }}
                             labelDisplayedRows={({ from, to, count }) => `${count} ${tableTexts['004']} ${from}-${to}`}
                             onChangePage={(event, newPageNumber) => {
                               setDynamicConfigsPagination({
@@ -212,8 +294,49 @@ const DynamicPage: React.FC<DynamicPageProps> = ({
                 lg={7}
                 xl={8}
               >
-                <Card>
-                  <CardContent>
+                <Card classes={{ root: classes.infoCard }}>
+                  <CardContent classes={{ root: classes.infoCardContent }}>
+                    <Box className={clsx(classes.infoItemWrapper)}>
+                      <TextField
+                        value={selectedDynamicConfig.pathname}
+                        variant="outlined"
+                        fullWidth={true}
+                        label={texts['004']}
+                        onChange={(event) => {
+                          setSelectedDynamicConfig({
+                            ...selectedDynamicConfig,
+                            pathname: event.target.value,
+                          });
+                        }}
+                      />
+                    </Box>
+                    <Box className={classes.editorWrapper}>
+                      <Typography gutterBottom={true}>{texts['003']}</Typography>
+                      <MonacoEditor
+                        className="app-monaco-editor"
+                        wrapperClassName="app-monaco-editor-wrapper"
+                        value={selectedDynamicConfig.content}
+                        onChange={(content: string) => {
+                          setSelectedDynamicConfig({
+                            ...selectedDynamicConfig,
+                            content,
+                          });
+                        }}
+                      />
+                    </Box>
+                    <Box
+                      className={clsx(classes.buttonsWrapper, 'app-margin-top')}
+                      style={{ flexShrink: 0 }}
+                    >
+                      <Button
+                        variant="outlined"
+                        color="primary"
+                      >{systemTexts['SAVE']}</Button>
+                      <Button
+                        variant="outlined"
+                        classes={{ root: classes.deleteButton }}
+                      >{systemTexts['DELETE']}</Button>
+                    </Box>
                   </CardContent>
                 </Card>
               </Grid>
@@ -221,6 +344,55 @@ const DynamicPage: React.FC<DynamicPageProps> = ({
           }
         </>
       </Grid>
+      <Dialog
+        open={createDynamicConfigOpen}
+        maxWidth="md"
+        fullWidth={true}
+        scroll="paper"
+      >
+        <DialogTitle>{texts['002']}</DialogTitle>
+        <DialogContent>
+          <Box className={classes.infoItemWrapper}>
+            <TextField
+              fullWidth={true}
+              variant="outlined"
+              label={texts['004']}
+              value={createDynamicConfigData.pathname}
+              onChange={(event) => {
+                setCreateDynamicConfigData({
+                  ...createDynamicConfigData,
+                  pathname: event.target.value,
+                });
+              }}
+            />
+          </Box>
+          <Box>
+            <Typography classes={{ root: 'app-margin-bottom' }}>{texts['003']}</Typography>
+            <MonacoEditor
+              language="json"
+              className={clsx('app-monaco-editor')}
+              value={createDynamicConfigData.content}
+              onChange={(content: string) => {
+                setCreateDynamicConfigData({
+                  ...createDynamicConfigData,
+                  content,
+                });
+              }}
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            color="primary"
+            onClick={() => setCreateDynamicConfigOpen(false)}
+          >{systemTexts['CANCEL']}</Button>
+          <Button
+            color="primary"
+            disabled={!validateDynamicConfigData(createDynamicConfigData) || createDynamicConfigLoading}
+            onClick={() => handleCreateDynamicConfigItem(createDynamicConfigData)}
+          >{createDynamicConfigLoading ? systemTexts['SUBMITTING'] : systemTexts['OK']}</Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

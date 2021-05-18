@@ -278,7 +278,7 @@ export interface RoleTreeItemResponseData {
 }
 
 export interface DynamicConfig {
-  id: number;
+  id: number | string;
   pathname: string;
   content: string;
   createdAt?: string;
