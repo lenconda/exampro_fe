@@ -10,7 +10,8 @@ import AppUserCard from '../../components/AppUserCard';
 import { encodeRedirectPathname } from '../../utils/redirect';
 import Fallback from '../../components/Fallback';
 import { useRequest } from '../../utils/request';
-import React, { useState, Suspense, useEffect } from 'react';
+import AppLanguageSelector from '../../components/AppLanguageSelector';
+import React, { useState, Suspense } from 'react';
 import AppBar from '@material-ui/core/AppBar';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Drawer from '@material-ui/core/Drawer';
@@ -126,6 +127,7 @@ const HomePage: React.FC<HomePageProps> = ({
           />
         </Toolbar>
         <Toolbar>
+          <AppLanguageSelector />
           <Dropdown
             classes={{
               paper: 'app-page-home__avatar-dropdown',

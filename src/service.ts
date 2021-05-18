@@ -44,3 +44,8 @@ export const getI18nTexts = async () => {
   const data = await getDynamicConfig('top.lenconda.exampro.i18n');
   return data;
 };
+
+export const getLanguageOptions = async () => {
+  const data = await getDynamicConfig('top.lenconda.exampro.languages');
+  return data;
+};

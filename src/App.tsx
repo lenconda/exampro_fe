@@ -7,7 +7,7 @@ import AppAlertContainer from './components/AppAlert/Container';
 import AppRequestContainer from './components/AppRequest/Container';
 import AppDialogContainer from './components/AppDialog/Container';
 import { Dispatch as DispatchProps } from './interfaces';
-import { getI18nTexts } from './service';
+import { getI18nTexts, getLanguageOptions } from './service';
 import {
   Route,
   Redirect,
@@ -43,6 +43,12 @@ const App: React.FC<AppProps> = ({
       dispatch({
         type: 'app/setI18nTexts',
         payload: texts,
+      });
+    });
+    getLanguageOptions().then((options) => {
+      dispatch({
+        type: 'app/setLanguageOptions',
+        payload: options,
       });
     });
   }, []);

@@ -285,3 +285,8 @@ export interface DynamicConfig {
   updatedAt?: string;
   deletedAt?: string;
 }
+
+export interface LanguageOption {
+  title: string;
+  code: string;
+}

@@ -1,38 +1,9 @@
 import { ConnectState } from '.';
-import { ExamStatus, User } from '../interfaces';
+import { LanguageOption, User } from '../interfaces';
 import { getUserProfile } from '../pages/Home/service';
 import { Effect, Subscription } from 'dva';
 import _ from 'lodash';
 import { Reducer } from 'redux';
-
-// export interface I18N {
-//   [key: string]: {
-//     errors?: Record<string, string>;
-//     ui?: {
-//       [pathname: string]: Record<string, string>;
-//     };
-//     avatarDropdown?: Record<string, string>;
-//     sidebarMenu?: Record<string, string>;
-//     examRoles?: Record<string, string>;
-//     table?: Record<string, string>;
-//     system?: Record<string, string>;
-//     examStatuses?: Record<ExamStatus, string>;
-//     dialog?: Record<string, string>;
-//     examCard?: Record<string, string>;
-//     editor?: Record<string, string>;
-//     questionEditor?: Record<string, string>;
-//     questionItem?: Record<string, string>;
-//     searchBar?: Record<string, string>;
-//     paperEditor?: Record<string, string>;
-//     paperQuestionItem?: Record<string, string>;
-//     examEditor?: Record<string, string>;
-//     dateTimePicker?: Record<string, string>;
-//     paperContainer?: Record<string, string>;
-//     examContainer?: Record<string, string>;
-//     roleSelector?: Record<string, string>;
-//     roleAutocomplete?: Record<string, string>;
-//   };
-// }
 
 export type I18N = Record<string, any>;
 
@@ -40,6 +11,7 @@ export interface AppState {
   count: number;
   locale: string;
   i18n: I18N;
+  languages: LanguageOption[];
   user?: User;
 }
 
@@ -53,6 +25,8 @@ export interface AppModelType {
   reducers: {
     setUserProfile: Reducer<AppState>;
     setI18nTexts: Reducer<AppState>;
+    setLanguageOptions: Reducer<AppState>;
+    setLocale: Reducer<AppState>;
   };
   subscriptions: {
     setup: Subscription;
@@ -63,8 +37,14 @@ const AppModel: AppModelType = {
   namespace: 'app',
   state: {
     count: 0,
-    locale: 'zh-CN',
+    locale: localStorage.getItem('locale') || 'en-US',
     i18n: {},
+    languages: [
+      {
+        title: 'English (United States)',
+        code: 'en-US',
+      },
+    ],
   },
   effects: {
     * getTexts({ payload }, { select }) {
@@ -92,6 +72,18 @@ const AppModel: AppModelType = {
       return {
         ...state,
         i18n: _.cloneDeep(payload),
+      };
+    },
+    setLanguageOptions(state, { payload }) {
+      return {
+        ...state,
+        languages: _.cloneDeep(payload),
+      };
+    },
+    setLocale(state, { payload }) {
+      return {
+        ...state,
+        locale: payload,
       };
     },
   },
