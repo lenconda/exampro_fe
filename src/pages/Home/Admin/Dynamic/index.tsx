@@ -17,6 +17,7 @@ import { usePageTexts, useTexts } from '../../../../utils/texts';
 import AppIndicator from '../../../../components/AppIndicator';
 import AppSearchBarInput from '../../../../components/AppSearchBar/Input';
 import { useDebouncedValue } from '../../../../utils/hooks';
+import AppDialogManager from '../../../../components/AppDialog/Manager';
 import React, { useEffect, useState } from 'react';
 import { lighten, makeStyles } from '@material-ui/core';
 import Box from '@material-ui/core/Box';
@@ -365,7 +366,11 @@ const DynamicPage: React.FC<DynamicPageProps> = ({
                           updateDynamicConfigLoading
                           || deleteDynamicConfigLoading
                         }
-                        onClick={() => handleDeleteDynamicConfigItem(selectedDynamicConfig)}
+                        onClick={() => {
+                          AppDialogManager.confirm(texts['006'], {
+                            onConfirm: () => handleDeleteDynamicConfigItem(selectedDynamicConfig),
+                          });
+                        }}
                       >{deleteDynamicConfigLoading ? systemTexts['DELETING'] : systemTexts['DELETE']}</Button>
                     </Box>
                   </CardContent>
