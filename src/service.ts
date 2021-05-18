@@ -32,3 +32,15 @@ export const getUserProfile = async (email: string) => {
   });
   return _.get(data, 'data.data') as User;
 };
+
+export const getDynamicConfig = async (pathname: string) => {
+  const data = await AppRequestManager.send({
+    url: `/dynamic/${pathname}`,
+  });
+  return JSON.parse(_.get(data, 'data.content') || '{}');
+};
+
+export const getI18nTexts = async () => {
+  const data = await getDynamicConfig('top.lenconda.exampro.i18n');
+  return data;
+};

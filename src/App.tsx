@@ -6,6 +6,8 @@ import Fallback from './components/Fallback';
 import AppAlertContainer from './components/AppAlert/Container';
 import AppRequestContainer from './components/AppRequest/Container';
 import AppDialogContainer from './components/AppDialog/Container';
+import { Dispatch as DispatchProps } from './interfaces';
+import { getI18nTexts } from './service';
 import {
   Route,
   Redirect,
@@ -14,7 +16,7 @@ import {
 } from 'react-router-dom';
 import { StylesProvider, ThemeProvider } from '@material-ui/core';
 import { Dispatch, AnyAction } from 'redux';
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { SnackbarProvider } from 'notistack';
 import './App.less';
 
@@ -31,11 +33,20 @@ const ExamPage = React.lazy(() => import('./pages/Exam'));
 // /403
 const ForbiddenPage = React.lazy(() => import('./pages/403'));
 
-export interface AppProps extends AppState {
-  dispatch: Dispatch<AnyAction>;
-}
+export interface AppProps extends AppState, DispatchProps {}
 
-const App: React.FC<AppProps> = (props) => {
+const App: React.FC<AppProps> = ({
+  dispatch,
+}) => {
+  useEffect(() => {
+    getI18nTexts().then((texts) => {
+      dispatch({
+        type: 'app/setI18nTexts',
+        payload: texts,
+      });
+    });
+  }, []);
+
   return (
     <ThemeProvider theme={theme}>
       <StylesProvider injectFirst={true}>
