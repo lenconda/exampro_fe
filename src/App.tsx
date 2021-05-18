@@ -15,10 +15,10 @@ import {
   Switch,
 } from 'react-router-dom';
 import { StylesProvider, ThemeProvider } from '@material-ui/core';
-import { Dispatch, AnyAction } from 'redux';
 import React, { Suspense, useEffect } from 'react';
 import { SnackbarProvider } from 'notistack';
 import './App.less';
+import _ from 'lodash';
 
 // /home
 const HomePage = React.lazy(() => import('./pages/Home'));
@@ -37,11 +37,12 @@ export interface AppProps extends AppState, DispatchProps {}
 
 const App: React.FC<AppProps> = ({
   dispatch,
+  i18n,
 }) => {
   useEffect(() => {
     getI18nTexts().then((texts) => {
       dispatch({
-        type: 'app/setI18nTexts',
+        type: 'app/handleSetI18nTexts',
         payload: texts,
       });
     });
