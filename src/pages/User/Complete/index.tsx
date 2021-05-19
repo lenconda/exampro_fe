@@ -5,6 +5,7 @@ import { getQuery } from '../../../utils/qs';
 import AppAlertManager from '../../../components/AppAlert/Manager';
 import { Dispatch } from '../../../interfaces';
 import { usePageTexts } from '../../../utils/texts';
+import AppLanguageSelector from '../../../components/AppLanguageSelector';
 import React, { useState } from 'react';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
@@ -169,6 +170,7 @@ const CompletePage: React.FC<CompletePageProps> = (props) => {
               <Typography variant="subtitle1" style={{ textAlign: 'center' }}>{texts['008']}</Typography>
             </>
         }
+        <AppLanguageSelector />
       </Card>
     </div>
   );

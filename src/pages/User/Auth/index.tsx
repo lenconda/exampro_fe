@@ -4,6 +4,7 @@ import { AppState } from '../../../models/app';
 import { usePageTexts } from '../../../utils/texts';
 import { Dispatch } from '../../../interfaces';
 import { decodeRedirectPathnameToString } from '../../../utils/redirect';
+import AppLanguageSelector from '../../../components/AppLanguageSelector';
 import React, { useState } from 'react';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
@@ -201,6 +202,7 @@ const AuthPage: React.FC<AuthPageProps> = (props) => {
               <Typography variant="subtitle1" style={{ textAlign: 'center' }}>{texts['013']}</Typography>
             </>
         }
+        <AppLanguageSelector />
       </Card>
     </div>
   );
