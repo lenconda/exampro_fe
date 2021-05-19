@@ -211,7 +211,7 @@ const ExamsPage: React.FC<ExamPageProps> = ({
           sm={12}
           md={3}
           lg={2}
-          xl={1}
+          xl={2}
           classes={{ root: 'item app-page-home__exams__tabs' }}
           style={
             (
@@ -283,7 +283,7 @@ const ExamsPage: React.FC<ExamPageProps> = ({
           sm={12}
           md={9}
           lg={10}
-          xl={11}
+          xl={10}
           classes={{
             item: 'item',
             root: 'app-page-home__exams__content',
