@@ -37,7 +37,7 @@ export interface AppProps extends AppState, DispatchProps {}
 
 const App: React.FC<AppProps> = ({
   dispatch,
-  i18n,
+  locale,
 }) => {
   useEffect(() => {
     getI18nTexts().then((texts) => {
@@ -52,7 +52,7 @@ const App: React.FC<AppProps> = ({
         payload: options,
       });
     });
-  }, []);
+  }, [locale]);
 
   return (
     <ThemeProvider theme={theme}>
