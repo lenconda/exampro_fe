@@ -5,6 +5,7 @@
     "test": "exit 0",
     "checksum": "node scripts/check.js",
     "deploy": "node scripts/deploy.js",
+    "pretest": "eslint .",
     "start": "cross-env NODE_ENV=development webpack-dev-server --config config/webpack.config.js --mode=development --progress",
     "build": "cross-env NODE_ENV=production webpack --config config/webpack.config.js --mode=production --progress"
   },
