@@ -75,5 +75,9 @@ workflows:
       - deploy:
           requires:
             - build
-          branches:
-            only: master
+          filters:
+            tags:
+              only:
+                - /.*/
+            branches:
+              ignore: /.*/
