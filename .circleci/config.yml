@@ -40,7 +40,7 @@ jobs:
           key: v1-dependencies-{{ checksum "checksum.txt" }}
       - save_cache:
           paths:
-            - lib
+            - dist
             - checksum.txt
           key: v1-dist-{{ checksum "checksum.txt" }}
 
