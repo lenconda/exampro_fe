@@ -1,12 +1,12 @@
 import { createPeerConnectionContext } from './connection';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { User } from '../../interfaces';
+import AppIndicator from '../AppIndicator';
+import AppUserCard from '../AppUserCard';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Card from '@material-ui/core/Card';
 import Grid from '@material-ui/core/Grid';
 import { lighten, makeStyles } from '@material-ui/core';
-import AppIndicator from '../AppIndicator';
 import _ from 'lodash';
-import AppUserCard from '../AppUserCard';
 import clsx from 'clsx';
 
 const senders = [];
@@ -94,13 +94,13 @@ const AppRecorder: React.FC<AppRecorderProps> = React.memo(({
     if (_.isFunction(onSelectChannel)) {
       onSelectChannel(channel);
     }
-  }
+  };
 
   useEffect(() => {
     setMounted(true);
     return () => {
       setMounted(false);
-    }
+    };
   }, []);
 
   useEffect(() => {
@@ -164,7 +164,7 @@ const AppRecorder: React.FC<AppRecorderProps> = React.memo(({
         }));
       });
       peerConnection.onAnswerMade((socket) => {
-        peerConnection.callUser(socket)
+        peerConnection.callUser(socket);
       });
       peerConnection.onCallRejected((data) => alert(`User: "Socket: ${data.socket}" rejected your call.`));
 
@@ -184,7 +184,7 @@ const AppRecorder: React.FC<AppRecorderProps> = React.memo(({
     }
     return () => {
       joined = true;
-    }
+    };
   }, []);
 
   if (type === 'desktop' && mode === 'participant') {
@@ -212,8 +212,8 @@ const AppRecorder: React.FC<AppRecorderProps> = React.memo(({
                       user={channel.user}
                       classes={{
                         root: clsx(classes.channelItem, {
-                          [classes.channelItemSelected]: _.get(selectedChannel, 'id') === channel.id
-                        })
+                          [classes.channelItemSelected]: _.get(selectedChannel, 'id') === channel.id,
+                        }),
                       }}
                       onClick={() => handleSelectChannel(channel)}
                     />
