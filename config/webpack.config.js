@@ -423,9 +423,9 @@ module.exports = function() {
       new HtmlWebpackPlugin({
         filename: path.resolve(APP_DIST_PATH, 'index.html'),
         template: path.resolve(APP_PUBLIC_PATH, 'index.html'),
-        appName: 'app name',
+        appName: 'ExamPro',
         templateParameters: {
-          appName: 'app name',
+          appName: 'ExamPro',
         },
         chunksSortMode: 'none',
         inject: true,
