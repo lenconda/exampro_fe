@@ -6,6 +6,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const OptimizeCSSAssetsWebpackPlugin = require('optimize-css-assets-webpack-plugin');
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const safePostCssParser = require('postcss-safe-parser');
 const postcssNormalize = require('postcss-normalize');
 const path = require('path');
@@ -43,8 +44,32 @@ module.exports = function() {
     ? [
       new ReactRefreshWebpackPlugin(),
       new webpack.HotModuleReplacementPlugin(),
+      new BundleAnalyzerPlugin({
+        analyzerMode: 'server',
+        analyzerHost: '127.0.0.1',
+        analyzerPort: '8888',
+        reportFilename: path.resolve(__dirname, 'report/report.html'),
+        defaultSizes: 'parsed',
+        openAnalyzer: true,
+        generateStatsFile: false,
+        statsFilename: path.resolve(__dirname, 'report/stats.json'),
+        statsOptions: null,
+        excludeAssets: null,
+        logLevel: 'info',
+      }),
     ]
-    : [];
+    : [
+      new BundleAnalyzerPlugin({
+        analyzerMode: 'static',
+        reportFilename: path.resolve(__dirname, 'report/report.html'),
+        defaultSizes: 'parsed',
+        generateStatsFile: true,
+        statsFilename: path.resolve(__dirname, 'report/stats.json'),
+        statsOptions: null,
+        excludeAssets: null,
+        logLevel: 'info',
+      }),
+    ];
 
   // common function to get style loaders
   const getStyleLoaders = (cssOptions, preProcessor) => {
