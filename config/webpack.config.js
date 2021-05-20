@@ -239,11 +239,17 @@ module.exports = function() {
           },
         },
       },
-      https: {
-        key: fs.readFileSync(path.resolve(__dirname, '../ssl/*.lenconda.top.key'), 'utf-8'),
-        cert: fs.readFileSync(path.resolve(__dirname, '../ssl/*.lenconda.top.cer'), 'utf-8'),
-        ca: fs.readFileSync(path.resolve(__dirname, '../ssl/ca.cer'), 'utf-8'),
-      },
+      ...(
+        isEnvDevelopment
+          ? {
+            https: {
+              key: fs.readFileSync(path.resolve(__dirname, '../ssl/*.lenconda.top.key'), 'utf-8'),
+              cert: fs.readFileSync(path.resolve(__dirname, '../ssl/*.lenconda.top.cer'), 'utf-8'),
+              ca: fs.readFileSync(path.resolve(__dirname, '../ssl/ca.cer'), 'utf-8'),
+            },
+          }
+          : {}
+      ),
     },
     module: {
       strictExportPresence: true,
