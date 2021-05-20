@@ -1,0 +1,79 @@
+version: 2
+
+defaults: &defaults
+  working_directory: ~/repo
+  docker:
+    - image: circleci/node:14.15
+
+jobs:
+  install:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: npm install
+      - run: npm run checksum
+      - run: npm run pretest
+      - save_cache:
+          paths:
+            - node_modules
+            - checksum.txt
+          key: v1-dependencies-{{ checksum "checksum.txt" }}
+      - persist_to_workspace:
+          root: ~/repo
+          paths: .
+  build:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "checksum.txt" }}
+            - v1-dependencies-
+      - run: ls -al
+      - run: npm run build
+      - run: ls -al
+      - save_cache:
+          paths:
+            - node_modules
+            - checksum.txt
+          key: v1-dependencies-{{ checksum "checksum.txt" }}
+      - save_cache:
+          paths:
+            - lib
+            - checksum.txt
+          key: v1-dist-{{ checksum "checksum.txt" }}
+
+  deploy:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - restore_cache:
+          keys:
+            - v1-dist-{{ checksum "checksum.txt" }}
+            - v1-dist-
+            - v1-dependencies-{{ checksum "checksum.txt" }}
+            - v1-dependencies-
+      - run: ls -al
+      - run: npm run deploy
+
+workflows:
+  version: 2
+  build_and_deploy:
+    jobs:
+      - install:
+          filters:
+            tags:
+              only: /.*/
+      - build:
+          requires:
+            - install
+          filters:
+            tags:
+              only: /.*/
+      - deploy:
+          requires:
+            - build
+            branches:
+              only: master

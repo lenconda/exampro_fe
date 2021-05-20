@@ -3,6 +3,8 @@
   "version": "0.0.1",
   "scripts": {
     "test": "exit 0",
+    "checksum": "node scripts/check.js",
+    "deploy": "node scripts/deploy.js",
     "start": "cross-env NODE_ENV=development webpack-dev-server --config config/webpack.config.js --mode=development --progress",
     "build": "cross-env NODE_ENV=production webpack --config config/webpack.config.js --mode=production --progress"
   },
@@ -31,6 +33,7 @@
     "@types/styled-components": "^5.1.9",
     "@typescript-eslint/eslint-plugin": "^1.13.0",
     "@typescript-eslint/parser": "^1.13.0",
+    "aliyun-oss-deploy": "^0.1.5",
     "autoprefixer": "^9.0.0",
     "babel-eslint": "^10.0.2",
     "babel-loader": "8.0.5",
@@ -52,6 +55,7 @@
     "html-webpack-plugin": "3.2.0",
     "less": "^4.1.0",
     "less-loader": "^7.3.0",
+    "md5-file": "^5.0.0",
     "mini-css-extract-plugin": "^0.8.0",
     "optimize-css-assets-webpack-plugin": "^5.0.4",
     "postcss-flexbugs-fixes": "4.2.1",
