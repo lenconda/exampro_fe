@@ -362,28 +362,29 @@ const MenuPage: React.FC<MenuPageProps> = ({
             lg={5}
             xl={4}
           >
-            {
-              menuTreeItemsLoading
-                ? <AppIndicator type="loading" />
-                : menuTreeItems && menuTreeItems.length === 0
-                  ? <AppIndicator type="empty" />
-                  : (
-                    <Card classes={{ root: clsx(classes.sectionWrapper) }}>
-                      <CardContent classes={{ root: classes.menuButtonsWrapper }}>
-                        <Button
-                          startIcon={<LinkPlusIcon />}
-                          color="primary"
-                          variant="contained"
-                          size="small"
-                          onClick={() => setCreateMenuItemOpen(true)}
-                        >{texts['001']}</Button>
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          disabled={updateMenuTreeItemsLoading}
-                          onClick={() => updateMenuItems(menuTreeItems)}
-                        >{updateMenuTreeItemsLoading ? systemTexts['SAVING'] : systemTexts['SAVE']}</Button>
-                      </CardContent>
+
+            <Card classes={{ root: clsx(classes.sectionWrapper) }}>
+              <CardContent classes={{ root: classes.menuButtonsWrapper }}>
+                <Button
+                  startIcon={<LinkPlusIcon />}
+                  color="primary"
+                  variant="contained"
+                  size="small"
+                  onClick={() => setCreateMenuItemOpen(true)}
+                >{texts['001']}</Button>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  disabled={updateMenuTreeItemsLoading || menuTreeItems.length === 0}
+                  onClick={() => updateMenuItems(menuTreeItems)}
+                >{updateMenuTreeItemsLoading ? systemTexts['SAVING'] : systemTexts['SAVE']}</Button>
+              </CardContent>
+              {
+                menuTreeItemsLoading
+                  ? <AppIndicator type="loading" />
+                  : menuTreeItems && menuTreeItems.length === 0
+                    ? <AppIndicator type="empty" />
+                    : (
                       <Box className={classes.menuItemsWrapper}>
                         <DragDropContext onDragEnd={handleDragEnd}>
                           <Droppable droppableId="menu-tree">
@@ -412,8 +413,8 @@ const MenuPage: React.FC<MenuPageProps> = ({
                                                       classes={{
                                                         root: clsx(classes.menuTreeItem, {
                                                           [classes.menuTreeItemSelected]: _.isNumber(selectedMenuTreeItemIndex)
-                                                            && menuTreeItems[selectedMenuTreeItemIndex]
-                                                            && menuTreeItems[selectedMenuTreeItemIndex].id === treeItem.id,
+                                                                  && menuTreeItems[selectedMenuTreeItemIndex]
+                                                                  && menuTreeItems[selectedMenuTreeItemIndex].id === treeItem.id,
                                                         }),
                                                       }}
                                                       style={{
@@ -441,9 +442,9 @@ const MenuPage: React.FC<MenuPageProps> = ({
                           </Droppable>
                         </DragDropContext>
                       </Box>
-                    </Card>
-                  )
-            }
+                    )
+              }
+            </Card>
           </Grid>
           <Grid
             item={true}
