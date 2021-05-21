@@ -108,15 +108,15 @@ export const createPeerConnectionContext = (path: string) => {
     iceServers: [
       {
         urls: [
-          'stun:stun1.l.google.com:19302',
-          'stun:stun4.l.google.com:19302',
+          STUN_SERVER,
+          'stun:stun.voipstunt.com',
           'stun:stunserver.org',
         ],
       },
       {
-        urls: ['turn:turn.bistri.com:80'],
-        credential: 'homeo',
-        username: 'homeo',
+        urls: [TURN_SERVER],
+        credential: TURN_SERVER_CREDENTIAL,
+        username: TURN_SERVER_USERNAME,
       },
     ],
   });

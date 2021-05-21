@@ -58,18 +58,7 @@ module.exports = function() {
         logLevel: 'info',
       }),
     ]
-    : [
-      new BundleAnalyzerPlugin({
-        analyzerMode: 'static',
-        reportFilename: path.resolve(__dirname, 'report/report.html'),
-        defaultSizes: 'parsed',
-        generateStatsFile: true,
-        statsFilename: path.resolve(__dirname, 'report/stats.json'),
-        statsOptions: null,
-        excludeAssets: null,
-        logLevel: 'info',
-      }),
-    ];
+    : [];
 
   // common function to get style loaders
   const getStyleLoaders = (cssOptions, preProcessor) => {
@@ -483,6 +472,12 @@ module.exports = function() {
       ]),
       new CleanWebpackPlugin(),
       new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+      new webpack.DefinePlugin({
+        STUN_SERVER: JSON.stringify(process.env.STUN_SERVER),
+        TURN_SERVER: JSON.stringify(process.env.TURN_SERVER),
+        TURN_SERVER_USERNAME: JSON.stringify(process.env.TURN_SERVER_USERNAME),
+        TURN_SERVER_CREDENTIAL: JSON.stringify(process.env.TURN_SERVER_CREDENTIAL),
+      }),
       ...developmentPlugins,
     ],
   };
