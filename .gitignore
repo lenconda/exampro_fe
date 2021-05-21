@@ -23,6 +23,8 @@ dist
 # HTTPS certification files
 ssl
 
+# checksums
 checksum.txt
 
-report
+# Report files
+/report
