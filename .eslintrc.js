@@ -7,7 +7,12 @@ module.exports = {
     'react-hooks',
     'import',
   ],
-  globals: {},
+  globals: {
+    STUN_SERVER: true,
+    TURN_SERVER: true,
+    TURN_SERVER_CREDENTIAL: true,
+    TURN_SERVER_USERNAME: true,
+  },
   parserOptions: {
     ecmaVersion: 2018,
     sourceType: 'module',
