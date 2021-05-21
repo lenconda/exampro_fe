@@ -111,7 +111,6 @@ export const createPeerConnectionContext = (path: string) => {
           'stun:stun1.l.google.com:19302',
           'stun:stun4.l.google.com:19302',
           'stun:stunserver.org',
-          'stun:stun.voipstunt.com',
         ],
       },
       {
