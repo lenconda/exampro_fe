@@ -37,6 +37,7 @@ import {
   checkReviewPermission,
 } from '../../utils/exam';
 import { getUserProfile } from '../../service';
+import AppRecorder from '../AppRecorder';
 import { getUserProfile as getSelfProfile } from '../../pages/Home/service';
 import AppAlertManager from '../AppAlert/Manager';
 import AppUserCard from '../AppUserCard';
@@ -68,7 +69,6 @@ import formatDistanceToNowStrict from 'date-fns/formatDistanceToNowStrict';
 import './index.less';
 import { useHistory } from 'react-router';
 import { CSSProperties } from '@material-ui/styles';
-import AppRecorder from '../AppRecorder';
 
 export const getDistanceString = (dateString) => {
   const formatDistance = ({ days, hours, minutes, seconds }) => [
@@ -500,7 +500,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = React.memo(({
         clearInterval(timer);
       }
       setTimerString(distance);
-    }
+    };
 
     if (exam) {
       if (timerUnlocked && examState === 'processing') {
@@ -856,7 +856,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = React.memo(({
                                   paper={exam.paper}
                                   mode="answer"
                                   onAnswerChange={(paper, answer) => {
-                                    setParticipantAnswer(answer)
+                                    setParticipantAnswer(answer);
                                   }}
                                   onPaperQuestionLoaded={(loadedPaperQuestions) => {
                                     setPaperQuestionLoaded(true);
