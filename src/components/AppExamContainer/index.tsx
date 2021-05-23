@@ -231,6 +231,10 @@ const useStyles = makeStyles((theme) => {
       height: 180,
       marginLeft: theme.spacing(2),
     },
+    fraudAlert: {
+      textAlign: 'left',
+      marginTop: theme.spacing(2),
+    },
   };
 });
 
@@ -291,10 +295,10 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = React.memo(({
     }).length;
   };
 
-  const fetchExamInfo = (id: number, action?: string) => {
+  const fetchExamInfo = (id: number, action?: string, participantEmail?: string) => {
     if (action) {
       setExamLoading(true);
-      getExamInfo(id, action).then((exam) => {
+      getExamInfo(id, action, participantEmail).then((exam) => {
         setExam(exam);
       }).catch((err) => {
         const statusCode = _.get(err, 'response.status');
@@ -367,7 +371,7 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = React.memo(({
 
   useEffect(() => {
     if (['forbidden', 'submitted', 'not_ready'].indexOf(examState) === -1) {
-      fetchExamInfo(examId, action);
+      fetchExamInfo(examId, action, participantEmail);
     }
     if (examState === 'resulted') {
       fetchParticipantExamResult(examId, participantEmail);
@@ -716,10 +720,15 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = React.memo(({
                               )
                             }
                             {
+                              (examState === 'resulted' && participantEmail && exam) && (
+                                <AppUserCard user={_.get(exam, 'userExam.user')} />
+                              )
+                            }
+                            {
                               _.get(exam, 'userExam.fraud') && (
-                                <Alert severity="error" style={{ textAlign: 'left' }}>
+                                <Alert severity="error" classes={{ root: classes.fraudAlert }}>
                                   <AlertTitle>{texts['FRAUD_MARKED_TITLE']}</AlertTitle>
-                                  {texts['FRAUD_MARKED_MESSAGE']}
+                                  {!participantEmail && texts['FRAUD_MARKED_MESSAGE']}
                                 </Alert>
                               )
                             }

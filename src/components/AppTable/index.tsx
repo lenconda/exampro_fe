@@ -35,6 +35,7 @@ export interface AppTableProps extends TableProps {
   data?: Record<string, any>[];
   selectable?: boolean;
   loading?: boolean;
+  pagination?: boolean;
   containerMinHeight?: number;
   toolbarButtons?: ToolbarButton[];
   wrapperClassName?: string;
@@ -100,8 +101,7 @@ const AppTable: React.FC<AppTableComponentProps> = ({
   toolbarButtons = [],
   wrapperClassName = '',
   containerClassName = '',
-  dispatch,
-  onSelectionChange,
+  pagination = true,
   TablePaginationProps = {
     count: 0,
     page: 0,
@@ -109,6 +109,8 @@ const AppTable: React.FC<AppTableComponentProps> = ({
     onChangePage: () => {},
   },
   PaperProps = {},
+  dispatch,
+  onSelectionChange,
   ...props
 }) => {
   const classes = useStyles();
@@ -201,7 +203,7 @@ const AppTable: React.FC<AppTableComponentProps> = ({
       const newTableContainerMaxHeight =
         window.innerHeight
         - tableBody.current.offsetTop
-        - tablePagination.current.clientHeight
+        - (_.get(tablePagination, 'current.clientHeight') || 0)
         - tableHead.current.clientHeight
         - (tableToolBar.current ? tableToolBar.current.clientHeight : 0)
         - collapseHeight;
@@ -338,18 +340,22 @@ const AppTable: React.FC<AppTableComponentProps> = ({
                       </TableBody>
                     </Table>
                   </TableContainer>
-                  <TablePagination
-                    {...TablePaginationProps}
-                    component={Box}
-                    ref={tablePagination}
-                    rowsPerPageOptions={[5, 10, 20, 50]}
-                    labelRowsPerPage={texts['001']}
-                    backIconButtonText={texts['002']}
-                    nextIconButtonText={texts['003']}
-                    labelDisplayedRows={({ from, to, count }) => `${count} ${texts['004']} ${from}-${to}`}
-                    onChangePage={handleChangePage}
-                    onChangeRowsPerPage={handleChangeRowsPerPage}
-                  />
+                  {
+                    pagination && (
+                      <TablePagination
+                        {...TablePaginationProps}
+                        component={Box}
+                        ref={tablePagination}
+                        rowsPerPageOptions={[5, 10, 20, 50]}
+                        labelRowsPerPage={texts['001']}
+                        backIconButtonText={texts['002']}
+                        nextIconButtonText={texts['003']}
+                        labelDisplayedRows={({ from, to, count }) => `${count} ${texts['004']} ${from}-${to}`}
+                        onChangePage={handleChangePage}
+                        onChangeRowsPerPage={handleChangeRowsPerPage}
+                      />
+                    )
+                  }
                 </Paper>
               </div>
             )

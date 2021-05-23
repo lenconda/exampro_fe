@@ -30,6 +30,7 @@ import Typography from '@material-ui/core/Typography';
 import DeleteIcon from 'mdi-material-ui/Delete';
 import FileDocumentEditIcon from 'mdi-material-ui/FileDocumentEdit';
 import FileEyeIcon from 'mdi-material-ui/FileEye';
+import FormatListCheckboxIcon from 'mdi-material-ui/FormatListCheckbox';
 import NotePlusIcon from 'mdi-material-ui/NotePlus';
 import TextBoxCheckIcon from 'mdi-material-ui/TextBoxCheck';
 import './index.less';
@@ -67,6 +68,7 @@ const ExamsPage: React.FC<ExamPageProps> = ({
   const examRoleTexts = useTexts(dispatch, 'examRoles');
   const systemTexts = useTexts(dispatch, 'system');
   const tableTexts = useTexts(dispatch, 'table');
+  const examCardTexts = useTexts(dispatch, 'examCard');
   const history = useHistory();
   const roleIdQuery = useLocationQuery('role') as string;
   const [roleId, setRoleId] = useState<string>('');
@@ -355,9 +357,9 @@ const ExamsPage: React.FC<ExamPageProps> = ({
                                 Icon: FileDocumentEditIcon,
                                 title: texts['011'],
                                 show: selectedExams.length === 1
-                                && ['resource/exam/initiator', 'resource/exam/maintainer'].includes(roleId)
-                                && (selectedExams[0].startTime ? Date.parse(selectedExams[0].startTime) > Date.now() : true)
-                                && Date.now() < Date.parse(selectedExams[0].endTime),
+                                  && ['resource/exam/initiator', 'resource/exam/maintainer'].includes(roleId)
+                                  && (selectedExams[0].startTime ? Date.parse(selectedExams[0].startTime) > Date.now() : true)
+                                  && Date.now() < Date.parse(selectedExams[0].endTime),
                                 IconButtonProps: {
                                   onClick: () => {
                                     setExamEditorMode('edit');
@@ -369,12 +371,24 @@ const ExamsPage: React.FC<ExamPageProps> = ({
                                 Icon: TextBoxCheckIcon,
                                 title: texts['015'],
                                 show: selectedExams.length === 1
-                                && ['resource/exam/reviewer'].includes(roleId)
-                                && Date.parse(selectedExams[0].endTime) < Date.now()
-                                && Date.now() < Date.parse(selectedExams[0].resultTime),
+                                  && ['resource/exam/reviewer'].includes(roleId)
+                                  && Date.parse(selectedExams[0].endTime) < Date.now()
+                                  && Date.now() < Date.parse(selectedExams[0].resultTime),
                                 IconButtonProps: {
                                   onClick: () => {
                                     history.push(`/home/exams/review_list/${selectedExams[0].id}`);
+                                  },
+                                },
+                              },
+                              {
+                                Icon: FormatListCheckboxIcon,
+                                title: examCardTexts['008'],
+                                show: selectedExams.length === 1
+                                  && ['resource/exam/reviewer'].includes(roleId)
+                                  && Date.parse(selectedExams[0].resultTime) < Date.now(),
+                                IconButtonProps: {
+                                  onClick: () => {
+                                    history.push(`/home/exams/result/${selectedExams[0].id}`);
                                   },
                                 },
                               },
