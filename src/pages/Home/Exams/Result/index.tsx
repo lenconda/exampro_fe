@@ -16,7 +16,6 @@ import Typography from '@material-ui/core/Typography';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import ExportVariantIcon from 'mdi-material-ui/ExportVariant';
 import FileClockIcon from 'mdi-material-ui/FileClock';
-import RefreshOutlinedIcon from '@material-ui/icons/RefreshOutlined';
 import React, { useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router';
 import { makeStyles } from '@material-ui/core';
@@ -144,38 +143,25 @@ const ResultPage: React.FC<ResultPageProps> = ({
         },
       ]);
     }
-  }, [texts, systemTexts]);
+  }, [texts, systemTexts, exam]);
 
   return (
     <div className="app-page app-page-home__exams__result">
       <div className="app-grid-container">
         <Box className={classes.controlButtonsWrapper}>
-          <Box>
-            <Button
-              startIcon={<ArrowBackIcon />}
-              variant="outlined"
-              onClick={() => history.go(-1)}
-            >{texts['001']}</Button>
-            <Button
-              startIcon={<ExportVariantIcon />}
-              variant="text"
-              color="primary"
-              onClick={() => {
-                // TODO:
-              }}
-            >{systemTexts['EXPORT']}</Button>
-          </Box>
-          {
-            exam && (
-              <Button
-                startIcon={resultLoading ? null : <RefreshOutlinedIcon />}
-                disabled={resultLoading}
-                variant="text"
-                color="primary"
-                onClick={() => handleGetExamResults(exam.id)}
-              >{!resultLoading ? texts['002'] : texts['003']}</Button>
-            )
-          }
+          <Button
+            startIcon={<ArrowBackIcon />}
+            variant="outlined"
+            onClick={() => history.go(-1)}
+          >{texts['001']}</Button>
+          <Button
+            startIcon={<ExportVariantIcon />}
+            variant="text"
+            color="primary"
+            onClick={() => {
+              // TODO:
+            }}
+          >{systemTexts['EXPORT']}</Button>
         </Box>
         <Box className={classes.contentWrapper}>
           {
