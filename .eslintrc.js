@@ -12,6 +12,7 @@ module.exports = {
     TURN_SERVER: true,
     TURN_SERVER_CREDENTIAL: true,
     TURN_SERVER_USERNAME: true,
+    SVGInject: true,
   },
   parserOptions: {
     ecmaVersion: 2018,

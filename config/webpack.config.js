@@ -185,17 +185,6 @@ module.exports = function() {
             priority: 30,
             chunks: 'initial',
           },
-          'mdi-icons': {
-            test: function (module, chunks) {
-              if (/mdi-material-ui/.test(module.context)) {
-                return true;
-              }
-            },
-            chunks: 'all',
-            name: 'mdi-icons',
-            minChunks: 1,
-            priority: 40,
-          },
         },
       },
       minimizer: [

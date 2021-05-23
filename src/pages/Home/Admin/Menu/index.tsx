@@ -26,6 +26,8 @@ import AppDialogManager from '../../../../components/AppDialog/Manager';
 import AppTable, { TableSchema } from '../../../../components/AppTable';
 import RoleSelector from '../components/RoleSelector';
 import RoleAutocomplete from '../components/RoleAutocomplete';
+import Image from '../../../../components/Image';
+import { useDebouncedValue } from '../../../../utils/hooks';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -39,12 +41,10 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import Grid from '@material-ui/core/Grid';
 import MenuItem from '@material-ui/core/MenuItem';
 import Paper from '@material-ui/core/Paper';
-import SvgIcon from '@material-ui/core/SvgIcon';
 import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
-import * as icons from 'mdi-material-ui';
 import ArrowCollapseLeftIcon from 'mdi-material-ui/ArrowCollapseLeft';
 import ArrowCollapseRightIcon from 'mdi-material-ui/ArrowCollapseRight';
 import LinkPlusIcon from 'mdi-material-ui/LinkPlus';
@@ -117,16 +117,6 @@ const useStyles = makeStyles((theme) => {
         marginRight: theme.spacing(1),
       },
     },
-    createMenuInfoIconWrapper: {
-      height: '100%',
-      padding: theme.spacing(2),
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      border: '1px solid transparent',
-      borderColor: theme.palette.grey[400],
-      marginLeft: theme.spacing(3),
-    },
     tabsWrapper: {
       marginBottom: theme.spacing(3),
     },
@@ -135,6 +125,11 @@ const useStyles = makeStyles((theme) => {
     },
     menuRolesTableContainer: {
       padding: 0,
+    },
+    menuIcon: {
+      width: theme.spacing(2),
+      height: theme.spacing(2),
+      marginRight: theme.spacing(2),
     },
   };
 });
@@ -168,6 +163,7 @@ const MenuPage: React.FC<MenuPageProps> = ({
   const menuRoleCardRef = useRef<HTMLElement>(undefined);
   const [roleSelectorOpen, setRoleSelectorOpen] = useState<boolean>(false);
   const [grantMenuRolesLoading, setGrantMenuRolesLoading] = useState<boolean>(false);
+  const debouncedIcon = useDebouncedValue(createMenuData.icon);
 
   const validateCreateMenuData = (data: MenuItemRequestData) => {
     for (const key of Object.keys(data)) {
@@ -394,7 +390,6 @@ const MenuPage: React.FC<MenuPageProps> = ({
                                   <div ref={provided.innerRef}>
                                     {
                                       menuTreeItems.map((treeItem, index) => {
-                                        const Icon = icons[treeItem.icon];
                                         return (
                                           <Draggable key={index} index={index + 1} draggableId={index.toString()}>
                                             {
@@ -413,17 +408,18 @@ const MenuPage: React.FC<MenuPageProps> = ({
                                                       classes={{
                                                         root: clsx(classes.menuTreeItem, {
                                                           [classes.menuTreeItemSelected]: _.isNumber(selectedMenuTreeItemIndex)
-                                                                  && menuTreeItems[selectedMenuTreeItemIndex]
-                                                                  && menuTreeItems[selectedMenuTreeItemIndex].id === treeItem.id,
+                                                            && menuTreeItems[selectedMenuTreeItemIndex]
+                                                            && menuTreeItems[selectedMenuTreeItemIndex].id === treeItem.id,
                                                         }),
                                                       }}
                                                       style={{
                                                         paddingLeft: 16 + 16 * treeItem.level,
                                                       }}
                                                     >
-                                                      {
-                                                        Icon && <Icon fontSize="small" />
-                                                      }
+                                                      <Image
+                                                        icon={treeItem.icon}
+                                                        className={classes.menuIcon}
+                                                      />
                                                       <Typography noWrap={true}>{treeItem.pathname}</Typography>
                                                     </MenuItem>
                                                   </Paper>
@@ -640,13 +636,7 @@ const MenuPage: React.FC<MenuPageProps> = ({
                 });
               }}
             />
-            {
-              icons[createMenuData.icon] && (
-                <Box className={classes.createMenuInfoIconWrapper}>
-                  <SvgIcon component={icons[createMenuData.icon]} />
-                </Box>
-              )
-            }
+            <Image style={{ margin: '0 16px' }} icon={debouncedIcon} />
           </Box>
           <Box className={classes.createMenuInfoItemWrapper}>
             <TextField
