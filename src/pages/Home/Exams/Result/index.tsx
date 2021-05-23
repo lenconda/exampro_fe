@@ -20,6 +20,7 @@ import React, { useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router';
 import { makeStyles } from '@material-ui/core';
 import _ from 'lodash';
+import download from 'js-file-download';
 
 export interface ResultPageProps extends Dispatch, AppState {}
 
@@ -73,6 +74,16 @@ const ResultPage: React.FC<ResultPageProps> = ({
     }).finally(() => {
       setExamLoading(false);
     });
+  };
+
+  const handleExportCSVFile = (resultItems: ExamResultListItem[]) => {
+    const data = resultItems.map((item) => {
+      const { user, createdAt, score } = item;
+      const { email, name } = user;
+      const currentItemRowArray = [name, email, new Date(createdAt).toLocaleString(), score];
+      return currentItemRowArray.join(',');
+    });
+    download(new Blob([`\ufeff${data.join('\n')}`], { type: 'text/csv,charset=UTF-8' }), `${exam.title}.csv`);
   };
 
   useEffect(() => {
@@ -158,10 +169,11 @@ const ResultPage: React.FC<ResultPageProps> = ({
             startIcon={<ExportVariantIcon />}
             variant="text"
             color="primary"
-            onClick={() => {
-              // TODO:
-            }}
-          >{systemTexts['EXPORT']}</Button>
+            disabled={resultItems.length === 0}
+            onClick={() => handleExportCSVFile(resultItems)}
+          >
+            {systemTexts['EXPORT']}
+          </Button>
         </Box>
         <Box className={classes.contentWrapper}>
           {

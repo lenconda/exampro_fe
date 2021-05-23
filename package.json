@@ -105,6 +105,7 @@
     "invariant": "^2.2.4",
     "isomorphic-fetch": "^3.0.0",
     "js-base64": "^3.6.0",
+    "js-file-download": "^0.4.12",
     "katex": "^0.13.0",
     "lodash": "^4.17.21",
     "mdi-material-ui": "^6.22.1",
