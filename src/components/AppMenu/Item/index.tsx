@@ -1,5 +1,6 @@
 import { SidebarMenuItem } from '../../../interfaces';
 import { useAppPathname } from '../../../utils/history';
+import Image from '../../Image';
 import React, { useEffect, useState } from 'react';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -9,15 +10,12 @@ import Divider from '@material-ui/core/Divider';
 import Collapse from '@material-ui/core/Collapse';
 import IconExpandLessIcon from '@material-ui/icons/ExpandLess';
 import IconExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import * as icons from 'mdi-material-ui';
 import {
   lighten,
   makeStyles,
-  SvgIconTypeMap,
   Tooltip,
   Typography,
 } from '@material-ui/core';
-import { OverridableComponent } from '@material-ui/core/OverridableComponent';
 import { useHistory } from 'react-router';
 import './index.less';
 import clsx from 'clsx';
@@ -38,6 +36,11 @@ const useStyles = makeStyles((theme) => {
         backgroundColor: lighten(theme.palette.primary.main, 0.85),
       },
     },
+    icon: {
+      '& path': {
+        fill: theme.palette.primary.main,
+      },
+    },
   };
 });
 
@@ -51,7 +54,6 @@ const AppMenuItem: React.FC<AppMenuItemProps> = ({
   const history = useHistory();
   const locationPathname = useAppPathname();
   const [open, setOpen] = useState<boolean>(false);
-  const [Icon, setIcon] = useState<OverridableComponent<SvgIconTypeMap<{}, 'svg'>>>(null);
   const [pathname, setPathname] = useState<string>('');
   const [isActive, setIsActive] = useState<boolean>(false);
 
@@ -61,10 +63,6 @@ const AppMenuItem: React.FC<AppMenuItemProps> = ({
     }
     setOpen(!open);
   };
-
-  useEffect(() => {
-    setIcon(icons[icon]);
-  }, [icon]);
 
   useEffect(() => {
     const currentPathname = `${prefix}${itemPathname}`;
@@ -113,13 +111,9 @@ const AppMenuItem: React.FC<AppMenuItemProps> = ({
           }, classes.appMenuItem),
         }}
       >
-        {
-          !!Icon && (
-            <ListItemIcon>
-              <Icon className="app-menu__item__icon" />
-            </ListItemIcon>
-          )
-        }
+        <ListItemIcon>
+          <Image icon={icon} className={classes.icon} />
+        </ListItemIcon>
         <Tooltip title={title}>
           <ListItemText
             primary={
@@ -128,7 +122,6 @@ const AppMenuItem: React.FC<AppMenuItemProps> = ({
                 classes={{ root: 'app-menu__item__text' }}
               >{title}</Typography>
             }
-            inset={!Icon}
           />
         </Tooltip>
         {

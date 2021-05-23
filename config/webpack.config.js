@@ -9,6 +9,7 @@ const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin'
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const safePostCssParser = require('postcss-safe-parser');
 const postcssNormalize = require('postcss-normalize');
+const _ = require('lodash');
 const path = require('path');
 const fs = require('fs');
 
@@ -137,7 +138,32 @@ module.exports = function() {
       filename: 'static/js/' + (isEnvDevelopment ? '[name].bundle.js' : '[name].[hash:8].js'),
       chunkFilename: 'static/js/' + (isEnvDevelopment ? '[name].chunk.js' : '[name].[contenthash:8].chunk.js'),
       publicPath: '/',
+      libraryTarget: 'umd',
     },
+    externals: [
+      {
+        lodash: {
+          commonjs: 'lodash',
+          amd: 'lodash',
+          root: '_', // indicates global variable
+          commonjs2: 'lodash',
+        },
+        'react': 'React',
+        'react-dom': 'ReactDOM',
+        'moment': 'moment',
+      },
+      // function(context, request, callback) {
+      //   if (request.startsWith('date-fns/')) {
+      //     return callback(null, {
+      //       root: ['dateFns', _.camelCase(request.replace(/^date-fns\//, ''))],
+      //       commonjs: `${request}/index`,
+      //       commonjs2: `${request}/index`,
+      //       amd: `${request}/index`,
+      //     });
+      //   }
+      //   callback();
+      // },
+    ],
     optimization: {
       splitChunks: {
         cacheGroups: {
@@ -228,6 +254,10 @@ module.exports = function() {
     },
     resolve: {
       extensions: ['.ts', '.tsx', '.js', 'jsx'],
+      alias: {
+        'katex': path.resolve(process.cwd(), 'node_modules/katex'),
+        'immutable': path.resolve(process.cwd(), 'node_modules/immutable'),
+      },
     },
     devServer: {
       hot: true,
