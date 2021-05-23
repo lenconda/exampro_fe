@@ -290,3 +290,9 @@ export interface LanguageOption {
   title: string;
   code: string;
 }
+
+export interface ExamResultListItem {
+  user: User;
+  score: number;
+  createdAt: string;
+}

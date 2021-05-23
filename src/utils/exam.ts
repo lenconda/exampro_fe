@@ -109,6 +109,24 @@ export const checkReviewPermission = (exam: ExamResponseData) => {
   return true;
 };
 
+export const checkReviewResultPermission = (exam: ExamResponseData) => {
+  if (!exam) {
+    return false;
+  }
+  if (!exam.userExam) {
+    return false;
+  }
+  const { resultTime } = exam;
+  const resultTimestamp = Date.parse(resultTime);
+  const currentTimestamp = Date.now();
+
+  if (currentTimestamp > resultTimestamp) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
 export const checkResultPermission = (exam: ExamResponseData) => {
   if (!exam) {
     return false;
