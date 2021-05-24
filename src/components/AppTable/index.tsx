@@ -16,11 +16,11 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper, { PaperProps } from '@material-ui/core/Paper';
+import Box from '@material-ui/core/Box';
 import Checkbox from '@material-ui/core/Checkbox';
 import TablePagination, { TablePaginationProps } from '@material-ui/core/TablePagination';
 import clsx from 'clsx';
 import _ from 'lodash';
-import { Box } from '@material-ui/core';
 
 export interface TableSchema {
   title: string | React.ReactNode;

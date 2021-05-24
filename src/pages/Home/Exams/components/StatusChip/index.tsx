@@ -6,7 +6,7 @@ import { useTexts } from '../../../../../utils/texts';
 import React from 'react';
 import Chip, { ChipProps } from '@material-ui/core/Chip';
 import _ from 'lodash';
-import { makeStyles } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 
 interface StatusChipComponentProps extends ChipProps {

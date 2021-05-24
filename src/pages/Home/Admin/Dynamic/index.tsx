@@ -19,7 +19,7 @@ import AppSearchBarInput from '../../../../components/AppSearchBar/Input';
 import { useDebouncedValue } from '../../../../utils/hooks';
 import AppDialogManager from '../../../../components/AppDialog/Manager';
 import React, { useEffect, useState } from 'react';
-import { lighten, makeStyles } from '@material-ui/core';
+import { lighten, makeStyles } from '@material-ui/core/styles';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';

@@ -5,7 +5,7 @@ import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
 import Popover from '@material-ui/core/Popover';
 import TextField from '@material-ui/core/TextField';
-import { makeStyles } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
 import React, { useEffect, useState } from 'react';
 import { BlockMath } from 'react-katex';
 import _ from 'lodash';

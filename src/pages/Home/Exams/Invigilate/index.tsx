@@ -25,7 +25,7 @@ import VideoOutlineIcon from 'mdi-material-ui/VideoOutline';
 import RefreshOutlinedIcon from '@material-ui/icons/RefreshOutlined';
 import React, { useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router';
-import { makeStyles } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
 import _ from 'lodash';
 import clsx from 'clsx';
 
