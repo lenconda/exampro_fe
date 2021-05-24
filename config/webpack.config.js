@@ -151,6 +151,8 @@ module.exports = function() {
         'react': 'React',
         'react-dom': 'ReactDOM',
         'moment': 'moment',
+        'draft-js': 'Draft',
+        'immutable': 'Immutable',
       },
       function(context, request, callback) {
         if (request.startsWith('sockjs-client')) {
@@ -163,6 +165,18 @@ module.exports = function() {
         }
         callback();
       },
+      // function(context, request, callback) {
+      //   if (request.startsWith('immutable')) {
+      //     console.log('\nFUCK YOU: ', request, '\n');
+      //     // return callback(null, {
+      //     //   root: ['Draft'],
+      //     //   commonjs: `${request}/index`,
+      //     //   commonjs2: `${request}/index`,
+      //     //   amd: `${request}/index`,
+      //     // });
+      //   }
+      //   callback();
+      // },
     ],
     optimization: {
       splitChunks: {
