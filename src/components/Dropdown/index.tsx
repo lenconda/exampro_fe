@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
-import { makeStyles, Menu, MenuProps } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
+import Menu, { MenuProps } from '@material-ui/core/Menu';
 import './index.less';
 import _ from 'lodash';
 

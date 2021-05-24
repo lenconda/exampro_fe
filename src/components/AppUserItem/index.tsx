@@ -7,7 +7,7 @@ import Typography from '@material-ui/core/Typography';
 import React from 'react';
 import _ from 'lodash';
 import clsx from 'clsx';
-import { makeStyles } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
 
 export interface AppUserItemProps extends PaperProps {
   user?: User;

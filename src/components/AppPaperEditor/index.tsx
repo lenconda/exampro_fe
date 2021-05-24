@@ -43,7 +43,7 @@ import TextField from '@material-ui/core/TextField';
 import CheckIcon from '@material-ui/icons/Check';
 import DeleteIcon from '@material-ui/icons/Delete';
 import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
-import { makeStyles } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
 import _ from 'lodash';
 
 export interface AppPaperEditorProps extends DialogProps {

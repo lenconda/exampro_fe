@@ -2,20 +2,20 @@ import { SidebarMenuItem } from '../../../interfaces';
 import { useAppPathname } from '../../../utils/history';
 import Image from '../../Image';
 import React, { useEffect, useState } from 'react';
+import Collapse from '@material-ui/core/Collapse';
+import Divider from '@material-ui/core/Divider';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import Divider from '@material-ui/core/Divider';
-import Collapse from '@material-ui/core/Collapse';
+import Tooltip from '@material-ui/core/Tooltip';
+import Typography from '@material-ui/core/Typography';
 import IconExpandLessIcon from '@material-ui/icons/ExpandLess';
 import IconExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import {
   lighten,
   makeStyles,
-  Tooltip,
-  Typography,
-} from '@material-ui/core';
+} from '@material-ui/core/styles';
 import { useHistory } from 'react-router';
 import './index.less';
 import clsx from 'clsx';

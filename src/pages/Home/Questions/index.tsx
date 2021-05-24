@@ -36,7 +36,7 @@ import PlaylistPlusIcon from 'mdi-material-ui/PlaylistPlus';
 import IconButton from '@material-ui/core/IconButton';
 import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
-import { lighten, makeStyles } from '@material-ui/core';
+import { lighten, makeStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import './index.less';
 

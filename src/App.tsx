@@ -14,7 +14,7 @@ import {
   BrowserRouter as Router,
   Switch,
 } from 'react-router-dom';
-import { StylesProvider, ThemeProvider } from '@material-ui/core';
+import { StylesProvider, ThemeProvider } from '@material-ui/core/styles';
 import React, { Suspense, useEffect } from 'react';
 import { SnackbarProvider } from 'notistack';
 import './App.less';
