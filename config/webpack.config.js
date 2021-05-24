@@ -153,6 +153,7 @@ module.exports = function() {
         'moment': 'moment',
         'draft-js': 'Draft',
         'immutable': 'Immutable',
+        'katex': 'katex',
       },
       function(context, request, callback) {
         if (request.startsWith('sockjs-client')) {
