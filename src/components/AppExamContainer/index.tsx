@@ -114,6 +114,7 @@ const useStyles = makeStyles((theme) => {
       backgroundColor: 'transparent',
       overflowY: 'scroll',
       height: '100%',
+      width: '100%',
     },
     examContainerWrapperCenter: {
       display: 'flex',

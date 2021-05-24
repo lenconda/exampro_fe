@@ -359,8 +359,7 @@ const ExamsPage: React.FC<ExamPageProps> = ({
                                 title: texts['011'],
                                 show: selectedExams.length === 1
                                   && ['resource/exam/initiator', 'resource/exam/maintainer'].includes(roleId)
-                                  && (selectedExams[0].startTime ? Date.parse(selectedExams[0].startTime) > Date.now() : true)
-                                  && Date.now() < Date.parse(selectedExams[0].endTime),
+                                  && Date.now() < Date.parse(selectedExams[0].resultTime),
                                 IconButtonProps: {
                                   onClick: () => {
                                     setExamEditorMode('edit');

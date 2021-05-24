@@ -9,7 +9,6 @@ const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin'
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const safePostCssParser = require('postcss-safe-parser');
 const postcssNormalize = require('postcss-normalize');
-const _ = require('lodash');
 const path = require('path');
 const fs = require('fs');
 
@@ -167,18 +166,6 @@ module.exports = function() {
         }
         callback();
       },
-      // function(context, request, callback) {
-      //   if (request.startsWith('immutable')) {
-      //     console.log('\nFUCK YOU: ', request, '\n');
-      //     // return callback(null, {
-      //     //   root: ['Draft'],
-      //     //   commonjs: `${request}/index`,
-      //     //   commonjs2: `${request}/index`,
-      //     //   amd: `${request}/index`,
-      //     // });
-      //   }
-      //   callback();
-      // },
     ],
     optimization: {
       splitChunks: {

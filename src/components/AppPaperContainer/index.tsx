@@ -44,6 +44,8 @@ const useStyles = makeStyles((theme) => {
   return {
     paperContainerWrapper: {
       padding: theme.spacing(5),
+      paddingRight: 0,
+      paddingLeft: 0,
       display: 'flex',
       justifyContent: 'center',
       backgroundColor: 'transparent',
@@ -142,6 +144,7 @@ const AppPaperContainer: React.FC<AppPaperContainerComponentProps> = ({
         elevation={0}
         style={{
           maxWidth,
+          width: '100%',
           backgroundColor: 'transparent',
         }}
       >
