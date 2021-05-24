@@ -154,6 +154,7 @@ module.exports = function() {
         'draft-js': 'Draft',
         'immutable': 'Immutable',
         'katex': 'katex',
+        'react-beautiful-dnd': 'ReactBeautifulDnd',
       },
       function(context, request, callback) {
         if (request.startsWith('sockjs-client')) {
