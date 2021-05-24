@@ -19,7 +19,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { connect } from 'react-redux';
 import { useHistory } from 'react-router';
 import qs from 'qs';
-import { createStyles, makeStyles, useTheme, useMediaQuery, Theme } from '@material-ui/core';
+import { createStyles, makeStyles, useTheme, Theme } from '@material-ui/core/styles';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
 import Tab from '@material-ui/core/Tab';
@@ -358,8 +359,7 @@ const ExamsPage: React.FC<ExamPageProps> = ({
                                 title: texts['011'],
                                 show: selectedExams.length === 1
                                   && ['resource/exam/initiator', 'resource/exam/maintainer'].includes(roleId)
-                                  && (selectedExams[0].startTime ? Date.parse(selectedExams[0].startTime) > Date.now() : true)
-                                  && Date.now() < Date.parse(selectedExams[0].endTime),
+                                  && Date.now() < Date.parse(selectedExams[0].resultTime),
                                 IconButtonProps: {
                                   onClick: () => {
                                     setExamEditorMode('edit');

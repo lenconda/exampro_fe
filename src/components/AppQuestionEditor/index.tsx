@@ -45,7 +45,7 @@ import CheckIcon from '@material-ui/icons/Check';
 import CloseIcon from '@material-ui/icons/Close';
 import DeleteIcon from '@material-ui/icons/Delete';
 import React, { useEffect, useState } from 'react';
-import { lighten, makeStyles } from '@material-ui/core';
+import { lighten, makeStyles } from '@material-ui/core/styles';
 import DraftEditor, { ContentState, EditorState } from 'draft-js';
 import _ from 'lodash';
 import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautiful-dnd';

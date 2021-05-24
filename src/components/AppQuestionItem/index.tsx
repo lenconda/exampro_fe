@@ -34,7 +34,7 @@ import FlagIcon from '@material-ui/icons/Flag';
 import DeleteOutlineIcon from '@material-ui/icons/DeleteOutline';
 import React, { useEffect, useRef, useState } from 'react';
 import { ContentState, EditorState } from 'draft-js';
-import { lighten, makeStyles } from '@material-ui/core';
+import { lighten, makeStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import _ from 'lodash';
 

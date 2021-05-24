@@ -10,7 +10,7 @@ import CheckIcon from '@material-ui/icons/Check';
 import LanguageIcon from '@material-ui/icons/Language';
 import React, { useEffect } from 'react';
 import _ from 'lodash';
-import { lighten, makeStyles } from '@material-ui/core';
+import { lighten, makeStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 
 export interface AppLanguageSelectorProps extends DropdownProps {}

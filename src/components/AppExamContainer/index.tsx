@@ -56,7 +56,8 @@ import Paper, { PaperProps } from '@material-ui/core/Paper';
 import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
 import React, { useEffect, useRef, useState } from 'react';
-import { makeStyles, useTheme, useMediaQuery } from '@material-ui/core';
+import { makeStyles, useTheme } from '@material-ui/core/styles';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 import EmoticonCryOutlineIcon from 'mdi-material-ui/EmoticonCryOutline';
 import FileClockIcon from 'mdi-material-ui/FileClock';
 import ProgressClockIcon from 'mdi-material-ui/ProgressClock';
@@ -113,6 +114,7 @@ const useStyles = makeStyles((theme) => {
       backgroundColor: 'transparent',
       overflowY: 'scroll',
       height: '100%',
+      width: '100%',
     },
     examContainerWrapperCenter: {
       display: 'flex',

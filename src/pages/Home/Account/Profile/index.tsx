@@ -17,7 +17,7 @@ import TextField from '@material-ui/core/TextField';
 import ShieldEditOutlineIcon from 'mdi-material-ui/ShieldEditOutline';
 import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
-import { makeStyles } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
 import _ from 'lodash';
 
 export interface ProfilePageProps extends Dispatch, AppState {}

@@ -5,7 +5,7 @@ import AppUserCard from '../AppUserCard';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Card from '@material-ui/core/Card';
 import Grid from '@material-ui/core/Grid';
-import { lighten, makeStyles } from '@material-ui/core';
+import { lighten, makeStyles } from '@material-ui/core/styles';
 import _ from 'lodash';
 import clsx from 'clsx';
 

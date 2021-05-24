@@ -23,7 +23,7 @@ import AppUserCard from '../../../../components/AppUserCard';
 import AppSearchBarInput from '../../../../components/AppSearchBar/Input';
 import { useDebouncedValue } from '../../../../utils/hooks';
 import React, { useEffect, useState } from 'react';
-import { lighten, makeStyles } from '@material-ui/core';
+import { lighten, makeStyles } from '@material-ui/core/styles';
 import Avatar from '@material-ui/core/Avatar';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';

@@ -24,7 +24,7 @@ import Paper, { PaperProps } from '@material-ui/core/Paper';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import React, { useEffect, useState } from 'react';
-import { makeStyles } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
 import _ from 'lodash';
 import clsx from 'clsx';
 
@@ -44,6 +44,8 @@ const useStyles = makeStyles((theme) => {
   return {
     paperContainerWrapper: {
       padding: theme.spacing(5),
+      paddingRight: 0,
+      paddingLeft: 0,
       display: 'flex',
       justifyContent: 'center',
       backgroundColor: 'transparent',
@@ -142,6 +144,7 @@ const AppPaperContainer: React.FC<AppPaperContainerComponentProps> = ({
         elevation={0}
         style={{
           maxWidth,
+          width: '100%',
           backgroundColor: 'transparent',
         }}
       >

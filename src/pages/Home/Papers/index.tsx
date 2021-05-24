@@ -17,7 +17,7 @@ import React, { useEffect, useState } from 'react';
 import NoteAddIcon from '@material-ui/icons/NoteAdd';
 import { useHistory } from 'react-router';
 import _ from 'lodash';
-import { makeStyles } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import MenuItem from '@material-ui/core/MenuItem';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';

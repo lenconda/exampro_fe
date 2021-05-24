@@ -9,7 +9,7 @@ import AddIcon from '@material-ui/icons/Add';
 import React, { useEffect, useState } from 'react';
 import clsx from 'clsx';
 import { OverridableComponent } from '@material-ui/core/OverridableComponent';
-import { SvgIconTypeMap } from '@material-ui/core';
+import { SvgIconTypeMap } from '@material-ui/core/SvgIcon';
 import _ from 'lodash';
 
 export interface AppSearchBarProps {

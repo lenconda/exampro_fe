@@ -9,7 +9,6 @@ const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin'
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const safePostCssParser = require('postcss-safe-parser');
 const postcssNormalize = require('postcss-normalize');
-const _ = require('lodash');
 const path = require('path');
 const fs = require('fs');
 
@@ -151,18 +150,22 @@ module.exports = function() {
         'react': 'React',
         'react-dom': 'ReactDOM',
         'moment': 'moment',
+        'draft-js': 'Draft',
+        'immutable': 'Immutable',
+        'katex': 'katex',
+        'react-beautiful-dnd': 'ReactBeautifulDnd',
       },
-      // function(context, request, callback) {
-      //   if (request.startsWith('date-fns/')) {
-      //     return callback(null, {
-      //       root: ['dateFns', _.camelCase(request.replace(/^date-fns\//, ''))],
-      //       commonjs: `${request}/index`,
-      //       commonjs2: `${request}/index`,
-      //       amd: `${request}/index`,
-      //     });
-      //   }
-      //   callback();
-      // },
+      function(context, request, callback) {
+        if (request.startsWith('sockjs-client')) {
+          return callback(null, {
+            root: 'SockJS',
+            commonjs: `${request}/index`,
+            commonjs2: `${request}/index`,
+            amd: `${request}/index`,
+          });
+        }
+        callback();
+      },
     ],
     optimization: {
       splitChunks: {
@@ -170,14 +173,20 @@ module.exports = function() {
           vendors: {
             name: 'vendors',
             test: /[\\/]node_modules[\\/]/,
-            priority: -10,
+            priority: 30,
             chunks: 'initial',
           },
           common: {
-            name: 'common',
+            test: function (module, chunks) {
+              if (/@material-ui\/core/.test(module.context)) {
+                return false;
+              }
+              return true;
+            },
             chunks: 'all',
-            minSize: 20,
+            name: 'common',
             minChunks: 2,
+            priority: 20,
           },
           '@ant-design': {
             name: 'ant-design',
@@ -256,7 +265,6 @@ module.exports = function() {
       extensions: ['.ts', '.tsx', '.js', 'jsx'],
       alias: {
         'katex': path.resolve(process.cwd(), 'node_modules/katex'),
-        'immutable': path.resolve(process.cwd(), 'node_modules/immutable'),
       },
     },
     devServer: {

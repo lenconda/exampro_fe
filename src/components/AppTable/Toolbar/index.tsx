@@ -9,7 +9,8 @@ import Toolbar, { ToolbarProps } from '@material-ui/core/Toolbar';
 import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
 import { OverridableComponent } from '@material-ui/core/OverridableComponent';
-import { createStyles, lighten, makeStyles, SvgIconTypeMap, Theme } from '@material-ui/core';
+import { SvgIconTypeMap } from '@material-ui/core/SvgIcon';
+import { createStyles, lighten, makeStyles, Theme } from '@material-ui/core/styles';
 import React from 'react';
 import _ from 'lodash';
 

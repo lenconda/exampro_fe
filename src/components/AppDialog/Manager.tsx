@@ -1,4 +1,4 @@
-import { DialogProps } from '@material-ui/core';
+import { DialogProps } from '@material-ui/core/Dialog';
 import { EventEmitter } from 'events';
 
 export const Constants = {

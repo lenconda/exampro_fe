@@ -15,7 +15,7 @@ import Typography from '@material-ui/core/Typography';
 import EmailCheckIcon from 'mdi-material-ui/EmailCheck';
 import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
-import { makeStyles } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
 import _ from 'lodash';
 import clsx from 'clsx';
 
