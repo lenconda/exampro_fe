@@ -61,7 +61,6 @@ const Image: React.FC<ImageProps> = ({
       }}
       onLoadStart={() => setLoading(true)}
       onLoad={(event) => {
-        SVGInject(event.target);
         setLoading(false);
         setError(false);
       }}
