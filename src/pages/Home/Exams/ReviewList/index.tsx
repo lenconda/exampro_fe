@@ -138,21 +138,11 @@ const ReviewListPage: React.FC<ReviewListPageProps> = ({
             const { reviewing } = row;
             const url = `/exam/${_.get(exam, 'id')}?action=review&participant_email=${email}`;
             return (
-              <>
-                {
-                  reviewing
-                    ? (
-                      <Typography variant="body2" color="textSecondary">{systemTexts['REVIEW']}</Typography>
-                    )
-                    : (
-                      <Link
-                        color="secondary"
-                        href={url}
-                        target="_blank"
-                      >{systemTexts['REVIEW']}</Link>
-                    )
-                }
-              </>
+              <Link
+                color="secondary"
+                href={url}
+                target="_blank"
+              >{systemTexts['REVIEW']}</Link>
             );
           },
         },
