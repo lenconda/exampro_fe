@@ -85,3 +85,11 @@ export const increaseLeftTimes = async (examId: number) => {
   });
   return;
 };
+
+export const removeReviewingStatus = async (examId: number, participantEmail: string) => {
+  await AppRequestManager.send({
+    url: `/exam/${examId}/reviewing/${participantEmail}`,
+    method: 'DELETE',
+  });
+  return;
+};

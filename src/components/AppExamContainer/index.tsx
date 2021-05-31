@@ -4,6 +4,7 @@ import {
   getParticipantExamResult,
   increaseLeftTimes,
   putParticipantExamScores,
+  removeReviewingStatus,
   startExam,
   startReviewExam,
   submitParticipantAnswer,
@@ -579,6 +580,16 @@ const AppExamContainer: React.FC<AppExamContainerComponentProps> = React.memo(({
       window.removeEventListener('blur', handler);
     };
   }, [examState]);
+
+  useEffect(() => {
+    const handler = () => {
+      removeReviewingStatus(examId, participantEmail);
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => {
+      window.removeEventListener('beforeunload', handler);
+    };
+  }, []);
 
   const statusesWrapper = (
     <Box className={classes.questionAnswerStatusesWrapper}>

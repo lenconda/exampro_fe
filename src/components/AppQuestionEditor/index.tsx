@@ -347,6 +347,14 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
     Object.keys(keys).forEach((key) => {
       localStorage.removeItem(keys[key]);
     });
+
+    if (!saveDraft) {
+      setQuestionContentState(EditorState.createEmpty().getCurrentContent());
+      setQuestionShortAnswerContentState(EditorState.createEmpty().getCurrentContent());
+      setQuestionChoices([]);
+      setQuestionBlankAnswers([]);
+      setSelectedQuestionCategories([]);
+    }
   };
 
   const handleQuestionChoiceChange = (
@@ -485,8 +493,6 @@ const AppQuestionEditor: React.FC<AppQuestionEditorConnectedProps> = ({
       if (questionBlankAnswers.length !== 0) {
         localStorage.setItem(CACHE_KEYS.QUESTION_BLANK_ANSWERS, JSON.stringify(questionBlankAnswers));
       }
-    } else {
-      handleRemoveCache(CACHE_KEYS);
     }
   }, [
     debouncedQuestionContentState,
